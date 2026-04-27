@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Import Views
+// Import Views (Halaman)
 import 'beranda_view.dart';
 import 'keuangan_view.dart';
+import 'catatan_view.dart'; // Import halaman baru
 import 'profil_view.dart';
 import 'login_view.dart';
 
+// Import Controller
 import '../controllers/auth_controller.dart';
 
 class HomeView extends StatefulWidget {
@@ -19,14 +21,14 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   int _currentIndex = 0;
   final AuthController _authController = AuthController();
-
-  // Variabel untuk mendeteksi status login
   bool _isLoggedIn = false;
 
+  // Daftar halaman yang akan ditampilkan di body
   final List<Widget> _pages = [
-    const BerandaView(),
-    const KeuanganView(),
-    const ProfilView(),
+    const BerandaView(), // Index 0
+    const KeuanganView(), // Index 1
+    const CatatanView(), // Index 2 (Halaman Baru)
+    const ProfilView(), // Index 3
   ];
 
   @override
@@ -35,23 +37,21 @@ class _HomeViewState extends State<HomeView> {
     _loadSession();
   }
 
-  // Fungsi mengecek apakah di memori HP ada data login admin
+  // Fungsi mengecek status login admin di memori HP
   Future<void> _loadSession() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      // Jika id_member tidak null, berarti ada admin yang sedang login
       _isLoggedIn = prefs.getString('id_member') != null;
     });
   }
 
+  // Fungsi saat tombol navigasi bawah diklik
   void _onTap(int index) async {
-    // JIKA TOMBOL KE-4 (INDEX 3) DI-KLIK:
-    if (index == 3) {
+    // Tombol terakhir (Index 4) adalah Login/Logout
+    if (index == 4) {
       if (_isLoggedIn) {
-        // Kalau sudah login, tombol ini fungsinya Logout
         _showLogoutDialog();
       } else {
-        // Kalau belum login (User biasa), tombol ini fungsinya mengarahkan ke halaman Login Admin
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const LoginView()),
@@ -64,6 +64,7 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
+  // Popup konfirmasi logout
   void _showLogoutDialog() {
     showDialog(
       context: context,
@@ -79,7 +80,7 @@ class _HomeViewState extends State<HomeView> {
             onPressed: () async {
               await _authController.logout();
               if (!mounted) return;
-              // Setelah logout, refresh halaman Home ini jadi mode User biasa
+              // Reset aplikasi ke mode User/Tamu
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const HomeView()),
@@ -108,11 +109,15 @@ class _HomeViewState extends State<HomeView> {
         backgroundColor: Colors.teal,
         elevation: 0,
       ),
+
+      // Menampilkan halaman sesuai index aktif
       body: _pages[_currentIndex],
+
+      // Menu Navigasi Bawah
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTap,
-        type: BottomNavigationBarType.fixed,
+        type: BottomNavigationBarType.fixed, // Menampilkan lebih dari 3 menu
         selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
@@ -128,17 +133,18 @@ class _HomeViewState extends State<HomeView> {
             label: "Keuangan",
           ),
           const BottomNavigationBarItem(
+            icon: Icon(Icons.notes),
+            activeIcon: Icon(Icons.notes),
+            label: "Catatan",
+          ),
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: "Profil",
           ),
-
-          // TOMBOL KE-4 BERUBAH SECARA DINAMIS
           BottomNavigationBarItem(
-            icon: Icon(
-              _isLoggedIn ? Icons.logout : Icons.login,
-            ), // Ikon berubah
-            label: _isLoggedIn ? "Logout" : "Login Admin", // Teks berubah
+            icon: Icon(_isLoggedIn ? Icons.logout : Icons.login),
+            label: _isLoggedIn ? "Logout" : "Login Admin",
           ),
         ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'member_view.dart'; // Import halaman member
 
 class ProfilView extends StatefulWidget {
   const ProfilView({super.key});
@@ -19,12 +20,11 @@ class _ProfilViewState extends State<ProfilView> {
     _loadDataProfil();
   }
 
-  // Mengambil data yang tersimpan di HP saat user login tadi
   Future<void> _loadDataProfil() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _namaLengkap = prefs.getString('nama') ?? 'Member Karisma';
-      _role = prefs.getString('role') ?? 'Member';
+      _namaLengkap = prefs.getString('nama') ?? 'Tamu Karisma';
+      _role = prefs.getString('role') ?? 'Tamu';
       _idMember = prefs.getString('id_member') ?? '-';
     });
   }
@@ -34,7 +34,7 @@ class _ProfilViewState extends State<ProfilView> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // 1. BAGIAN HEADER PROFIL
+          // HEADER PROFIL
           Container(
             width: double.infinity,
             padding: const EdgeInsets.only(top: 40, bottom: 30),
@@ -93,14 +93,14 @@ class _ProfilViewState extends State<ProfilView> {
 
           const SizedBox(height: 30),
 
-          // 2. BAGIAN MENU PENGATURAN / INFO
+          // MENU SETTINGS / INFO
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Informasi Akun",
+                  "Menu Aplikasi",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -118,18 +118,32 @@ class _ProfilViewState extends State<ProfilView> {
                     children: [
                       ListTile(
                         leading: const Icon(Icons.badge, color: Colors.teal),
-                        title: const Text("ID Member"),
+                        title: const Text("ID Member Anda"),
                         trailing: Text(
                           "#$_idMember",
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                       const Divider(height: 0),
-                      const ListTile(
-                        leading: Icon(Icons.security, color: Colors.teal),
-                        title: Text("Keamanan Akun"),
-                        trailing: Icon(Icons.arrow_forward_ios, size: 16),
+
+                      // TOMBOL DAFTAR MEMBER
+                      ListTile(
+                        leading: const Icon(
+                          Icons.people_alt,
+                          color: Colors.teal,
+                        ),
+                        title: const Text("Daftar Pengurus & Member"),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MemberView(),
+                            ),
+                          );
+                        },
                       ),
+
                       const Divider(height: 0),
                       const ListTile(
                         leading: Icon(Icons.help_outline, color: Colors.teal),
