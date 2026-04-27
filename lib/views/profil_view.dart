@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'member_view.dart'; // Import halaman member
 
 class ProfilView extends StatefulWidget {
   const ProfilView({super.key});
@@ -108,7 +107,6 @@ class _ProfilViewState extends State<ProfilView> {
                   ),
                 ),
                 const SizedBox(height: 10),
-
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
@@ -125,25 +123,14 @@ class _ProfilViewState extends State<ProfilView> {
                         ),
                       ),
                       const Divider(height: 0),
-
-                      // TOMBOL DAFTAR MEMBER
-                      ListTile(
-                        leading: const Icon(
-                          Icons.people_alt,
+                      const ListTile(
+                        leading: Icon(
+                          Icons.settings_outlined,
                           color: Colors.teal,
                         ),
-                        title: const Text("Daftar Pengurus & Member"),
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MemberView(),
-                            ),
-                          );
-                        },
+                        title: Text("Pengaturan Akun"),
+                        trailing: Icon(Icons.arrow_forward_ios, size: 16),
                       ),
-
                       const Divider(height: 0),
                       const ListTile(
                         leading: Icon(Icons.help_outline, color: Colors.teal),
