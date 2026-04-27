@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Import Views (Halaman)
+// Import Views
 import 'beranda_view.dart';
 import 'keuangan_view.dart';
+import 'profil_view.dart';
 import 'login_view.dart';
 
-// Import Controller
 import '../controllers/auth_controller.dart';
 
 class HomeView extends StatefulWidget {
@@ -17,19 +17,16 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  // 1. Variabel untuk mengontrol navigasi
   int _currentIndex = 0;
   final AuthController _authController = AuthController();
-  String _namaUser = "";
 
-  // 2. Daftar halaman yang akan ditampilkan di body
-  // Urutannya harus sama dengan urutan di BottomNavigationBar
+  // Variabel untuk mendeteksi status login
+  bool _isLoggedIn = false;
+
   final List<Widget> _pages = [
-    const BerandaView(), // Index 0
-    const KeuanganView(), // Index 1
-    const Center(
-      child: Text("Halaman Profil", style: TextStyle(fontSize: 20)),
-    ), // Index 2 (Placeholder)
+    const BerandaView(),
+    const KeuanganView(),
+    const ProfilView(),
   ];
 
   @override
@@ -38,34 +35,41 @@ class _HomeViewState extends State<HomeView> {
     _loadSession();
   }
 
-  // Fungsi untuk ambil nama user agar bisa muncul di AppBar (opsional)
+  // Fungsi mengecek apakah di memori HP ada data login admin
   Future<void> _loadSession() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      _namaUser = prefs.getString('nama') ?? 'User';
+      // Jika id_member tidak null, berarti ada admin yang sedang login
+      _isLoggedIn = prefs.getString('id_member') != null;
     });
   }
 
-  // 3. Fungsi saat tombol navigasi diklik
   void _onTap(int index) async {
-    // Jika yang diklik adalah tombol Logout (Index 3)
+    // JIKA TOMBOL KE-4 (INDEX 3) DI-KLIK:
     if (index == 3) {
-      _showLogoutDialog();
+      if (_isLoggedIn) {
+        // Kalau sudah login, tombol ini fungsinya Logout
+        _showLogoutDialog();
+      } else {
+        // Kalau belum login (User biasa), tombol ini fungsinya mengarahkan ke halaman Login Admin
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginView()),
+        );
+      }
     } else {
-      // Jika yang diklik menu biasa, ganti halaman
       setState(() {
         _currentIndex = index;
       });
     }
   }
 
-  // Fungsi popup konfirmasi logout
   void _showLogoutDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Logout"),
-        content: const Text("Apakah Anda yakin ingin keluar?"),
+        content: const Text("Apakah Anda yakin ingin keluar dari mode Admin?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -75,10 +79,10 @@ class _HomeViewState extends State<HomeView> {
             onPressed: () async {
               await _authController.logout();
               if (!mounted) return;
-              // Pindah ke halaman login dan hapus semua tumpukan halaman sebelumnya
+              // Setelah logout, refresh halaman Home ini jadi mode User biasa
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (_) => const LoginView()),
+                MaterialPageRoute(builder: (_) => const HomeView()),
                 (route) => false,
               );
             },
@@ -95,7 +99,6 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // App Bar khas Karisma
       appBar: AppBar(
         title: const Text(
           "KARISMA MOBILE",
@@ -104,43 +107,39 @@ class _HomeViewState extends State<HomeView> {
         centerTitle: true,
         backgroundColor: Colors.teal,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
       ),
-
-      // Body menampilkan halaman sesuai index yang aktif
       body: _pages[_currentIndex],
-
-      // Bottom Navigation Bar (Menu Bawah)
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onTap,
-        type: BottomNavigationBarType
-            .fixed, // WAJIB: agar lebih dari 3 menu tidak putih/hilang
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_outlined),
             activeIcon: Icon(Icons.dashboard),
             label: "Beranda",
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet_outlined),
             activeIcon: Icon(Icons.account_balance_wallet),
             label: "Keuangan",
           ),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: "Profil",
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.logout), label: "Logout"),
+
+          // TOMBOL KE-4 BERUBAH SECARA DINAMIS
+          BottomNavigationBarItem(
+            icon: Icon(
+              _isLoggedIn ? Icons.logout : Icons.login,
+            ), // Ikon berubah
+            label: _isLoggedIn ? "Logout" : "Login Admin", // Teks berubah
+          ),
         ],
       ),
     );
