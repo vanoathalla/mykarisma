@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// IMPORT HALAMAN BARU
+import 'member_view.dart';
+import 'catatan_view.dart'; // Jika ingin akses catatan dari sini juga
+import 'peta_view.dart';
+// import 'dokumentasi_view.dart'; // Nanti di-uncomment kalau file dokumentasi sudah kamu buat
+
 class ProfilView extends StatefulWidget {
   const ProfilView({super.key});
 
@@ -92,14 +98,14 @@ class _ProfilViewState extends State<ProfilView> {
 
           const SizedBox(height: 30),
 
-          // MENU SETTINGS / INFO
+          // MENU APLIKASI
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  "Menu Aplikasi",
+                  "Menu Utama",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -107,6 +113,7 @@ class _ProfilViewState extends State<ProfilView> {
                   ),
                 ),
                 const SizedBox(height: 10),
+
                 Card(
                   elevation: 2,
                   shape: RoundedRectangleBorder(
@@ -123,6 +130,80 @@ class _ProfilViewState extends State<ProfilView> {
                         ),
                       ),
                       const Divider(height: 0),
+
+                      // TOMBOL MEMBER
+                      ListTile(
+                        leading: const Icon(
+                          Icons.people_alt,
+                          color: Colors.teal,
+                        ),
+                        title: const Text("Daftar Pengurus & Member"),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MemberView(),
+                            ),
+                          );
+                        },
+                      ),
+                      const Divider(height: 0),
+
+                      // TOMBOL DOKUMENTASI (Pastikan file dokumentasi_view.dart sudah ada)
+                      ListTile(
+                        leading: const Icon(
+                          Icons.photo_library,
+                          color: Colors.teal,
+                        ),
+                        title: const Text("Dokumentasi Kegiatan"),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          // Navigator.push(context, MaterialPageRoute(builder: (context) => const DokumentasiView()));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Fitur Dokumentasi menyusul"),
+                            ),
+                          );
+                        },
+                      ),
+
+                      // TOMBOL PETA
+                      ListTile(
+                        leading: const Icon(Icons.map, color: Colors.teal),
+                        title: const Text("Lokasi Masjid"),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const PetaView(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+                const Text(
+                  "Lainnya",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Column(
+                    children: [
                       const ListTile(
                         leading: Icon(
                           Icons.settings_outlined,
