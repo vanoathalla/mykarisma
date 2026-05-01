@@ -1,9 +1,11 @@
 ﻿import 'package:flutter/material.dart';
 import '../controllers/keuangan_controller.dart';
 import '../controllers/currency_controller.dart';
+import '../helpers/auth_helper.dart';
 import '../models/keuangan_model.dart';
 import '../models/currency_model.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_widgets.dart';
 import 'konversi/konversi_view.dart';
 
 class KeuanganView extends StatefulWidget {
@@ -20,19 +22,26 @@ class _KeuanganViewState extends State<KeuanganView> {
   CurrencyModel? _currencyRates;
   bool _loadingRates = true;
 
-  // Konversi state (card manual)
   final TextEditingController _nominalCtrl = TextEditingController();
   String _fromCurrency = 'IDR';
   String _toCurrency = 'USD';
   double _hasilKonversi = 0.0;
 
-  // Refresh key
   int _refreshKey = 0;
+  String _roleUser = 'tamu'; // default tamu
 
   @override
   void initState() {
     super.initState();
     _fetchRates();
+    _loadRole();
+  }
+
+  Future<void> _loadRole() async {
+    final session = await AuthHelper.getActiveSession();
+    if (mounted) {
+      setState(() => _roleUser = session?['role'] ?? 'tamu');
+    }
   }
 
   Future<void> _fetchRates() async {
@@ -53,16 +62,14 @@ class _KeuanganViewState extends State<KeuanganView> {
     setState(() => _hasilKonversi = hasil);
   }
 
-  void _refreshData() {
-    setState(() => _refreshKey++);
-  }
+  void _refreshData() => setState(() => _refreshKey++);
 
   String formatRupiah(int angka) {
-    String hasil = angka.toString().replaceAllMapped(
+    final str = angka.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
+      (m) => '${m[1]}.',
     );
-    return "Rp $hasil";
+    return 'Rp $str';
   }
 
   String _formatHasil(double nilai, String currency) {
@@ -84,7 +91,6 @@ class _KeuanganViewState extends State<KeuanganView> {
     final tanggalCtrl = TextEditingController(text: _formatTanggal(DateTime.now()));
     bool isSaving = false;
 
-    // Konversi otomatis di form
     double usdVal = 0, sarVal = 0, eurVal = 0;
 
     void hitungKonversiForm(String val, StateSetter setModalState) {
@@ -106,14 +112,14 @@ class _KeuanganViewState extends State<KeuanganView> {
           builder: (ctx, setModalState) {
             return Container(
               decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                color: AppTheme.surfaceContainerLowest,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               ),
               padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
               ),
               child: SingleChildScrollView(
                 child: Form(
@@ -122,6 +128,18 @@ class _KeuanganViewState extends State<KeuanganView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Handle bar
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppTheme.outlineVariant,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -129,47 +147,42 @@ class _KeuanganViewState extends State<KeuanganView> {
                             'Tambah Transaksi',
                             style: TextStyle(
                               fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primary,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.onSurface,
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.close),
+                            icon: const Icon(Icons.close_rounded, color: AppTheme.outline),
                             onPressed: () => Navigator.pop(ctx),
                           ),
                         ],
                       ),
-                      const Divider(),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
 
                       // Jenis transaksi toggle
-                      const Text(
-                        'Jenis Transaksi',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
                       Row(
                         children: [
                           Expanded(
                             child: GestureDetector(
                               onTap: () => setModalState(() => selectedTipe = 'pemasukan'),
-                              child: Container(
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 decoration: BoxDecoration(
                                   color: selectedTipe == 'pemasukan'
                                       ? Colors.green
-                                      : Colors.grey.shade200,
-                                  borderRadius: BorderRadius.circular(10),
+                                      : AppTheme.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
-                                      Icons.arrow_downward,
+                                      Icons.arrow_downward_rounded,
                                       color: selectedTipe == 'pemasukan'
                                           ? Colors.white
-                                          : Colors.grey,
-                                      size: 18,
+                                          : AppTheme.outline,
+                                      size: 16,
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
@@ -177,8 +190,9 @@ class _KeuanganViewState extends State<KeuanganView> {
                                       style: TextStyle(
                                         color: selectedTipe == 'pemasukan'
                                             ? Colors.white
-                                            : Colors.grey,
-                                        fontWeight: FontWeight.bold,
+                                            : AppTheme.outline,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
                                       ),
                                     ),
                                   ],
@@ -190,23 +204,24 @@ class _KeuanganViewState extends State<KeuanganView> {
                           Expanded(
                             child: GestureDetector(
                               onTap: () => setModalState(() => selectedTipe = 'pengeluaran'),
-                              child: Container(
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 decoration: BoxDecoration(
                                   color: selectedTipe == 'pengeluaran'
                                       ? Colors.red
-                                      : Colors.grey.shade200,
-                                  borderRadius: BorderRadius.circular(10),
+                                      : AppTheme.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
-                                      Icons.arrow_upward,
+                                      Icons.arrow_upward_rounded,
                                       color: selectedTipe == 'pengeluaran'
                                           ? Colors.white
-                                          : Colors.grey,
-                                      size: 18,
+                                          : AppTheme.outline,
+                                      size: 16,
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
@@ -214,8 +229,9 @@ class _KeuanganViewState extends State<KeuanganView> {
                                       style: TextStyle(
                                         color: selectedTipe == 'pengeluaran'
                                             ? Colors.white
-                                            : Colors.grey,
-                                        fontWeight: FontWeight.bold,
+                                            : AppTheme.outline,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
                                       ),
                                     ),
                                   ],
@@ -225,39 +241,27 @@ class _KeuanganViewState extends State<KeuanganView> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 16),
 
-                      // Keterangan
                       TextFormField(
                         controller: namaCtrl,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Keterangan',
                           hintText: 'Iuran bulanan anggota',
-                          prefixIcon: const Icon(Icons.description, color: AppTheme.primary),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.primary),
-                          ),
+                          prefixIcon: Icon(Icons.description_outlined, color: AppTheme.primary),
                         ),
                         validator: (v) =>
                             (v == null || v.trim().isEmpty) ? 'Keterangan wajib diisi' : null,
                       ),
                       const SizedBox(height: 12),
 
-                      // Nominal
                       TextFormField(
                         controller: nominalFormCtrl,
                         keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Nominal (Rp)',
                           hintText: '0',
-                          prefixIcon: const Icon(Icons.money, color: AppTheme.primary),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppTheme.primary),
-                          ),
+                          prefixIcon: Icon(Icons.payments_outlined, color: AppTheme.primary),
                         ),
                         onChanged: (val) => hitungKonversiForm(val, setModalState),
                         validator: (v) {
@@ -268,17 +272,16 @@ class _KeuanganViewState extends State<KeuanganView> {
                         },
                       ),
 
-                      // Konversi otomatis
                       if (_currencyRates != null) ...[
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
-                            color: AppTheme.primary.withValues(alpha: 0.07),
-                            borderRadius: BorderRadius.circular(8),
+                            color: AppTheme.primary.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            '≈ ${usdVal.toStringAsFixed(2)} USD  |  ${sarVal.toStringAsFixed(2)} SAR  |  ${eurVal.toStringAsFixed(2)} EUR',
+                            '≈ ${usdVal.toStringAsFixed(2)} USD  ·  ${sarVal.toStringAsFixed(2)} SAR  ·  ${eurVal.toStringAsFixed(2)} EUR',
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppTheme.primary,
@@ -289,7 +292,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                       ],
                       const SizedBox(height: 12),
 
-                      // Tanggal
                       GestureDetector(
                         onTap: () async {
                           final initial = DateTime.tryParse(tanggalCtrl.text) ?? DateTime.now();
@@ -298,12 +300,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                             initialDate: initial,
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2100),
-                            builder: (context, child) => Theme(
-                              data: Theme.of(context).copyWith(
-                                colorScheme: const ColorScheme.light(primary: AppTheme.primary),
-                              ),
-                              child: child!,
-                            ),
                           );
                           if (picked != null) {
                             setModalState(() => tanggalCtrl.text = _formatTanggal(picked));
@@ -312,29 +308,26 @@ class _KeuanganViewState extends State<KeuanganView> {
                         child: AbsorbPointer(
                           child: TextFormField(
                             controller: tanggalCtrl,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Tanggal',
-                              prefixIcon: const Icon(Icons.calendar_today, color: AppTheme.primary),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                              prefixIcon: Icon(Icons.calendar_today_outlined, color: AppTheme.primary),
                             ),
                             validator: (v) =>
                                 (v == null || v.isEmpty) ? 'Tanggal wajib dipilih' : null,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
 
-                      // Tombol simpan
                       SizedBox(
                         width: double.infinity,
-                        height: 50,
+                        height: 52,
                         child: ElevatedButton(
                           onPressed: isSaving
                               ? null
                               : () async {
                                   if (!formKey.currentState!.validate()) return;
                                   setModalState(() => isSaving = true);
-
                                   final messenger = ScaffoldMessenger.of(context);
                                   final res = await _keuanganCtrl.insertKeuangan(
                                     selectedTipe,
@@ -342,11 +335,9 @@ class _KeuanganViewState extends State<KeuanganView> {
                                     tanggalCtrl.text,
                                     int.tryParse(nominalFormCtrl.text) ?? 0,
                                   );
-
                                   setModalState(() => isSaving = false);
                                   if (!ctx.mounted) return;
                                   Navigator.pop(ctx);
-
                                   messenger.showSnackBar(
                                     SnackBar(
                                       content: Text(res['message']),
@@ -356,22 +347,16 @@ class _KeuanganViewState extends State<KeuanganView> {
                                   );
                                   if (res['success']) _refreshData();
                                 },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
                           child: isSaving
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text(
-                                  'SIMPAN TRANSAKSI',
-                                  style: TextStyle(
-                                    fontSize: 16,
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
                                     color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                                    strokeWidth: 2,
                                   ),
-                                ),
+                                )
+                              : const Text('SIMPAN TRANSAKSI'),
                         ),
                       ),
                     ],
@@ -385,40 +370,6 @@ class _KeuanganViewState extends State<KeuanganView> {
     );
   }
 
-  Future<void> _konfirmasiHapus(KeuanganModel item) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Hapus Transaksi'),
-        content: Text('Yakin ingin menghapus transaksi "${item.keterangan}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Hapus'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      final res = await _keuanganCtrl.deleteKeuangan(item.id);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(res['message']),
-            backgroundColor: res['success'] ? Colors.green : Colors.red,
-          ),
-        );
-        if (res['success']) _refreshData();
-      }
-    }
-  }
-
   @override
   void dispose() {
     _nominalCtrl.dispose();
@@ -428,12 +379,7 @@ class _KeuanganViewState extends State<KeuanganView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppTheme.primary,
-        onPressed: _bukaFormTransaksi,
-        tooltip: 'Tambah Transaksi',
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      backgroundColor: AppTheme.background,
       body: FutureBuilder<Map<String, dynamic>>(
         key: ValueKey(_refreshKey),
         future: _keuanganCtrl.fetchKeuangan(),
@@ -444,347 +390,427 @@ class _KeuanganViewState extends State<KeuanganView> {
             );
           }
           if (!snapshot.hasData || snapshot.data!['success'] == false) {
-            return const Center(child: Text("Gagal memuat data keuangan."));
+            return const Center(child: Text('Gagal memuat data keuangan.'));
           }
 
-          var data = snapshot.data!;
-          List<KeuanganModel> riwayat = data['data'];
+          final data = snapshot.data!;
+          final List<KeuanganModel> riwayat = data['data'];
 
-          return ListView(
-            children: [
-              // ── KARTU SALDO UTAMA ──────────────────────────────────
-              Container(
-                margin: const EdgeInsets.all(15),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primary.withAlpha(230),
-                      AppTheme.primary,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+          return CustomScrollView(
+            slivers: [
+              // ── App Bar ──────────────────────────────────────────────
+              SliverAppBar(
+                floating: true,
+                snap: true,
+                backgroundColor: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                titleSpacing: 20,
+                title: const Text(
+                  'Keuangan',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.onSurface,
                   ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.shade400,
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
                 ),
-                child: Column(
-                  children: [
-                    const Text(
-                      "Total Saldo Kas Masjid",
-                      style: TextStyle(color: Colors.white70, fontSize: 16),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      formatRupiah(data['saldo']),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.refresh_rounded, color: AppTheme.primary),
+                    onPressed: () {
+                      _fetchRates();
+                      _refreshData();
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(1),
+                  child: Container(height: 1, color: AppTheme.primary.withValues(alpha: 0.08)),
+                ),
+              ),
+
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // ── Saldo Card ──────────────────────────────────────
+                    AiMeshCard(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Pemasukan",
-                              style: TextStyle(color: Colors.white70),
-                            ),
                             Text(
-                              formatRupiah(data['pemasukan']),
-                              style: const TextStyle(
-                                color: Colors.greenAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Text(
-                              "Pengeluaran",
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                            Text(
-                              formatRupiah(data['pengeluaran']),
-                              style: const TextStyle(
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // ── WIDGET KONVERSI MATA UANG (dipertahankan) ─────────
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.currency_exchange, color: AppTheme.primary),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Konversi Mata Uang',
+                              'Total Saldo Kas',
                               style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.primary,
+                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.75),
+                                fontWeight: FontWeight.w500,
                               ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              formatRupiah(data['saldo']),
+                              style: const TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildSaldoItem(
+                                    label: 'Pemasukan',
+                                    value: formatRupiah(data['pemasukan']),
+                                    icon: Icons.arrow_downward_rounded,
+                                    color: Colors.greenAccent,
+                                  ),
+                                ),
+                                Container(
+                                  width: 1,
+                                  height: 40,
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                ),
+                                Expanded(
+                                  child: _buildSaldoItem(
+                                    label: 'Pengeluaran',
+                                    value: formatRupiah(data['pengeluaran']),
+                                    icon: Icons.arrow_upward_rounded,
+                                    color: Colors.redAccent.shade100,
+                                    align: CrossAxisAlignment.end,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _nominalCtrl,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Nominal',
-                            hintText: 'Masukkan jumlah',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: AppTheme.primary),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
-                            ),
-                          ),
-                          onChanged: (_) => _hitungKonversi(),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: DropdownButton<String>(
-                                value: _fromCurrency,
-                                isExpanded: true,
-                                items: CurrencyController.supportedCurrencies
-                                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  if (val != null) {
-                                    setState(() => _fromCurrency = val);
-                                    _hitungKonversi();
-                                  }
-                                },
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // ── Konversi Card ───────────────────────────────────
+                    SurfaceCard(
+                      padding: const EdgeInsets.all(20),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primary.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(
+                                  Icons.currency_exchange_rounded,
+                                  color: AppTheme.primary,
+                                  size: 18,
+                                ),
                               ),
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8),
-                              child: Icon(Icons.arrow_forward, color: AppTheme.primary),
-                            ),
-                            Expanded(
-                              child: DropdownButton<String>(
-                                value: _toCurrency,
-                                isExpanded: true,
-                                items: CurrencyController.supportedCurrencies
-                                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                                    .toList(),
-                                onChanged: (val) {
-                                  if (val != null) {
-                                    setState(() => _toCurrency = val);
-                                    _hitungKonversi();
-                                  }
-                                },
+                              const SizedBox(width: 10),
+                              const Text(
+                                'Konversi Mata Uang',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.onSurface,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        if (_loadingRates)
-                          const Text('Memuat kurs...', style: TextStyle(color: Colors.grey))
-                        else if (_currencyRates == null)
-                          const Text('Kurs tidak tersedia', style: TextStyle(color: Colors.red))
-                        else
-                          Text(
-                            'Hasil: ${_formatHasil(_hasilKonversi, _toCurrency)}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primary,
-                            ),
+                            ],
                           ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const KonversiView()),
-                              );
-                            },
-                            icon: const Icon(Icons.open_in_new, color: AppTheme.primary),
-                            label: const Text(
-                              'Konversi Lengkap',
-                              style: TextStyle(color: AppTheme.primary),
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _nominalCtrl,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Nominal',
+                              hintText: 'Masukkan jumlah',
                             ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: AppTheme.primary),
-                              shape: RoundedRectangleBorder(
+                            onChanged: (_) => _hitungKonversi(),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  value: _fromCurrency,
+                                  decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  ),
+                                  items: CurrencyController.supportedCurrencies
+                                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                                      .toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setState(() => _fromCurrency = val);
+                                      _hitungKonversi();
+                                    }
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                child: Icon(Icons.arrow_forward_rounded,
+                                    color: AppTheme.primary, size: 20),
+                              ),
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  value: _toCurrency,
+                                  decoration: const InputDecoration(
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  ),
+                                  items: CurrencyController.supportedCurrencies
+                                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                                      .toList(),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setState(() => _toCurrency = val);
+                                      _hitungKonversi();
+                                    }
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          if (_loadingRates)
+                            const Text('Memuat kurs...', style: TextStyle(color: AppTheme.outline))
+                          else if (_currencyRates == null)
+                            const Text('Kurs tidak tersedia', style: TextStyle(color: Colors.red))
+                          else
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary.withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              // ── JUDUL RIWAYAT TRANSAKSI ────────────────────────────
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Riwayat Transaksi",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-
-              // ── LIST TRANSAKSI ─────────────────────────────────────
-              if (riwayat.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 30),
-                  child: Center(
-                    child: Text(
-                      'Belum ada transaksi.\nTap + untuk menambah.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                )
-              else
-                ...riwayat.map((item) {
-                  bool isPemasukan = item.jenis.toLowerCase() == 'pemasukan';
-                  return Dismissible(
-                    key: Key('keuangan_${item.id}'),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.only(right: 20),
-                      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.delete, color: Colors.white, size: 28),
-                    ),
-                    confirmDismiss: (_) async {
-                      return await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Hapus Transaksi'),
-                          content: Text(
-                            'Yakin ingin menghapus transaksi "${item.keterangan}"?',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Batal'),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, true),
-                              style: TextButton.styleFrom(foregroundColor: Colors.red),
-                              child: const Text('Hapus'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    onDismissed: (_) async {
-                      final messenger = ScaffoldMessenger.of(context);
-                      final res = await _keuanganCtrl.deleteKeuangan(item.id);
-                      if (mounted) {
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(res['message']),
-                            backgroundColor: res['success'] ? Colors.green : Colors.red,
-                          ),
-                        );
-                        _refreshData();
-                      }
-                    },
-                    child: Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: isPemasukan
-                              ? Colors.green.shade100
-                              : Colors.red.shade100,
-                          child: Icon(
-                            isPemasukan ? Icons.arrow_downward : Icons.arrow_upward,
-                            color: isPemasukan ? Colors.green : Colors.red,
-                          ),
-                        ),
-                        title: Text(
-                          item.keterangan,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(item.tanggal),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              (isPemasukan ? "+ " : "- ") + formatRupiah(item.nominal),
-                              style: TextStyle(
-                                color: isPemasukan ? Colors.green : Colors.red,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                              child: Text(
+                                'Hasil: ${_formatHasil(_hasilKonversi, _toCurrency)}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.primary,
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 4),
-                            InkWell(
-                              onTap: () => _konfirmasiHapus(item),
-                              child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const KonversiView()),
+                              ),
+                              icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                              label: const Text('Konversi Lengkap'),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                  );
-                }),
 
-              const SizedBox(height: 80),
+                    const SizedBox(height: 24),
+
+                    // ── Riwayat Transaksi ───────────────────────────────
+                    SectionHeader(title: 'Riwayat Transaksi'),
+                    const SizedBox(height: 14),
+
+                    if (riwayat.isEmpty)
+                      SurfaceCard(
+                        padding: const EdgeInsets.all(32),
+                        child: const Center(
+                          child: Column(
+                            children: [
+                              Icon(Icons.receipt_long_outlined,
+                                  size: 48, color: AppTheme.outline),
+                              SizedBox(height: 12),
+                              Text(
+                                'Belum ada transaksi',
+                                style: TextStyle(
+                                  color: AppTheme.outline,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      ...riwayat.map((item) {
+                        final isPemasukan = item.jenis.toLowerCase() == 'pemasukan';
+                        return Dismissible(
+                          key: Key('keuangan_${item.id}'),
+                          // Hanya admin yang bisa swipe hapus
+                          direction: _roleUser == 'admin'
+                              ? DismissDirection.endToStart
+                              : DismissDirection.none,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 20),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.red.shade400,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(Icons.delete_outline_rounded,
+                                color: Colors.white, size: 24),
+                          ),
+                          confirmDismiss: (_) async {
+                            return await showDialog<bool>(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                title: const Text('Hapus Transaksi'),
+                                content: Text(
+                                    'Yakin ingin menghapus "${item.keterangan}"?'),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, false),
+                                    child: const Text('Batal'),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx, true),
+                                    style: TextButton.styleFrom(
+                                        foregroundColor: Colors.red),
+                                    child: const Text('Hapus'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          onDismissed: (_) async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            final res = await _keuanganCtrl.deleteKeuangan(item.id);
+                            if (mounted) {
+                              messenger.showSnackBar(SnackBar(
+                                content: Text(res['message']),
+                                backgroundColor:
+                                    res['success'] ? Colors.green : Colors.red,
+                              ));
+                              _refreshData();
+                            }
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceContainerLowest,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: AppTheme.outlineVariant.withValues(alpha: 0.5),
+                              ),
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 4),
+                              leading: Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: isPemasukan
+                                      ? Colors.green.withValues(alpha: 0.1)
+                                      : Colors.red.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  isPemasukan
+                                      ? Icons.arrow_downward_rounded
+                                      : Icons.arrow_upward_rounded,
+                                  color: isPemasukan ? Colors.green : Colors.red,
+                                  size: 20,
+                                ),
+                              ),
+                              title: Text(
+                                item.keterangan,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: AppTheme.onSurface,
+                                ),
+                              ),
+                              subtitle: Text(
+                                item.tanggal,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.outline,
+                                ),
+                              ),
+                              trailing: Text(
+                                formatRupiah(item.nominal),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 14,
+                                  color: isPemasukan ? Colors.green : Colors.red,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                  ]),
+                ),
+              ),
             ],
           );
         },
       ),
+      floatingActionButton: _roleUser == 'admin'
+          ? FloatingActionButton(
+              backgroundColor: AppTheme.secondary,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              onPressed: _bukaFormTransaksi,
+              child: const Icon(Icons.add_rounded, size: 28),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildSaldoItem({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+    CrossAxisAlignment align = CrossAxisAlignment.start,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Column(
+        crossAxisAlignment: align,
+        children: [
+          Row(
+            mainAxisAlignment: align == CrossAxisAlignment.end
+                ? MainAxisAlignment.end
+                : MainAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 14),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
-
-

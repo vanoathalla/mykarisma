@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../controllers/ai_controller.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_widgets.dart';
 
 class ChatbotView extends StatefulWidget {
   const ChatbotView({super.key});
@@ -19,11 +20,9 @@ class _ChatbotViewState extends State<ChatbotView> {
   @override
   void initState() {
     super.initState();
-    // Pesan sambutan awal
     _messages.add({
       'role': 'ai',
-      'text':
-          'Assalamu\'alaikum! Saya asisten digital KARISMA. Ada yang bisa saya bantu?',
+      'text': 'Assalamu\'alaikum! Saya asisten digital KARISMA. Ada yang bisa saya bantu?',
     });
   }
 
@@ -40,8 +39,7 @@ class _ChatbotViewState extends State<ChatbotView> {
       _messages.clear();
       _messages.add({
         'role': 'ai',
-        'text':
-            'Assalamu\'alaikum! Saya asisten digital KARISMA. Ada yang bisa saya bantu?',
+        'text': 'Assalamu\'alaikum! Saya asisten digital KARISMA. Ada yang bisa saya bantu?',
       });
     });
     _aiCtrl.clearHistory();
@@ -83,104 +81,88 @@ class _ChatbotViewState extends State<ChatbotView> {
     });
   }
 
-  Widget _buildChatBubble(String text, bool isUser) {
-    return Align(
-      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.all(12),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        decoration: BoxDecoration(
-          color: isUser ? AppTheme.primary : Colors.grey.shade100,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isUser ? 16 : 4),
-            bottomRight: Radius.circular(isUser ? 4 : 16),
-          ),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: isUser ? Colors.white : Colors.black87,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTypingIndicator() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-            bottomRight: Radius.circular(16),
-            bottomLeft: Radius.circular(4),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: AppTheme.primary,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Mengetik...',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: const [
-            Icon(Icons.smart_toy, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Asisten KARISMA'),
-          ],
-        ),
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_outline),
-            onPressed: _clearChat,
-            tooltip: 'Hapus riwayat',
-          ),
-        ],
-      ),
+      backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          // Daftar pesan
+          // ── App Bar ──────────────────────────────────────────────────
+          Container(
+            color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                              color: AppTheme.onSurface, size: 20),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [AppTheme.primary, AppTheme.tertiary],
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.smart_toy_rounded,
+                              color: Colors.white, size: 18),
+                        ),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Karisma AI',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.onSurface,
+                                ),
+                              ),
+                              Text(
+                                'Asisten Digital KARISMA',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.outline,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded,
+                              color: AppTheme.outline),
+                          onPressed: _clearChat,
+                          tooltip: 'Hapus riwayat',
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                      height: 1, color: AppTheme.primary.withValues(alpha: 0.08)),
+                ],
+              ),
+            ),
+          ),
+
+          // ── Messages ─────────────────────────────────────────────────
           Expanded(
             child: ListView.builder(
               controller: _scrollCtrl,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               itemCount: _messages.length + (_loading ? 1 : 0),
               itemBuilder: (ctx, i) {
                 if (_loading && i == _messages.length) {
-                  return _buildTypingIndicator();
+                  return _buildTypingBubble();
                 }
                 final msg = _messages[i];
                 final isUser = msg['role'] == 'user';
@@ -188,51 +170,132 @@ class _ChatbotViewState extends State<ChatbotView> {
               },
             ),
           ),
-          // Input area
+
+          // ── Input Area ───────────────────────────────────────────────
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.shade300,
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
+              color: AppTheme.surfaceContainerLowest,
+              border: Border(
+                top: BorderSide(
+                  color: AppTheme.primary.withValues(alpha: 0.08),
                 ),
-              ],
+              ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _inputCtrl,
-                    decoration: InputDecoration(
-                      hintText: 'Ketik pesan...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _inputCtrl,
+                      decoration: InputDecoration(
+                        hintText: 'Ketik pesan...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: AppTheme.surfaceContainerLow,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
+                      onSubmitted: (_) => _kirimPesan(),
+                      textInputAction: TextInputAction.send,
                     ),
-                    onSubmitted: (_) => _kirimPesan(),
-                    textInputAction: TextInputAction.send,
                   ),
-                ),
-                const SizedBox(width: 8),
-                FloatingActionButton.small(
-                  onPressed: _kirimPesan,
-                  backgroundColor: AppTheme.primary,
-                  child: const Icon(Icons.send, color: Colors.white),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: _kirimPesan,
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppTheme.primary, AppTheme.tertiary],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(Icons.send_rounded,
+                          color: Colors.white, size: 20),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildChatBubble(String text, bool isUser) {
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        decoration: BoxDecoration(
+          gradient: isUser
+              ? const LinearGradient(
+                  colors: [AppTheme.primary, AppTheme.primaryContainer],
+                )
+              : null,
+          color: isUser ? null : AppTheme.surfaceContainerLow,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(isUser ? 18 : 4),
+            bottomRight: Radius.circular(isUser ? 4 : 18),
+          ),
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: isUser ? Colors.white : AppTheme.onSurface,
+            fontSize: 14,
+            height: 1.5,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypingBubble() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceContainerLow,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(18),
+            topRight: Radius.circular(18),
+            bottomRight: Radius.circular(18),
+            bottomLeft: Radius.circular(4),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const TypingIndicator(),
+            const SizedBox(width: 8),
+            Text(
+              'Mengetik...',
+              style: TextStyle(
+                color: AppTheme.outline,
+                fontSize: 12,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

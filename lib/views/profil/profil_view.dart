@@ -2,14 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../helpers/auth_helper.dart';
 import '../../theme/app_theme.dart';
-import '../auth/login_view.dart';
-import '../member_view.dart';
-import '../peta/peta_view.dart';
-import '../konversi/konversi_view.dart';
-import '../sensor/kiblat_view.dart';
-import '../game/hijaiyah_game_view.dart';
 
 class ProfilView extends StatefulWidget {
   const ProfilView({super.key});
@@ -23,11 +16,20 @@ class _ProfilViewState extends State<ProfilView> {
   String _role = 'Memuat...';
   String _idMember = '-';
   String? _fotoPath;
+  bool _editMode = false;
+
+  final _namaCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadDataProfil();
+  }
+
+  @override
+  void dispose() {
+    _namaCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _loadDataProfil() async {
@@ -44,6 +46,7 @@ class _ProfilViewState extends State<ProfilView> {
             prefs.getString('id_member') ??
             '-';
         _fotoPath = prefs.getString('foto_path');
+        _namaCtrl.text = _namaLengkap;
       });
     }
   }
@@ -55,44 +58,24 @@ class _ProfilViewState extends State<ProfilView> {
       imageQuality: 80,
     );
     if (picked == null) return;
-
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('foto_path', picked.path);
-
-    if (mounted) {
-      setState(() => _fotoPath = picked.path);
-    }
+    if (mounted) setState(() => _fotoPath = picked.path);
   }
 
-  Future<void> _logout() async {
-    final konfirmasi = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Konfirmasi Logout'),
-        content: const Text('Apakah Anda yakin ingin keluar?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Logout'),
-          ),
-        ],
-      ),
-    );
-
-    if (konfirmasi != true) return;
-
-    await AuthHelper.clearSession();
-
+  Future<void> _simpanNama() async {
+    final nama = _namaCtrl.text.trim();
+    if (nama.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('session_nama', nama);
+    await prefs.setString('nama', nama);
     if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginView()),
-        (route) => false,
+      setState(() {
+        _namaLengkap = nama;
+        _editMode = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nama berhasil diperbarui')),
       );
     }
   }
@@ -105,343 +88,434 @@ class _ProfilViewState extends State<ProfilView> {
     return nama.isNotEmpty ? nama[0].toUpperCase() : '?';
   }
 
+  Color _getRoleColor(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return AppTheme.primary;
+      case 'pengurus':
+        return AppTheme.tertiary;
+      default:
+        return AppTheme.secondary;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? const Color(0xFF1A1C1C) : AppTheme.background;
+    final textPrimary = isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface;
+    final textSub = isDark ? const Color(0xFF889390) : AppTheme.outline;
+    final cardBg = isDark ? const Color(0xFF252828) : AppTheme.surfaceContainerLowest;
+    final cardBorder = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : AppTheme.outlineVariant.withValues(alpha: 0.4);
+    final roleColor = _getRoleColor(_role);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profil'),
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // ── HEADER PROFIL ──────────────────────────────────────────────
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.only(top: 30, bottom: 30),
-              decoration: BoxDecoration(
-                color: AppTheme.primary,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade400,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+      backgroundColor: bg,
+      body: CustomScrollView(
+        slivers: [
+          // ── App Bar ──────────────────────────────────────────────────
+          SliverAppBar(
+            floating: true,
+            snap: true,
+            backgroundColor: isDark
+                ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
+                : AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            titleSpacing: 20,
+            title: Text(
+              'Profil Saya',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: textPrimary,
               ),
-              child: Column(
-                children: [
-                  // Foto profil dengan GestureDetector
-                  GestureDetector(
-                    onTap: _pilihFoto,
-                    child: Stack(
-                      alignment: Alignment.bottomRight,
-                      children: [
-                        CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.white,
-                          backgroundImage: _fotoPath != null &&
-                                  File(_fotoPath!).existsSync()
-                              ? FileImage(File(_fotoPath!))
-                              : null,
-                          child: _fotoPath == null ||
-                                  !File(_fotoPath!).existsSync()
-                              ? Text(
-                                  _getInisial(_namaLengkap),
-                                  style: const TextStyle(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.bold,
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(
+                  _editMode ? Icons.close_rounded : Icons.edit_rounded,
+                  color: AppTheme.primary,
+                ),
+                onPressed: () => setState(() {
+                  _editMode = !_editMode;
+                  if (!_editMode) _namaCtrl.text = _namaLengkap;
+                }),
+              ),
+              const SizedBox(width: 8),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(
+                height: 1,
+                color: AppTheme.primary.withValues(alpha: 0.08),
+              ),
+            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                // ── Hero Header ─────────────────────────────────────────
+                Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF004F45), Color(0xFF283B9F)],
+                    ),
+                  ),
+                  child: SafeArea(
+                    top: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
+                      child: Column(
+                        children: [
+                          // Avatar
+                          GestureDetector(
+                            onTap: _pilihFoto,
+                            child: Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                Container(
+                                  width: 100,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.35),
+                                      width: 3,
+                                    ),
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor:
+                                        Colors.white.withValues(alpha: 0.18),
+                                    backgroundImage: _fotoPath != null &&
+                                            File(_fotoPath!).existsSync()
+                                        ? FileImage(File(_fotoPath!))
+                                        : null,
+                                    child: _fotoPath == null ||
+                                            !File(_fotoPath!).existsSync()
+                                        ? Text(
+                                            _getInisial(_namaLengkap),
+                                            style: const TextStyle(
+                                              fontSize: 32,
+                                              fontWeight: FontWeight.w800,
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : null,
+                                  ),
+                                ),
+                                Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppTheme.primary.withValues(alpha: 0.2),
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt_rounded,
+                                    size: 15,
                                     color: AppTheme.primary,
                                   ),
-                                )
-                              : null,
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
+                                ),
+                              ],
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            size: 16,
-                            color: AppTheme.primary,
+                          const SizedBox(height: 16),
+
+                          // Nama
+                          Text(
+                            _namaLengkap,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  Text(
-                    _namaLengkap.toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade400,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'Role: ${_role.toUpperCase()}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                          const SizedBox(height: 10),
+
+                          // Badges
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _Badge(
+                                label: _role.toUpperCase(),
+                                bg: Colors.white.withValues(alpha: 0.18),
+                                textColor: Colors.white,
+                              ),
+                              const SizedBox(width: 8),
+                              _Badge(
+                                label: '#$_idMember',
+                                bg: Colors.white.withValues(alpha: 0.10),
+                                textColor: Colors.white.withValues(alpha: 0.80),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+
+                // ── Curved clip ─────────────────────────────────────────
+                Container(
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: bg,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(28),
+                    ),
+                  ),
+                  transform: Matrix4.translationValues(0, -28, 0),
+                ),
+              ],
             ),
+          ),
 
-            const SizedBox(height: 20),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ── MENU UTAMA ───────────────────────────────────────────
-                  const Text(
-                    'Menu Utama',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+          // ── Info Cards ────────────────────────────────────────────────
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                // Edit Nama (hanya saat edit mode)
+                if (_editMode) ...[
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: cardBg,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: cardBorder),
                     ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ListTile(
-                          leading: const Icon(
-                            Icons.badge,
-                            color: AppTheme.primary,
-                          ),
-                          title: const Text('ID Member Anda'),
-                          trailing: Text(
-                            '#$_idMember',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                        Text(
+                          'Edit Profil',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: textPrimary,
                           ),
                         ),
-                        const Divider(height: 0),
-                        ListTile(
-                          leading: const Icon(
-                            Icons.people_alt,
-                            color: AppTheme.primary,
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: _namaCtrl,
+                          style: TextStyle(color: textPrimary),
+                          decoration: InputDecoration(
+                            labelText: 'Nama Lengkap',
+                            prefixIcon: const Icon(
+                              Icons.person_outline_rounded,
+                              color: AppTheme.primary,
+                            ),
                           ),
-                          title: const Text('Daftar Pengurus & Member'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MemberView(),
-                              ),
-                            );
-                          },
                         ),
-                        const Divider(height: 0),
-                        ListTile(
-                          leading: const Icon(
-                            Icons.map,
-                            color: AppTheme.primary,
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 48,
+                          child: ElevatedButton(
+                            onPressed: _simpanNama,
+                            child: const Text('Simpan Perubahan'),
                           ),
-                          title: const Text('Lokasi Masjid'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const PetaView(),
-                              ),
-                            );
-                          },
                         ),
                       ],
                     ),
                   ),
+                  const SizedBox(height: 16),
+                ],
 
-                  const SizedBox(height: 20),
-
-                  // ── FITUR TAMBAHAN ───────────────────────────────────────
-                  const Text(
-                    'Fitur Tambahan',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
+                // Info Card
+                Container(
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: cardBorder),
                   ),
-                  const SizedBox(height: 10),
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: const Icon(
-                            Icons.explore,
-                            color: AppTheme.primary,
-                          ),
-                          title: const Text('Kompas Kiblat'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const KiblatView(),
-                              ),
-                            );
-                          },
-                        ),
-                        const Divider(height: 0),
-                        ListTile(
-                          leading: const Icon(
-                            Icons.currency_exchange,
-                            color: AppTheme.primary,
-                          ),
-                          title: const Text('Konversi'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const KonversiView(),
-                              ),
-                            );
-                          },
-                        ),
-                        const Divider(height: 0),
-                        ListTile(
-                          leading: const Icon(
-                            Icons.games,
-                            color: AppTheme.primary,
-                          ),
-                          title: const Text('Mini Game Hijaiyah'),
-                          trailing: const Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const HijaiyahGameView(),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // ── PENGATURAN ───────────────────────────────────────────
-                  const Text(
-                    'Pengaturan',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ValueListenableBuilder<ThemeMode>(
-                      valueListenable: themeNotifier,
-                      builder: (context, mode, _) {
-                        return SwitchListTile(
-                          secondary: const Icon(
-                            Icons.dark_mode,
-                            color: AppTheme.primary,
-                          ),
-                          title: const Text('Mode Gelap'),
-                          subtitle: Text(
-                            mode == ThemeMode.dark ? 'Aktif' : 'Nonaktif',
-                          ),
-                          value: mode == ThemeMode.dark,
-                          activeThumbColor: AppTheme.primary,
-                          onChanged: (val) {
-                            themeNotifier.value =
-                                val ? ThemeMode.dark : ThemeMode.light;
-                          },
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // ── TOMBOL LOGOUT ────────────────────────────────────────
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _logout,
-                      icon: const Icon(Icons.logout),
-                      label: const Text(
-                        'Logout',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  child: Column(
+                    children: [
+                      _InfoTile(
+                        icon: Icons.badge_rounded,
+                        label: 'ID Member',
+                        value: '#$_idMember',
+                        textPrimary: textPrimary,
+                        textSub: textSub,
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
+                      Divider(height: 1, indent: 68, endIndent: 16, color: cardBorder),
+                      _InfoTile(
+                        icon: Icons.verified_user_rounded,
+                        label: 'Role',
+                        value: _role,
+                        textPrimary: textPrimary,
+                        textSub: textSub,
+                        valueColor: roleColor,
+                      ),
+                      Divider(height: 1, indent: 68, endIndent: 16, color: cardBorder),
+                      _InfoTile(
+                        icon: Icons.person_rounded,
+                        label: 'Nama Lengkap',
+                        value: _namaLengkap,
+                        textPrimary: textPrimary,
+                        textSub: textSub,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Foto Profil Card
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: cardBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.10),
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        child: const Icon(
+                          Icons.photo_camera_rounded,
+                          color: AppTheme.primary,
+                          size: 22,
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Foto Profil',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: textPrimary,
+                              ),
+                            ),
+                            Text(
+                              'Ketuk untuk mengganti foto',
+                              style: TextStyle(fontSize: 12, color: textSub),
+                            ),
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: _pilihFoto,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'Ganti',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-
-                  const SizedBox(height: 30),
-                ],
-              ),
+                ),
+              ]),
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Helper Widgets ───────────────────────────────────────────────────────────
+class _Badge extends StatelessWidget {
+  final String label;
+  final Color bg;
+  final Color textColor;
+  const _Badge({required this.label, required this.bg, required this.textColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: textColor,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color textPrimary;
+  final Color textSub;
+  final Color? valueColor;
+
+  const _InfoTile({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.textPrimary,
+    required this.textSub,
+    this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: AppTheme.primary.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: AppTheme.primary, size: 20),
+      ),
+      title: Text(
+        label,
+        style: TextStyle(fontSize: 12, color: textSub),
+      ),
+      subtitle: Text(
+        value,
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: valueColor ?? textPrimary,
         ),
       ),
     );

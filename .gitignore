@@ -6,3 +6,6 @@ dist/
 /build/
 /.dart_tool/
 .kiro/
+/build/
+/.dart_tool/
+.kiro/

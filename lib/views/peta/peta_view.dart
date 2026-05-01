@@ -276,11 +276,28 @@ class _PetaViewState extends State<PetaView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        title: const Text('Peta Lokasi'),
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+              color: AppTheme.onSurface, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Peta Lokasi',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.onSurface,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppTheme.primary.withValues(alpha: 0.08)),
+        ),
       ),
       body: GoogleMap(
         initialCameraPosition: const CameraPosition(
@@ -291,10 +308,14 @@ class _PetaViewState extends State<PetaView> {
       ),
       floatingActionButton: _isAdmin
           ? FloatingActionButton(
-              backgroundColor: AppTheme.primary,
+              backgroundColor: AppTheme.secondary,
+              foregroundColor: Colors.white,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18)),
               onPressed: _showAddLandmarkDialog,
               tooltip: 'Tambah Landmark',
-              child: const Icon(Icons.add, color: Colors.white),
+              child: const Icon(Icons.add_rounded, size: 28),
             )
           : null,
     );

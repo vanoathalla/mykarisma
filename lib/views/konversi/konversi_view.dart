@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../controllers/currency_controller.dart';
 import '../../models/currency_model.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_widgets.dart';
 
 class KonversiView extends StatefulWidget {
   const KonversiView({super.key});
@@ -13,7 +14,6 @@ class KonversiView extends StatefulWidget {
 class _KonversiViewState extends State<KonversiView> {
   final CurrencyController _currencyCtrl = CurrencyController();
 
-  // ── Konversi Mata Uang ─────────────────────────────────────────────────────
   CurrencyModel? _rates;
   bool _loadingRates = true;
 
@@ -22,7 +22,6 @@ class _KonversiViewState extends State<KonversiView> {
   String _toCurrency = 'USD';
   double _hasilKonversi = 0.0;
 
-  // ── Konversi Zona Waktu ────────────────────────────────────────────────────
   final TextEditingController _waktuCtrl = TextEditingController();
   String _fromZone = 'WIB';
   String _toZone = 'London';
@@ -102,7 +101,6 @@ class _KonversiViewState extends State<KonversiView> {
     final fromOffset = _zoneOffset[_fromZone] ?? 0;
     final toOffset = _zoneOffset[_toZone] ?? 0;
 
-    // Konversi ke UTC lalu ke zona tujuan
     int totalMenitUTC = jam * 60 + menit - fromOffset * 60;
     int totalMenitTujuan = totalMenitUTC + toOffset * 60;
 
@@ -154,315 +152,297 @@ class _KonversiViewState extends State<KonversiView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Konversi'),
-        backgroundColor: AppTheme.primary,
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── SECTION 1: Konversi Mata Uang ──────────────────────────────
-            _buildSectionHeader(
-              icon: Icons.currency_exchange,
-              title: 'Konversi Mata Uang',
+      backgroundColor: AppTheme.background,
+      body: CustomScrollView(
+        slivers: [
+          // ── App Bar ──────────────────────────────────────────────────
+          SliverAppBar(
+            floating: true,
+            snap: true,
+            backgroundColor: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            titleSpacing: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: AppTheme.onSurface, size: 20),
+              onPressed: () => Navigator.pop(context),
             ),
-            const SizedBox(height: 12),
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Input nominal
-                    TextFormField(
-                      controller: _nominalCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Nominal',
-                        hintText: 'Masukkan jumlah',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppTheme.primary),
-                        ),
-                      ),
-                      onChanged: (_) => _hitungKonversi(),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Dropdown dari + swap + ke
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildCurrencyDropdown(
-                            value: _fromCurrency,
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _fromCurrency = val);
-                                _hitungKonversi();
-                              }
-                            },
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: _swapCurrency,
-                          icon: const Icon(
-                            Icons.swap_horiz,
-                            color: AppTheme.primary,
-                          ),
-                          tooltip: 'Tukar',
-                        ),
-                        Expanded(
-                          child: _buildCurrencyDropdown(
-                            value: _toCurrency,
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _toCurrency = val);
-                                _hitungKonversi();
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Hasil konversi
-                    if (_loadingRates)
-                      const Center(
-                        child: CircularProgressIndicator(
-                          color: AppTheme.primary,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    else if (_rates == null)
-                      const Text(
-                        'Kurs tidak tersedia, periksa koneksi internet',
-                        style: TextStyle(color: Colors.red),
-                      )
-                    else ...[
-                      Text(
-                        _formatHasil(_hasilKonversi, _toCurrency),
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Kurs terakhir diperbarui: ${_formatTanggal(_rates!.lastUpdated)}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+            title: const Text(
+              'Konversi',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.onSurface,
               ),
             ),
-
-            const SizedBox(height: 24),
-
-            // ── SECTION 2: Konversi Zona Waktu ─────────────────────────────
-            _buildSectionHeader(
-              icon: Icons.access_time,
-              title: 'Konversi Zona Waktu',
-            ),
-            const SizedBox(height: 12),
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded, color: AppTheme.primary),
+                onPressed: _fetchRates,
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Input waktu
-                    TextFormField(
-                      controller: _waktuCtrl,
-                      keyboardType: TextInputType.datetime,
-                      decoration: InputDecoration(
-                        labelText: 'Waktu (HH:mm)',
-                        hintText: 'Contoh: 14:30',
-                        prefixIcon: const Icon(
-                          Icons.access_time,
-                          color: AppTheme.primary,
+              const SizedBox(width: 8),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(height: 1, color: AppTheme.primary.withValues(alpha: 0.08)),
+            ),
+          ),
+
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                // ── Mata Uang ─────────────────────────────────────────
+                SectionHeader(title: 'Konversi Mata Uang'),
+                const SizedBox(height: 14),
+                SurfaceCard(
+                  padding: const EdgeInsets.all(20),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _nominalCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Nominal',
+                          hintText: 'Masukkan jumlah',
+                          prefixIcon: Icon(Icons.payments_outlined, color: AppTheme.primary),
                         ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(color: AppTheme.primary),
-                        ),
+                        onChanged: (_) => _hitungKonversi(),
                       ),
-                      onChanged: (_) => _hitungWaktu(),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Dropdown zona asal → zona tujuan
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildZoneDropdown(
-                            value: _fromZone,
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _fromZone = val);
-                                _hitungWaktu();
-                              }
-                            },
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Icon(
-                            Icons.arrow_forward,
-                            color: AppTheme.primary,
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildZoneDropdown(
-                            value: _toZone,
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _toZone = val);
-                                _hitungWaktu();
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Hasil konversi waktu
-                    if (_hasilWaktu.isNotEmpty) ...[
+                      const SizedBox(height: 14),
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
                         children: [
-                          Text(
-                            _hasilWaktu,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.primary,
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: _fromCurrency,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                              ),
+                              items: CurrencyController.supportedCurrencies
+                                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setState(() => _fromCurrency = val);
+                                  _hitungKonversi();
+                                }
+                              },
                             ),
                           ),
-                          if (_bedaHari.isNotEmpty) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
+                          GestureDetector(
+                            onTap: _swapCurrency,
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 8),
+                              width: 36,
+                              height: 36,
                               decoration: BoxDecoration(
-                                color: _bedaHari.startsWith('+')
-                                    ? Colors.orange.shade100
-                                    : Colors.blue.shade100,
-                                borderRadius: BorderRadius.circular(8),
+                                color: AppTheme.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              child: Text(
-                                _bedaHari,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: _bedaHari.startsWith('+')
-                                      ? Colors.orange.shade800
-                                      : Colors.blue.shade800,
-                                ),
-                              ),
+                              child: const Icon(Icons.swap_horiz_rounded,
+                                  color: AppTheme.primary, size: 20),
                             ),
-                          ],
+                          ),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: _toCurrency,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                              ),
+                              items: CurrencyController.supportedCurrencies
+                                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setState(() => _toCurrency = val);
+                                  _hitungKonversi();
+                                }
+                              },
+                            ),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'UTC${_zoneOffset[_fromZone]! >= 0 ? '+' : ''}${_zoneOffset[_fromZone]} → UTC${_zoneOffset[_toZone]! >= 0 ? '+' : ''}${_zoneOffset[_toZone]}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
+                      const SizedBox(height: 16),
+                      if (_loadingRates)
+                        const Center(
+                          child: CircularProgressIndicator(
+                              color: AppTheme.primary, strokeWidth: 2),
+                        )
+                      else if (_rates == null)
+                        const Text(
+                          'Kurs tidak tersedia, periksa koneksi internet',
+                          style: TextStyle(color: Colors.red, fontSize: 13),
+                        )
+                      else ...[
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _formatHasil(_hasilKonversi, _toCurrency),
+                                style: const TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.primary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Kurs: ${_formatTanggal(_rates!.lastUpdated)}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.outline,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ] else
-                      const Text(
-                        'Masukkan waktu untuk melihat hasil konversi',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                  ],
+                      ],
+                    ],
+                  ),
                 ),
-              ),
+
+                const SizedBox(height: 24),
+
+                // ── Zona Waktu ────────────────────────────────────────
+                SectionHeader(title: 'Konversi Zona Waktu'),
+                const SizedBox(height: 14),
+                SurfaceCard(
+                  padding: const EdgeInsets.all(20),
+                  borderRadius: BorderRadius.circular(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        controller: _waktuCtrl,
+                        keyboardType: TextInputType.datetime,
+                        decoration: const InputDecoration(
+                          labelText: 'Waktu (HH:mm)',
+                          hintText: 'Contoh: 14:30',
+                          prefixIcon: Icon(Icons.access_time_rounded,
+                              color: AppTheme.primary),
+                        ),
+                        onChanged: (_) => _hitungWaktu(),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: _fromZone,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                              ),
+                              items: _zoneOffset.keys
+                                  .map((z) => DropdownMenuItem(value: z, child: Text(z)))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setState(() => _fromZone = val);
+                                  _hitungWaktu();
+                                }
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Icon(Icons.arrow_forward_rounded,
+                                color: AppTheme.primary, size: 20),
+                          ),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: _toZone,
+                              decoration: const InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                              ),
+                              items: _zoneOffset.keys
+                                  .map((z) => DropdownMenuItem(value: z, child: Text(z)))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setState(() => _toZone = val);
+                                  _hitungWaktu();
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      if (_hasilWaktu.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    _hasilWaktu,
+                                    style: const TextStyle(
+                                      fontSize: 26,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppTheme.primary,
+                                    ),
+                                  ),
+                                  if (_bedaHari.isNotEmpty) ...[
+                                    const SizedBox(width: 10),
+                                    CategoryBadge(
+                                      label: _bedaHari,
+                                      color: _bedaHari.startsWith('+')
+                                          ? Colors.orange.withValues(alpha: 0.1)
+                                          : Colors.blue.withValues(alpha: 0.1),
+                                      textColor: _bedaHari.startsWith('+')
+                                          ? Colors.orange.shade700
+                                          : Colors.blue.shade700,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'UTC${_zoneOffset[_fromZone]! >= 0 ? '+' : ''}${_zoneOffset[_fromZone]} → UTC${_zoneOffset[_toZone]! >= 0 ? '+' : ''}${_zoneOffset[_toZone]}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.outline,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Text(
+                          'Masukkan waktu untuk melihat hasil konversi',
+                          style: const TextStyle(
+                            color: AppTheme.outline,
+                            fontSize: 13,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ]),
             ),
-
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader({required IconData icon, required String title}) {
-    return Row(
-      children: [
-        Icon(icon, color: AppTheme.primary, size: 22),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.primary,
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCurrencyDropdown({
-    required String value,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ],
       ),
-      items: CurrencyController.supportedCurrencies
-          .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-          .toList(),
-      onChanged: onChanged,
-    );
-  }
-
-  Widget _buildZoneDropdown({
-    required String value,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      decoration: InputDecoration(
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      ),
-      items: _zoneOffset.keys
-          .map((z) => DropdownMenuItem(value: z, child: Text(z)))
-          .toList(),
-      onChanged: onChanged,
     );
   }
 }

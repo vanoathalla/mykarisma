@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../controllers/game_controller.dart';
 import '../../models/game_session_model.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_widgets.dart';
 
 class HijaiyahGameView extends StatefulWidget {
   const HijaiyahGameView({super.key});
@@ -18,7 +19,7 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
   int _lives = GameController.livesPerGame;
   int _level = 1;
   bool _isGameOver = false;
-  String? _feedback; // null / 'correct' / 'wrong'
+  String? _feedback;
   bool _showLeaderboard = false;
 
   @override
@@ -82,53 +83,153 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
     _nextQuestion();
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      body: Column(
+        children: [
+          // ── App Bar ──────────────────────────────────────────────────
+          if (!_showLeaderboard)
+            Container(
+              color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 20, 12),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                                color: AppTheme.onSurface, size: 20),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          const Expanded(
+                            child: Text(
+                              'Tebak Huruf Hijaiyah',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                        height: 1,
+                        color: AppTheme.primary.withValues(alpha: 0.08)),
+                  ],
+                ),
+              ),
+            ),
+
+          // ── Content ──────────────────────────────────────────────────
+          Expanded(
+            child: _showLeaderboard
+                ? _buildLeaderboard()
+                : _isGameOver
+                    ? _buildGameOverUI()
+                    : _buildGameUI(),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildGameUI() {
     Color bgColor;
     if (_feedback == 'correct') {
-      bgColor = Colors.green.shade100;
+      bgColor = Colors.green.withValues(alpha: 0.1);
     } else if (_feedback == 'wrong') {
-      bgColor = Colors.red.shade100;
+      bgColor = Colors.red.withValues(alpha: 0.1);
     } else {
-      bgColor = Colors.teal.shade50;
+      bgColor = AppTheme.primary.withValues(alpha: 0.05);
     }
 
     return Column(
       children: [
-        // Header: skor, nyawa, level
+        // Stats bar
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Skor: $_score',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Row(
-                children: List.generate(
-                  GameController.livesPerGame,
-                  (i) => Icon(
-                    i < _lives ? Icons.favorite : Icons.favorite_border,
-                    color: Colors.red,
-                    size: 24,
+              // Score
+              Expanded(
+                child: SurfaceCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.star_rounded,
+                          color: AppTheme.secondary, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        '$_score',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.onSurface,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              Text(
-                'Level $_level',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              const SizedBox(width: 10),
+              // Lives
+              Expanded(
+                child: SurfaceCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      GameController.livesPerGame,
+                      (i) => Icon(
+                        i < _lives ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        color: Colors.red,
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              // Level
+              Expanded(
+                child: SurfaceCard(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.trending_up_rounded,
+                          color: AppTheme.primary, size: 18),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Lv.$_level',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
         ),
 
-        // Huruf hijaiyah besar
+        const SizedBox(height: 20),
+
+        // Letter display
         Expanded(
           child: Center(
             child: AnimatedContainer(
@@ -137,20 +238,21 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
               height: 200,
               decoration: BoxDecoration(
                 color: bgColor,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.shade300,
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: _feedback == 'correct'
+                      ? Colors.green.withValues(alpha: 0.3)
+                      : _feedback == 'wrong'
+                          ? Colors.red.withValues(alpha: 0.3)
+                          : AppTheme.outlineVariant.withValues(alpha: 0.5),
+                  width: 2,
+                ),
               ),
               child: Center(
                 child: Text(
                   _currentLetter['huruf'] ?? '',
                   style: const TextStyle(
-                    fontSize: 120,
+                    fontSize: 110,
                     fontWeight: FontWeight.bold,
                     color: AppTheme.primary,
                   ),
@@ -160,93 +262,124 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
           ),
         ),
 
-        // 4 pilihan jawaban dalam GridView 2x2
+        // Answer choices
         Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
           child: GridView.count(
             crossAxisCount: 2,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 2.5,
+            childAspectRatio: 2.8,
             children: _choices.map((c) {
-              Color btnColor = AppTheme.primary;
-              if (_feedback != null && c == _currentLetter['nama']) {
-                btnColor = Colors.green;
-              }
+              final isCorrect = _feedback != null && c == _currentLetter['nama'];
               return ElevatedButton(
                 onPressed: _feedback == null ? () => _jawab(c) : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: btnColor,
+                  backgroundColor: isCorrect ? Colors.green : AppTheme.primary,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: btnColor.withValues(alpha: 0.7),
+                  disabledBackgroundColor:
+                      isCorrect ? Colors.green : AppTheme.primary.withValues(alpha: 0.5),
                   disabledForegroundColor: Colors.white,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child: Text(
                   c,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               );
             }).toList(),
           ),
         ),
-
-        const SizedBox(height: 20),
       ],
     );
   }
 
   Widget _buildGameOverUI() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.emoji_events, size: 80, color: AppTheme.secondary),
-          const SizedBox(height: 16),
-          const Text(
-            'Game Over!',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Skor Akhir: $_score',
-            style: const TextStyle(fontSize: 22),
-          ),
-          Text(
-            'Level: $_level',
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 30),
-          ElevatedButton.icon(
-            onPressed: _restart,
-            icon: const Icon(Icons.replay),
-            label: const Text('Main Lagi'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: AppTheme.secondary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.emoji_events_rounded,
+                  size: 56, color: AppTheme.secondary),
             ),
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () => setState(() => _showLeaderboard = true),
-            icon: const Icon(Icons.leaderboard),
-            label: const Text('Leaderboard'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.primary,
-              side: const BorderSide(color: AppTheme.primary),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            const SizedBox(height: 20),
+            const Text(
+              'Game Over!',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.onSurface,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            SurfaceCard(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              borderRadius: BorderRadius.circular(20),
+              child: Column(
+                children: [
+                  Text(
+                    '$_score',
+                    style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                  const Text(
+                    'Skor Akhir',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppTheme.outline,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  CategoryBadge(
+                    label: 'Level $_level',
+                    color: AppTheme.primary.withValues(alpha: 0.1),
+                    textColor: AppTheme.primary,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: _restart,
+                icon: const Icon(Icons.replay_rounded, size: 18),
+                label: const Text('Main Lagi'),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton.icon(
+                onPressed: () => setState(() => _showLeaderboard = true),
+                icon: const Icon(Icons.leaderboard_rounded, size: 18),
+                label: const Text('Leaderboard'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -256,60 +389,100 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
       future: _gameCtrl.getLeaderboard(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(
+              child: CircularProgressIndicator(color: AppTheme.primary));
         }
 
         final sessions = snapshot.data ?? [];
 
         return Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () => setState(() => _showLeaderboard = false),
-                  ),
-                  const Text(
-                    'Leaderboard',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+            Container(
+              color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 20, 12),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                                color: AppTheme.onSurface, size: 20),
+                            onPressed: () =>
+                                setState(() => _showLeaderboard = false),
+                          ),
+                          const Expanded(
+                            child: Text(
+                              'Leaderboard',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.onSurface,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    Container(
+                        height: 1,
+                        color: AppTheme.primary.withValues(alpha: 0.08)),
+                  ],
+                ),
               ),
             ),
             Expanded(
               child: sessions.isEmpty
                   ? const Center(
-                      child: Text(
-                        'Belum ada sesi game.',
-                        style: TextStyle(color: Colors.grey),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.leaderboard_outlined,
+                              size: 56, color: AppTheme.outline),
+                          SizedBox(height: 12),
+                          Text(
+                            'Belum ada sesi game',
+                            style: TextStyle(
+                                color: AppTheme.outline, fontSize: 14),
+                          ),
+                        ],
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                       itemCount: sessions.length,
                       itemBuilder: (ctx, i) {
                         final s = sessions[i];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 8),
+                        final medalColors = [
+                          Colors.amber,
+                          Colors.grey.shade400,
+                          Colors.brown.shade300,
+                        ];
+                        final medalColor = i < 3
+                            ? medalColors[i]
+                            : AppTheme.primary.withValues(alpha: 0.15);
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceContainerLowest,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppTheme.outlineVariant.withValues(alpha: 0.5),
+                            ),
+                          ),
                           child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 4),
                             leading: CircleAvatar(
-                              backgroundColor: i == 0
-                                  ? Colors.amber
-                                  : i == 1
-                                      ? Colors.grey.shade400
-                                      : i == 2
-                                          ? Colors.brown.shade300
-                                          : AppTheme.primary
-                                              .withValues(alpha: 0.2),
+                              radius: 20,
+                              backgroundColor: medalColor,
                               child: Text(
                                 '${i + 1}',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 13,
                                   color: i < 3 ? Colors.white : AppTheme.primary,
                                 ),
                               ),
@@ -317,10 +490,18 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
                             title: Text(
                               'Skor: ${s.skor}',
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                color: AppTheme.onSurface,
                               ),
                             ),
-                            subtitle: Text('Level ${s.level} · ${s.tanggal}'),
+                            subtitle: Text(
+                              'Level ${s.level} · ${s.tanggal}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.outline,
+                              ),
+                            ),
                           ),
                         );
                       },
@@ -329,24 +510,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
           ],
         );
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _showLeaderboard
-          ? null
-          : AppBar(
-              title: const Text('Tebak Huruf Hijaiyah'),
-              backgroundColor: AppTheme.primary,
-              foregroundColor: Colors.white,
-            ),
-      body: _showLeaderboard
-          ? _buildLeaderboard()
-          : _isGameOver
-              ? _buildGameOverUI()
-              : _buildGameUI(),
     );
   }
 }

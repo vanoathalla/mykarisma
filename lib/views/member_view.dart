@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../controllers/member_controller.dart';
 import '../models/member_model.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_widgets.dart';
 
 class MemberView extends StatefulWidget {
   const MemberView({super.key});
@@ -51,121 +52,165 @@ class _MemberViewState extends State<MemberView> {
     });
   }
 
+  String _getInisial(String nama) {
+    final parts = nama.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    return nama.isNotEmpty ? nama[0].toUpperCase() : '?';
+  }
+
+  Color _getRoleColor(String role) {
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return AppTheme.primary;
+      case 'pengurus':
+        return AppTheme.tertiary;
+      default:
+        return AppTheme.secondary;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Daftar Pengurus & Member",
-          style: TextStyle(color: Colors.white, fontSize: 18),
-        ),
-        backgroundColor: AppTheme.primary,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          // ── SEARCH BAR ──────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(15, 12, 15, 8),
-            child: TextField(
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Cari member...',
-                prefixIcon: const Icon(Icons.search, color: AppTheme.primary),
-                filled: true,
-                fillColor: Colors.grey.shade100,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.primary),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+          // ── App Bar ──────────────────────────────────────────────────
+          Container(
+            color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 8, 20, 8),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                              color: AppTheme.onSurface, size: 20),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const Expanded(
+                          child: Text(
+                            'Pengurus & Member',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.refresh_rounded,
+                              color: AppTheme.primary),
+                          onPressed: _loadMembers,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                    child: TextField(
+                      onChanged: _onSearchChanged,
+                      decoration: InputDecoration(
+                        hintText: 'Cari member...',
+                        prefixIcon: const Icon(Icons.search_rounded,
+                            color: AppTheme.primary, size: 20),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear_rounded, size: 18),
+                                onPressed: () => _onSearchChanged(''),
+                              )
+                            : null,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                  ),
+                  Container(
+                      height: 1, color: AppTheme.primary.withValues(alpha: 0.08)),
+                ],
               ),
             ),
           ),
 
-          // ── KONTEN ──────────────────────────────────────────────────────
+          // ── Content ──────────────────────────────────────────────────
           Expanded(
             child: _loading
                 ? const Center(
-                    child: CircularProgressIndicator(color: AppTheme.primary),
-                  )
+                    child: CircularProgressIndicator(color: AppTheme.primary))
                 : _filteredMembers.isEmpty
                     ? Center(
-                        child: Text(
-                          _searchQuery.isNotEmpty
-                              ? 'Tidak ada member yang cocok'
-                              : 'Belum ada data member.',
-                          style: const TextStyle(color: Colors.grey),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.group_off_rounded,
+                                size: 56, color: AppTheme.outline),
+                            const SizedBox(height: 12),
+                            Text(
+                              _searchQuery.isNotEmpty
+                                  ? 'Tidak ada member yang cocok'
+                                  : 'Belum ada data member',
+                              style: const TextStyle(
+                                  color: AppTheme.outline, fontSize: 14),
+                            ),
+                          ],
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.all(15),
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                         itemCount: _filteredMembers.length,
                         itemBuilder: (context, i) {
-                          final item = _filteredMembers[i];
-                          final isPengurus =
-                              item.role != 'member' && item.role != '';
-
-                          return Card(
-                            elevation: 2,
+                          final member = _filteredMembers[i];
+                          final roleColor = _getRoleColor(member.role);
+                          return Container(
                             margin: const EdgeInsets.only(bottom: 10),
-                            shape: RoundedRectangleBorder(
-                              side: BorderSide(
-                                color: isPengurus
-                                    ? AppTheme.primary.withAlpha(128)
-                                    : Colors.transparent,
-                                width: 1,
+                            decoration: BoxDecoration(
+                              color: AppTheme.surfaceContainerLowest,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: AppTheme.outlineVariant
+                                    .withValues(alpha: 0.5),
                               ),
-                              borderRadius: BorderRadius.circular(10),
                             ),
                             child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 6),
                               leading: CircleAvatar(
-                                backgroundColor: isPengurus
-                                    ? AppTheme.primary
-                                    : Colors.grey.shade400,
+                                radius: 22,
+                                backgroundColor:
+                                    roleColor.withValues(alpha: 0.12),
                                 child: Text(
-                                  item.nama[0].toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
+                                  _getInisial(member.nama),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                    color: roleColor,
                                   ),
                                 ),
                               ),
                               title: Text(
-                                item.nama,
+                                member.nama,
                                 style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  color: AppTheme.onSurface,
                                 ),
                               ),
-                              subtitle: Text("RT: ${item.rt} | No HP: ${item.noHp}"),
-                              trailing: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 5,
+                              subtitle: Text(
+                                member.role,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppTheme.outline,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: isPengurus
-                                      ? Colors.orange.shade100
-                                      : Colors.grey.shade200,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  item.role.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: isPengurus
-                                        ? Colors.orange.shade800
-                                        : Colors.grey.shade700,
-                                  ),
-                                ),
+                              ),
+                              trailing: CategoryBadge(
+                                label: member.role,
+                                color: roleColor.withValues(alpha: 0.1),
+                                textColor: roleColor,
                               ),
                             ),
                           );
