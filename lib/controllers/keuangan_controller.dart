@@ -1,42 +1,81 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import '../helpers/database_helper.dart';
 import '../models/keuangan_model.dart';
 
 class KeuanganController {
-  final String apiUrl = "http://localhost/api_karisma/api_keuangan.php";
-
   Future<Map<String, dynamic>> fetchKeuangan() async {
     try {
-      print("Mencoba panggil API Keuangan..."); // CCTV 1
-      var response = await http.get(Uri.parse(apiUrl));
-      print("Status Code API: ${response.statusCode}"); // CCTV 2
-      print("Isi Data API: ${response.body}"); // CCTV 3
+      final rows = await DatabaseHelper.instance.getAllKeuangan();
 
-      var data = jsonDecode(response.body);
-
-      if (data['status'] == 'success') {
-        List jsonList = data['data'];
-        List<KeuanganModel> listKeuangan = jsonList
-            .map((e) => KeuanganModel.fromJson(e))
-            .toList();
-        print("Berhasil mengubah data jadi Model!"); // CCTV 4
-
+      if (rows.isEmpty) {
         return {
           "success": true,
-          "saldo": data['saldo'],
-          "pemasukan": data['total_pemasukan'],
-          "pengeluaran": data['total_pengeluaran'],
-          "data": listKeuangan,
+          "data": <KeuanganModel>[],
+          "saldo": 0,
+          "pemasukan": 0,
+          "pengeluaran": 0,
         };
-      } else {
-        print("API membalas dengan status: ${data['status']}");
-        return {"success": false};
       }
+
+      final List<KeuanganModel> listKeuangan =
+          rows.map((row) => KeuanganModel.fromJson(row)).toList();
+
+      int totalPemasukan = 0;
+      int totalPengeluaran = 0;
+
+      for (final item in listKeuangan) {
+        if (item.jenis == 'pemasukan') {
+          totalPemasukan += item.nominal;
+        } else if (item.jenis == 'pengeluaran') {
+          totalPengeluaran += item.nominal;
+        }
+      }
+
+      final int saldo = totalPemasukan - totalPengeluaran;
+
+      return {
+        "success": true,
+        "data": listKeuangan,
+        "saldo": saldo,
+        "pemasukan": totalPemasukan,
+        "pengeluaran": totalPengeluaran,
+      };
     } catch (e) {
-      print(
-        "ERROR FATAL: $e",
-      ); // CCTV 5 (Kalau ada yang salah mapping, akan muncul di sini)
+      debugPrint('[KeuanganController] Error: $e');
       return {"success": false};
+    }
+  }
+
+  Future<Map<String, dynamic>> insertKeuangan(
+    String tipe,
+    String nama,
+    String tanggal,
+    int jumlah,
+  ) async {
+    if (tipe.isEmpty || nama.trim().isEmpty || tanggal.isEmpty || jumlah <= 0) {
+      return {'success': false, 'message': 'Semua field wajib diisi dengan benar'};
+    }
+    try {
+      await DatabaseHelper.instance.insertKeuangan({
+        'tipe': tipe,
+        'nama': nama.trim(),
+        'tanggal': tanggal,
+        'jumlah': jumlah,
+      });
+      return {'success': true, 'message': 'Transaksi berhasil disimpan'};
+    } catch (e) {
+      debugPrint('[KeuanganController] insertKeuangan error: $e');
+      return {'success': false, 'message': 'Gagal menyimpan transaksi'};
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteKeuangan(String id) async {
+    try {
+      await DatabaseHelper.instance.deleteKeuangan(id);
+      return {'success': true, 'message': 'Transaksi berhasil dihapus'};
+    } catch (e) {
+      debugPrint('[KeuanganController] deleteKeuangan error: $e');
+      return {'success': false, 'message': 'Gagal menghapus transaksi'};
     }
   }
 }

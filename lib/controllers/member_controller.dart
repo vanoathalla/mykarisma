@@ -1,22 +1,14 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import '../helpers/database_helper.dart';
 import '../models/member_model.dart';
 
 class MemberController {
-  final String apiUrl = "http://localhost/api_karisma/api_member.php";
-
   Future<List<MemberModel>> fetchMember() async {
     try {
-      var response = await http.get(Uri.parse(apiUrl));
-      var data = jsonDecode(response.body);
-
-      if (data['status'] == 'success') {
-        List jsonList = data['data'];
-        return jsonList.map((e) => MemberModel.fromJson(e)).toList();
-      }
-      return [];
+      final rows = await DatabaseHelper.instance.getAllMembers();
+      return rows.map((row) => MemberModel.fromJson(row)).toList();
     } catch (e) {
-      print("Error fetching member: $e");
+      debugPrint('[MemberController] Error: $e');
       return [];
     }
   }

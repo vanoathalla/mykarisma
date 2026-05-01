@@ -6,7 +6,7 @@ import 'beranda_view.dart';
 import 'keuangan_view.dart';
 import 'catatan_view.dart'; // Import halaman baru
 import 'profil_view.dart';
-import 'login_view.dart';
+import 'auth/login_view.dart';
 
 // Import Controller
 import '../controllers/auth_controller.dart';
@@ -81,7 +81,9 @@ class _HomeViewState extends State<HomeView> {
               await _authController.logout();
               if (!mounted) return;
               // Reset aplikasi ke mode User/Tamu
+              // ignore: use_build_context_synchronously
               Navigator.pushAndRemoveUntil(
+                // ignore: use_build_context_synchronously
                 context,
                 MaterialPageRoute(builder: (_) => const HomeView()),
                 (route) => false,

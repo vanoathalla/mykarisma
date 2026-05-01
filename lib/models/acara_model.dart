@@ -23,4 +23,14 @@ class AcaraModel {
       tipe: json['tipe'],
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id_acara': int.tryParse(idAcara) ?? 0,
+      'nama': nama,
+      'tanggal': tanggal,
+      'kategori': kategori,
+      'tipe': tipe,
+    };
+  }
 }

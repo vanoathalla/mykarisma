@@ -22,4 +22,14 @@ class CatatanModel {
       tanggal: json['tanggal'] ?? '',
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id_catatan': int.tryParse(id) ?? 0,
+      'judul': judul,
+      'acara': acara,
+      'isi': isi,
+      'tanggal': tanggal,
+    };
+  }
 }

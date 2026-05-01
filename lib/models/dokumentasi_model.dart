@@ -19,4 +19,13 @@ class DokumentasiModel {
       tanggal: json['tanggal'] ?? '',
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id_dokumentasi': int.tryParse(id) ?? 0,
+      'nama': nama,
+      'url': url,
+      'tanggal': tanggal,
+    };
+  }
 }

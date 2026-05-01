@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // IMPORT HALAMAN BARU
 import 'member_view.dart';
-import 'catatan_view.dart'; // Jika ingin akses catatan dari sini juga
 import 'peta_view.dart';
 // import 'dokumentasi_view.dart'; // Nanti di-uncomment kalau file dokumentasi sudah kamu buat
 

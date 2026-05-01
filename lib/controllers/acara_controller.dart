@@ -1,55 +1,130 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import '../helpers/database_helper.dart';
 import '../models/acara_model.dart';
+import 'notification_controller.dart';
 
 class AcaraController {
-  final String apiUrl = "http://localhost/api_karisma/api_acara.php";
-  final String apiTambahUrl =
-      "http://localhost/api_karisma/api_tambah_acara.php";
-
-  // Fungsi untuk menampilkan data acara
+  // Fungsi untuk menampilkan data acara dari SQLite
   Future<List<AcaraModel>> fetchAcara() async {
     try {
-      var response = await http.get(Uri.parse(apiUrl));
-      var data = jsonDecode(response.body);
-
-      if (data['status'] == 'success') {
-        List jsonList = data['data'];
-        return jsonList.map((e) => AcaraModel.fromJson(e)).toList();
-      }
-      return [];
+      final rows = await DatabaseHelper.instance.getAllAcara();
+      return rows.map((row) => AcaraModel.fromJson(row)).toList();
     } catch (e) {
+      debugPrint('[AcaraController] Error fetchAcara: $e');
       return [];
     }
   }
 
-  // Fungsi untuk mengirim data acara baru ke PHP
+  // Fungsi untuk menyimpan data acara baru ke SQLite
   Future<Map<String, dynamic>> tambahAcara(
     String nama,
     String tanggal,
     String kategori,
     String tipe,
   ) async {
+    if (nama.isEmpty || tanggal.isEmpty || kategori.isEmpty || tipe.isEmpty) {
+      return {"success": false, "message": "Data tidak boleh kosong"};
+    }
+
     try {
-      var response = await http.post(
-        Uri.parse(apiTambahUrl),
-        body: {
-          "nama": nama,
-          "tanggal": tanggal,
-          "kategori": kategori,
-          "tipe": tipe,
-        },
-      );
+      final newId = await DatabaseHelper.instance.insertAcara({
+        'nama': nama,
+        'tanggal': tanggal,
+        'kategori': kategori,
+        'tipe': tipe,
+      });
 
-      var data = jsonDecode(response.body);
-
-      if (data['status'] == 'success') {
-        return {"success": true, "message": data['message']};
-      } else {
-        return {"success": false, "message": data['message']};
+      // Jadwalkan notifikasi jika tanggal di masa depan
+      final tanggalDate = DateTime.tryParse(tanggal);
+      if (tanggalDate != null && tanggalDate.isAfter(DateTime.now())) {
+        final acara = AcaraModel(
+          idAcara: newId.toString(),
+          nama: nama,
+          tanggal: tanggal,
+          kategori: kategori,
+          tipe: tipe,
+        );
+        await NotificationController.scheduleAcaraNotification(acara);
       }
+
+      return {"success": true, "message": "Acara berhasil ditambahkan"};
     } catch (e) {
-      return {"success": false, "message": "Gagal terhubung ke server"};
+      return {"success": false, "message": "Gagal menyimpan data"};
+    }
+  }
+
+  // Fungsi untuk menghapus acara dari SQLite dan membatalkan notifikasi
+  Future<Map<String, dynamic>> hapusAcara(String idAcara) async {
+    try {
+      final db = await DatabaseHelper.instance.database;
+      await db.delete(
+        'acara',
+        where: 'id_acara = ?',
+        whereArgs: [int.tryParse(idAcara) ?? 0],
+      );
+      await NotificationController.cancelNotification(
+        int.tryParse(idAcara) ?? 0,
+      );
+      return {"success": true, "message": "Acara berhasil dihapus"};
+    } catch (e) {
+      return {"success": false, "message": "Gagal menghapus acara"};
+    }
+  }
+
+  // Fungsi untuk memperbarui data acara di SQLite
+  Future<Map<String, dynamic>> updateAcara(
+    String id,
+    String nama,
+    String tanggal,
+    String kategori,
+    String tipe,
+  ) async {
+    if (nama.isEmpty || tanggal.isEmpty || kategori.isEmpty || tipe.isEmpty) {
+      return {"success": false, "message": "Data tidak boleh kosong"};
+    }
+    try {
+      await DatabaseHelper.instance.updateAcara(id, {
+        'nama': nama,
+        'tanggal': tanggal,
+        'kategori': kategori,
+        'tipe': tipe,
+      });
+
+      // Batalkan notifikasi lama dan jadwalkan ulang
+      await NotificationController.cancelNotification(int.tryParse(id) ?? 0);
+      final tanggalDate = DateTime.tryParse(tanggal);
+      if (tanggalDate != null && tanggalDate.isAfter(DateTime.now())) {
+        final acara = AcaraModel(
+          idAcara: id,
+          nama: nama,
+          tanggal: tanggal,
+          kategori: kategori,
+          tipe: tipe,
+        );
+        await NotificationController.scheduleAcaraNotification(acara);
+      }
+
+      return {"success": true, "message": "Acara berhasil diperbarui"};
+    } catch (e) {
+      return {"success": false, "message": "Gagal memperbarui acara"};
+    }
+  }
+
+  // Fungsi untuk mencari acara berdasarkan nama atau kategori
+  Future<List<AcaraModel>> searchAcara(String query) async {
+    try {
+      final all = await fetchAcara();
+      if (query.isEmpty) return all;
+      final q = query.toLowerCase();
+      return all
+          .where(
+            (a) =>
+                a.nama.toLowerCase().contains(q) ||
+                a.kategori.toLowerCase().contains(q),
+          )
+          .toList();
+    } catch (e) {
+      return [];
     }
   }
 }

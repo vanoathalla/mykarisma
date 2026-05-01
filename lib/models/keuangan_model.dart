@@ -24,4 +24,14 @@ class KeuanganModel {
       nominal: int.tryParse(json['jumlah'].toString()) ?? 0,
     );
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id_keuangan': int.tryParse(id) ?? 0,
+      'tipe': jenis,
+      'nama': keterangan,
+      'tanggal': tanggal,
+      'jumlah': nominal,
+    };
+  }
 }

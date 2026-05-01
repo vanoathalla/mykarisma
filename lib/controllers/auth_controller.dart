@@ -1,42 +1,70 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import '../models/user_model.dart';
+import 'package:local_auth/local_auth.dart';
+import '../helpers/auth_helper.dart';
+import '../helpers/database_helper.dart';
 
 class AuthController {
-  // Gunakan localhost jika running di Chrome
-  final String apiUrl = "http://localhost/api_karisma/api_login.php";
-
   Future<Map<String, dynamic>> login(String username, String password) async {
     try {
-      var response = await http.post(
-        Uri.parse(apiUrl),
-        body: {"username": username, "password": password},
+      final member = await DatabaseHelper.instance.getMemberByUsername(username);
+
+      if (member == null) {
+        return {"success": false, "message": "Username atau password salah"};
+      }
+
+      final hashedInput = AuthHelper.hashPassword(password);
+      if (hashedInput != member.passwordHash) {
+        return {"success": false, "message": "Username atau password salah"};
+      }
+
+      await AuthHelper.saveSession(
+        idMember: member.id,
+        nama: member.nama,
+        role: member.role,
       );
 
-      var data = jsonDecode(response.body);
-
-      if (data['status'] == 'success') {
-        // Simpan ke SharedPreferences
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString(
-          'id_member',
-          data['data']['id_member'].toString(),
-        );
-        await prefs.setString('nama', data['data']['nama']);
-        await prefs.setString('role', data['data']['role']);
-
-        return {"success": true, "message": data['message']};
-      } else {
-        return {"success": false, "message": data['message']};
-      }
+      return {"success": true, "message": "Login berhasil"};
     } catch (e) {
-      return {"success": false, "message": "Gagal terhubung ke server"};
+      return {"success": false, "message": "Gagal mengakses database"};
     }
   }
 
+  Future<bool> loginWithBiometric() async {
+    final localAuth = LocalAuthentication();
+    try {
+      final canCheck = await localAuth.canCheckBiometrics;
+      if (!canCheck) return false;
+      final authenticated = await localAuth.authenticate(
+        localizedReason: 'Login ke MyKarisma menggunakan biometrik',
+        options: const AuthenticationOptions(biometricOnly: true),
+      );
+      if (authenticated) {
+        // Ambil data admin dari DB dan buat session
+        final members = await DatabaseHelper.instance.getAllMembers();
+        if (members.isNotEmpty) {
+          final admin = members.firstWhere(
+            (m) => m['role'] == 'admin',
+            orElse: () => members.first,
+          );
+          await AuthHelper.saveSession(
+            idMember: admin['id_member'].toString(),
+            nama: admin['nama'] ?? '',
+            role: admin['role'] ?? '',
+          );
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> isBiometricAvailable() async {
+    final localAuth = LocalAuthentication();
+    return await localAuth.canCheckBiometrics;
+  }
+
   Future<void> logout() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await AuthHelper.clearSession();
   }
 }
