@@ -4,6 +4,7 @@ import '../../helpers/database_helper.dart';
 import '../../models/feedback_model.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_widgets.dart';
+import '../home/home_view.dart';
 
 class SaranView extends StatefulWidget {
   const SaranView({super.key});
@@ -18,15 +19,7 @@ class _SaranViewState extends State<SaranView> {
   final TextEditingController _isiCtrl = TextEditingController();
 
   double _rating = 0;
-  String? _kategori;
   bool _loading = false;
-
-  static const List<String> _kategoriList = [
-    'Materi',
-    'Pengajar',
-    'Tugas',
-    'Lainnya',
-  ];
 
   @override
   void dispose() {
@@ -41,7 +34,7 @@ class _SaranViewState extends State<SaranView> {
     final model = FeedbackModel(
       nama: _namaCtrl.text.trim().isEmpty ? null : _namaCtrl.text.trim(),
       rating: _rating.round(),
-      kategori: _kategori ?? '',
+      kategori: 'Umum',
       isi: _isiCtrl.text.trim(),
       tanggal: DateTime.now().toIso8601String().split('T').first,
     );
@@ -86,7 +79,6 @@ class _SaranViewState extends State<SaranView> {
     _isiCtrl.clear();
     setState(() {
       _rating = 0;
-      _kategori = null;
     });
   }
 
@@ -105,6 +97,18 @@ class _SaranViewState extends State<SaranView> {
             elevation: 0,
             titleSpacing: 20,
             automaticallyImplyLeading: false,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                  color: AppTheme.onSurface, size: 20),
+              onPressed: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  // Dari navbar — kembali ke Beranda
+                  homeTabNotifier.switchTo(1);
+                }
+              },
+            ),
             title: const Text(
               'Saran & Kesan',
               style: TextStyle(
@@ -191,66 +195,53 @@ class _SaranViewState extends State<SaranView> {
                       const SizedBox(height: 20),
 
                       // Rating
-                      SurfaceCard(
-                        padding: const EdgeInsets.all(20),
-                        borderRadius: BorderRadius.circular(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Rating',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            RatingBar.builder(
-                              initialRating: _rating,
-                              minRating: 1,
-                              direction: Axis.horizontal,
-                              allowHalfRating: false,
-                              itemCount: 5,
-                              itemSize: 36,
-                              itemPadding: const EdgeInsets.symmetric(horizontal: 4),
-                              itemBuilder: (context, _) => const Icon(
-                                Icons.star_rounded,
-                                color: AppTheme.secondary,
-                              ),
-                              onRatingUpdate: (rating) {
-                                setState(() => _rating = rating);
-                              },
-                            ),
-                            if (_rating > 0) ...[
-                              const SizedBox(height: 8),
-                              Text(
-                                _getRatingLabel(_rating.round()),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppTheme.outline,
-                                  fontStyle: FontStyle.italic,
+                      SizedBox(
+                        width: double.infinity,
+                        child: SurfaceCard(
+                          padding: const EdgeInsets.all(20),
+                          borderRadius: BorderRadius.circular(18),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Rating',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.onSurface,
                                 ),
                               ),
+                              const SizedBox(height: 12),
+                              RatingBar.builder(
+                                initialRating: _rating,
+                                minRating: 1,
+                                direction: Axis.horizontal,
+                                allowHalfRating: false,
+                                itemCount: 5,
+                                itemSize: 36,
+                                itemPadding: const EdgeInsets.symmetric(horizontal: 4),
+                                itemBuilder: (context, _) => const Icon(
+                                  Icons.star_rounded,
+                                  color: AppTheme.secondary,
+                                ),
+                                onRatingUpdate: (rating) {
+                                  setState(() => _rating = rating);
+                                },
+                              ),
+                              if (_rating > 0) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  _getRatingLabel(_rating.round()),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.outline,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ],
                             ],
-                          ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Kategori
-                      DropdownButtonFormField<String>(
-                        value: _kategori,
-                        decoration: const InputDecoration(
-                          labelText: 'Kategori',
-                          prefixIcon: Icon(Icons.category_outlined, color: AppTheme.primary),
-                        ),
-                        hint: const Text('Pilih kategori'),
-                        items: _kategoriList
-                            .map((k) => DropdownMenuItem(value: k, child: Text(k)))
-                            .toList(),
-                        validator: (val) => val == null ? 'Silakan pilih kategori' : null,
-                        onChanged: (val) => setState(() => _kategori = val),
                       ),
                       const SizedBox(height: 16),
 

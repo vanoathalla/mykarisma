@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../controllers/auth_controller.dart';
 import '../../theme/app_theme.dart';
 import '../home/home_view.dart';
+import 'register_view.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -120,14 +121,14 @@ class _LoginViewState extends State<LoginView> {
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: const Icon(
-                        Icons.mosque_rounded,
+                        Icons.groups_rounded,
                         size: 44,
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 20),
                     const Text(
-                      'SacredHub',
+                      'MyKarisma',
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.w800,
@@ -137,7 +138,7 @@ class _LoginViewState extends State<LoginView> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Karang Taruna & Remaja Masjid',
+                      'Karang Taruna Pemuda Desa',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.white.withValues(alpha: 0.75),
@@ -268,6 +269,37 @@ class _LoginViewState extends State<LoginView> {
                               ),
                             ),
                           ],
+
+                          const SizedBox(height: 16),
+
+                          // Link ke Register
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Belum punya akun? ',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.outline,
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => const RegisterView()),
+                                ),
+                                child: const Text(
+                                  'Daftar',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),

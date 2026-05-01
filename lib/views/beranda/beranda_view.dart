@@ -1,8 +1,5 @@
-﻿import 'dart:async';
-import 'dart:math' as math;
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 import '../../helpers/auth_helper.dart';
 import '../../theme/app_theme.dart';
 import '../../controllers/keuangan_controller.dart';
@@ -18,12 +15,12 @@ import '../member_view.dart';
 import '../dokumentasi_view.dart';
 import '../konversi/konversi_view.dart';
 import '../sensor/kiblat_view.dart';
-import '../sensor/sensor_view.dart';
 import '../keuangan_view.dart';
 import '../catatan_view.dart';
 import '../saran/saran_view.dart';
-import '../sensor/pedometer_view.dart';
 import '../game/hijaiyah_game_view.dart';
+import '../profil/profil_view.dart';
+import '../home/home_view.dart';
 
 class BerandaView extends StatefulWidget {
   const BerandaView({super.key});
@@ -43,49 +40,14 @@ class _BerandaViewState extends State<BerandaView> {
   List<AcaraModel> _acaraMendatang = [];
   List<CatatanModel> _catatanTerbaru = [];
 
-  // Live waveform data
-  final List<double> _wave = List.filled(12, 0.3);
-  StreamSubscription<AccelerometerEvent>? _accSub;
-  int _waveIdx = 0;
-
   @override
   void initState() {
     super.initState();
     _loadData();
-    _startWave();
-  }
-
-  void _startWave() {
-    try {
-      _accSub = accelerometerEventStream().listen((e) {
-        if (!mounted) return;
-        final mag = math.sqrt(e.x * e.x + e.y * e.y + e.z * e.z);
-        setState(() {
-          _wave[_waveIdx % 12] = (mag / 20.0).clamp(0.1, 1.0);
-          _waveIdx++;
-        });
-      });
-    } catch (_) {
-      _dummyWave();
-    }
-  }
-
-  void _dummyWave() {
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(milliseconds: 200));
-      if (!mounted) return false;
-      final r = math.Random();
-      setState(() {
-        _wave[_waveIdx % 12] = 0.15 + r.nextDouble() * 0.85;
-        _waveIdx++;
-      });
-      return mounted;
-    });
   }
 
   @override
   void dispose() {
-    _accSub?.cancel();
     super.dispose();
   }
 
@@ -103,14 +65,21 @@ class _BerandaViewState extends State<BerandaView> {
     final acara = await _acaraCtrl.fetchAcara();
     final catatan = await _catatanCtrl.fetchCatatan();
     final mendatang = acara
-        .where((a) => a.tanggal.compareTo(todayStr) >= 0)
+        .where((a) {
+          final tanggalOnly = a.tanggal.split(' ').first.trim();
+          return tanggalOnly.compareTo(todayStr) >= 0;
+        })
         .toList()
-      ..sort((a, b) => a.tanggal.compareTo(b.tanggal));
+      ..sort((a, b) {
+        final aDate = a.tanggal.split(' ').first.trim();
+        final bDate = b.tanggal.split(' ').first.trim();
+        return aDate.compareTo(bDate);
+      });
     if (!mounted) return;
     setState(() {
       _totalSaldo = (keuangan['saldo'] as int?) ?? 0;
-      _acaraMendatang = mendatang.take(3).toList();
-      _catatanTerbaru = catatan.take(5).toList();
+      _acaraMendatang = mendatang.take(1).toList();
+      _catatanTerbaru = catatan.take(1).toList();
       _isLoading = false;
     });
   }
@@ -157,7 +126,9 @@ class _BerandaViewState extends State<BerandaView> {
         onRefresh: _loadData,
         color: AppTheme.primary,
         child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
+          // ClampingScrollPhysics: tidak ada overscroll stretch/bounce,
+          // tapi RefreshIndicator tetap bisa trigger pull-to-refresh dari atas
+          physics: const ClampingScrollPhysics(),
           slivers: [
             SliverPersistentHeader(
               pinned: true,
@@ -172,7 +143,7 @@ class _BerandaViewState extends State<BerandaView> {
                   _buildAiCard(),
                   const SizedBox(height: 24),
                   _buildQuickGrid(isDark),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 12),
                   _buildFinancial(isDark),
                   const SizedBox(height: 24),
                   _buildEvents(isDark),
@@ -180,8 +151,6 @@ class _BerandaViewState extends State<BerandaView> {
                   _buildNotulensi(isDark),
                   const SizedBox(height: 24),
                   _buildMap(isDark),
-                  const SizedBox(height: 24),
-                  _buildSensor(isDark),
                 ]),
               ),
             ),
@@ -212,33 +181,36 @@ class _BerandaViewState extends State<BerandaView> {
     return Row(
       children: [
         const SizedBox(width: 16),
-        Stack(
-          children: [
-            Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppTheme.primary.withValues(alpha: 0.12),
-                border: Border.all(color: AppTheme.primary.withValues(alpha: 0.20), width: 2),
-              ),
-              child: const Icon(Icons.person_rounded, color: AppTheme.primary, size: 22),
-            ),
-            Positioned(
-              bottom: 0, right: 0,
-              child: Container(
-                width: 11, height: 11,
+        GestureDetector(
+          onTap: () => homeTabNotifier.switchTo(2), // Switch ke tab Profil
+          child: Stack(
+            children: [
+              Container(
+                width: 40, height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.green,
                   shape: BoxShape.circle,
-                  border: Border.all(color: isDark ? const Color(0xFF1A1C1C) : Colors.white, width: 2),
+                  color: AppTheme.primary.withValues(alpha: 0.12),
+                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.20), width: 2),
+                ),
+                child: const Icon(Icons.person_rounded, color: AppTheme.primary, size: 22),
+              ),
+              Positioned(
+                bottom: 0, right: 0,
+                child: Container(
+                  width: 11, height: 11,
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: isDark ? const Color(0xFF1A1C1C) : Colors.white, width: 2),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(width: 10),
         Text(
-          'SacredHub',
+          'MyKarisma',
           style: TextStyle(
             fontSize: 18, fontWeight: FontWeight.w800,
             color: isDark ? const Color(0xFF84D5C5) : AppTheme.primary,
@@ -285,7 +257,7 @@ class _BerandaViewState extends State<BerandaView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Ahlan wa Sahlan,',
+                          'Haii Selamat Datang,',
                           style: TextStyle(
                             fontSize: 15, fontWeight: FontWeight.w600,
                             color: isDark ? const Color(0xFF84D5C5) : AppTheme.primaryContainer,
@@ -409,15 +381,18 @@ class _BerandaViewState extends State<BerandaView> {
     final cardBorder = isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFEEEEEE);
     final labelColor = isDark ? const Color(0xFF889390) : AppTheme.onSurfaceVariant;
 
+    // Semua fitur tersusun langsung di grid — tidak ada menu "Lainnya"
     final items = [
       _QAItem(Icons.calendar_month_rounded, 'Acara', () => _go(const AcaraListView())),
       _QAItem(Icons.account_balance_wallet_rounded, 'Keuangan', () => _go(const KeuanganView())),
       _QAItem(Icons.sticky_note_2_rounded, 'Catatan', () => _go(const CatatanView())),
       _QAItem(Icons.group_rounded, 'Member', () => _go(const MemberView())),
       _QAItem(Icons.folder_open_rounded, 'Dokumentasi', () => _go(const DokumentasiView())),
-      _QAItem(Icons.mosque_rounded, 'Masjid', () => _go(const PetaView())),
-      _QAItem(Icons.sensors_rounded, 'Sensor', () => _go(const SensorView())),
-      _QAItem(Icons.apps_rounded, 'Lainnya', _showMoreSheet),
+      _QAItem(Icons.location_on_rounded, 'Lokasi', () => _go(const PetaView())),
+      _QAItem(Icons.explore_rounded, 'Kiblat', () => _go(const KiblatView())),
+      _QAItem(Icons.currency_exchange_rounded, 'Konversi', () => _go(const KonversiView())),
+      _QAItem(Icons.games_rounded, 'Mini Game', () => _go(const HijaiyahGameView())),
+      _QAItem(Icons.feedback_outlined, 'Saran', () => _go(const SaranView())),
     ];
 
     return GridView.builder(
@@ -477,7 +452,7 @@ class _BerandaViewState extends State<BerandaView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Kas Masjid', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: textSub)),
+                Text('Kas Karisma', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: textSub)),
                 Icon(Icons.trending_up_rounded, color: AppTheme.secondaryContainer, size: 22),
               ],
             ),
@@ -577,13 +552,20 @@ class _BerandaViewState extends State<BerandaView> {
                   decoration: BoxDecoration(
                     color: cardBg,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border(
-                      left: BorderSide(color: color, width: 4),
-                      top: BorderSide(color: border), right: BorderSide(color: border), bottom: BorderSide(color: border),
-                    ),
+                    border: Border.all(color: border),
                     boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
                   ),
-                  child: Padding(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Accent bar kiri
+                          Container(width: 4, color: color),
+                          // Konten
+                          Expanded(
+                            child: Padding(
                     padding: const EdgeInsets.all(14),
                     child: Row(
                       children: [
@@ -601,7 +583,7 @@ class _BerandaViewState extends State<BerandaView> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(item.nama, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textPrimary)),
+                              Text(item.nama, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: isDark ? const Color(0xFFF1F1F1) : Colors.black87)),
                               const SizedBox(height: 4),
                               Row(children: [
                                 Icon(Icons.schedule_rounded, size: 12, color: textSub),
@@ -632,6 +614,11 @@ class _BerandaViewState extends State<BerandaView> {
                       ],
                     ),
                   ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               );
             }).toList(),
@@ -640,7 +627,7 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  //  6. NOTULENSI HORIZONTAL SCROLL 
+  //  6. NOTULENSI — 1 CARD TERBARU 
   Widget _buildNotulensi(bool isDark) {
     final textPrimary = isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface;
     final textSub = isDark ? const Color(0xFF889390) : AppTheme.outline;
@@ -651,91 +638,92 @@ class _BerandaViewState extends State<BerandaView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Notulensi Terbaru', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textPrimary)),
-        const SizedBox(height: 14),
-        SizedBox(
-          height: 180,
-          child: _isLoading
-              ? ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 3,
-                  itemBuilder: (_, __) => Container(
-                    width: 220,
-                    margin: const EdgeInsets.only(right: 12),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFEEEEEE),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                )
-              : _catatanTerbaru.isEmpty
-                  ? Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(color: cardBg, borderRadius: BorderRadius.circular(24), border: Border.all(color: cardBorder)),
-                      child: Center(child: Text('Belum ada notulensi', style: TextStyle(color: textSub, fontSize: 13))),
-                    )
-                  : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _catatanTerbaru.length,
-                      itemBuilder: (_, i) {
-                        final c = _catatanTerbaru[i];
-                        final isFirst = i == 0;
-                        final iconColor = isFirst ? AppTheme.primary : AppTheme.secondaryContainer;
-                        final iconBg = isFirst ? AppTheme.primaryContainer.withValues(alpha: 0.12) : AppTheme.secondaryContainer.withValues(alpha: 0.12);
-                        final tagIcon = isFirst ? Icons.history_edu_rounded : Icons.description_rounded;
-                        return GestureDetector(
-                          onTap: () => _go(const CatatanView()),
-                          child: Container(
-                            width: 220,
-                            margin: const EdgeInsets.only(right: 12),
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: cardBg,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: cardBorder),
-                              boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      width: 32, height: 32,
-                                      decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
-                                      child: Icon(tagIcon, color: iconColor, size: 16),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Flexible(
-                                      child: Text(
-                                        c.acara.isNotEmpty ? c.acara.toUpperCase() : 'NOTULENSI',
-                                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: textSub, letterSpacing: 0.8),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Text(c.judul, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary, height: 1.3), maxLines: 2, overflow: TextOverflow.ellipsis),
-                                const SizedBox(height: 6),
-                                Expanded(
-                                  child: Text(c.isi, style: TextStyle(fontSize: 11, color: textSubtle, height: 1.4), maxLines: 3, overflow: TextOverflow.ellipsis),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(c.tanggal, style: TextStyle(fontSize: 9, color: textSub, fontWeight: FontWeight.w500)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Notulensi Terbaru', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textPrimary)),
+            GestureDetector(
+              onTap: () => _go(const CatatanView()),
+              child: const Text('Lihat Semua', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppTheme.primary)),
+            ),
+          ],
         ),
+        const SizedBox(height: 14),
+        if (_isLoading)
+          Container(
+            height: 120,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFEEEEEE),
+              borderRadius: BorderRadius.circular(24),
+            ),
+          )
+        else if (_catatanTerbaru.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(color: cardBg, borderRadius: BorderRadius.circular(24), border: Border.all(color: cardBorder)),
+            child: Center(child: Text('Belum ada notulensi', style: TextStyle(color: textSub, fontSize: 13))),
+          )
+        else
+          GestureDetector(
+            onTap: () => _go(const CatatanView()),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: cardBorder),
+                boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 32, height: 32,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryContainer.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.history_edu_rounded, color: AppTheme.primary, size: 16),
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          _catatanTerbaru.first.acara.isNotEmpty
+                              ? _catatanTerbaru.first.acara.toUpperCase()
+                              : 'NOTULENSI',
+                          style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: textSub, letterSpacing: 0.8),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _catatanTerbaru.first.judul,
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: textPrimary, height: 1.3),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _catatanTerbaru.first.isi,
+                    style: TextStyle(fontSize: 12, color: textSubtle, height: 1.4),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _catatanTerbaru.first.tanggal,
+                    style: TextStyle(fontSize: 10, color: textSub, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -809,7 +797,7 @@ class _BerandaViewState extends State<BerandaView> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Masjid Al-Kautsar Hub', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primary)),
+                            Text('Wilayah Karisma', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppTheme.primary)),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                               decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(20)),
@@ -829,142 +817,8 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  //  8. SENSOR WIDGET 
-  Widget _buildSensor(bool isDark) {
-    final cardBg = isDark ? const Color(0xFF252828) : Colors.white;
-    final cardBorder = isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFEEEEEE);
-    final textPrimary = isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface;
-    final textSub = isDark ? const Color(0xFF889390) : AppTheme.outline;
-
-    return GestureDetector(
-      onTap: () => _go(const SensorView()),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: cardBorder),
-          boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Live Telemetry', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textPrimary)),
-                    Text('Stability & Security Sensors', style: TextStyle(fontSize: 11, color: textSub)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    _PulsingDot(color: AppTheme.primary),
-                    const SizedBox(width: 6),
-                    const Text('REAL-TIME', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppTheme.primary, letterSpacing: 0.5)),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            // Waveform bars
-            SizedBox(
-              height: 60,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: List.generate(12, (i) {
-                  final h = _wave[i];
-                  final opacity = 0.3 + h * 0.7;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        height: 8 + h * 52,
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: opacity),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Icon(Icons.screen_rotation_rounded, size: 18, color: textSub),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('GYROSCOPE', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: textSub, letterSpacing: 0.5)),
-                          Text('0.04 / s', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Row(
-                    children: [
-                      Icon(Icons.vibration_rounded, size: 18, color: textSub),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('ACCEL', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: textSub, letterSpacing: 0.5)),
-                          Text('9.81 m/s', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  //  MORE SHEET 
-  void _showMoreSheet() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF252828) : Colors.white;
-    final textPrimary = isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface;
-    final textSub = isDark ? const Color(0xFF889390) : AppTheme.outline;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: cardBg,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppTheme.outlineVariant, borderRadius: BorderRadius.circular(2)))),
-            const SizedBox(height: 20),
-            Text('Fitur Lainnya', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: textPrimary)),
-            const SizedBox(height: 16),
-            _MoreItem(icon: Icons.explore_rounded, label: 'Kompas Kiblat', textColor: textPrimary, subColor: textSub, onTap: () { Navigator.pop(ctx); _go(const KiblatView()); }),
-            _MoreItem(icon: Icons.currency_exchange_rounded, label: 'Konversi Mata Uang & Waktu', textColor: textPrimary, subColor: textSub, onTap: () { Navigator.pop(ctx); _go(const KonversiView()); }),
-            _MoreItem(icon: Icons.directions_walk_rounded, label: 'Pedometer', textColor: textPrimary, subColor: textSub, onTap: () { Navigator.pop(ctx); _go(const PedometerView()); }),
-            _MoreItem(icon: Icons.games_rounded, label: 'Mini Game Hijaiyah', textColor: textPrimary, subColor: textSub, onTap: () { Navigator.pop(ctx); _go(const HijaiyahGameView()); }),
-            _MoreItem(icon: Icons.feedback_outlined, label: 'Saran & Kesan', textColor: textPrimary, subColor: textSub, onTap: () { Navigator.pop(ctx); _go(const SaranView()); }),
-          ],
-        ),
-      ),
-    );
-  }
+  //  8. SENSOR WIDGET — dihapus 
+  //  MORE SHEET — dihapus, semua fitur sudah ada di grid 
 }
 
 //  Helper Classes 
@@ -974,30 +828,6 @@ class _QAItem {
   final String label;
   final VoidCallback onTap;
   const _QAItem(this.icon, this.label, this.onTap);
-}
-
-class _MoreItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color textColor;
-  final Color subColor;
-  final VoidCallback onTap;
-  const _MoreItem({required this.icon, required this.label, required this.textColor, required this.subColor, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Container(
-        width: 40, height: 40,
-        decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.10), borderRadius: BorderRadius.circular(12)),
-        child: Icon(icon, color: AppTheme.primary, size: 20),
-      ),
-      title: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textColor)),
-      trailing: Icon(Icons.arrow_forward_ios_rounded, size: 14, color: subColor),
-      onTap: onTap,
-    );
-  }
 }
 
 //  Sticky Glass App Bar 
@@ -1077,40 +907,6 @@ class _BouncingDotsState extends State<_BouncingDots> with TickerProviderStateMi
           ),
         ),
       )),
-    );
-  }
-}
-
-//  Pulsing Dot 
-class _PulsingDot extends StatefulWidget {
-  final Color color;
-  const _PulsingDot({required this.color});
-  @override
-  State<_PulsingDot> createState() => _PulsingDotState();
-}
-
-class _PulsingDotState extends State<_PulsingDot> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _anim;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat(reverse: true);
-    _anim = Tween<double>(begin: 0.3, end: 1.0).animate(_ctrl);
-  }
-
-  @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _anim,
-      builder: (_, __) => Container(
-        width: 7, height: 7,
-        decoration: BoxDecoration(color: widget.color.withValues(alpha: _anim.value), shape: BoxShape.circle),
-      ),
     );
   }
 }

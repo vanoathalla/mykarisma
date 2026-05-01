@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../helpers/auth_helper.dart';
 import '../../theme/app_theme.dart';
+import '../home/home_view.dart';
 
 class ProfilView extends StatefulWidget {
   const ProfilView({super.key});
@@ -80,6 +82,73 @@ class _ProfilViewState extends State<ProfilView> {
     }
   }
 
+  Future<void> _logout() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Keluar'),
+        content: const Text('Yakin ingin keluar dari akun?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Keluar'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    await AuthHelper.clearSession();
+    if (mounted) {
+      // Kembali ke HomeView — HomeView akan detect tamu otomatis
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeView()),
+        (route) => false,
+      );
+    }
+  }
+
+  void _tampilkanTentangApp() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Tentang MyKarisma'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'MyKarisma',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.primary,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Aplikasi manajemen Karang Taruna & Pemuda Desa untuk mengelola kegiatan, keuangan, anggota, dan dokumentasi organisasi.',
+              style: TextStyle(fontSize: 13, height: 1.5),
+            ),
+            SizedBox(height: 12),
+            Text('Versi: 1.0.0', style: TextStyle(fontSize: 12, color: AppTheme.outline)),
+            Text('© 2024 MyKarisma', style: TextStyle(fontSize: 12, color: AppTheme.outline)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Tutup'),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _getInisial(String nama) {
     final parts = nama.trim().split(' ');
     if (parts.length >= 2) {
@@ -126,6 +195,16 @@ class _ProfilViewState extends State<ProfilView> {
             elevation: 0,
             automaticallyImplyLeading: false,
             titleSpacing: 20,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios_new_rounded, color: textPrimary, size: 20),
+              onPressed: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  homeTabNotifier.switchTo(1); // Kembali ke Beranda
+                }
+              },
+            ),
             title: Text(
               'Profil Saya',
               style: TextStyle(
@@ -439,6 +518,131 @@ class _ProfilViewState extends State<ProfilView> {
                     ],
                   ),
                 ),
+
+                const SizedBox(height: 20),
+
+                // ── Pengaturan ──────────────────────────────────────────
+                Text(
+                  'Pengaturan',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: cardBorder),
+                  ),
+                  child: Column(
+                    children: [
+                      // Dark Mode Toggle
+                      ValueListenableBuilder<ThemeMode>(
+                        valueListenable: themeNotifier,
+                        builder: (context, mode, _) {
+                          return SwitchListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 4),
+                            secondary: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                mode == ThemeMode.dark
+                                    ? Icons.dark_mode_rounded
+                                    : Icons.light_mode_rounded,
+                                color: AppTheme.primary,
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(
+                              'Mode Gelap',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: textPrimary,
+                              ),
+                            ),
+                            subtitle: Text(
+                              mode == ThemeMode.dark ? 'Aktif' : 'Nonaktif',
+                              style: TextStyle(fontSize: 12, color: textSub),
+                            ),
+                            value: mode == ThemeMode.dark,
+                            activeColor: AppTheme.primary,
+                            onChanged: (val) {
+                              themeNotifier.value =
+                                  val ? ThemeMode.dark : ThemeMode.light;
+                            },
+                          );
+                        },
+                      ),
+                      Divider(height: 1, indent: 68, endIndent: 16, color: cardBorder),
+                      // Tentang Aplikasi
+                      ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 4),
+                        leading: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.info_outline_rounded,
+                            color: AppTheme.primary,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(
+                          'Tentang Aplikasi',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: textPrimary,
+                          ),
+                        ),
+                        trailing: Icon(Icons.arrow_forward_ios_rounded,
+                            size: 14, color: textSub),
+                        onTap: _tampilkanTentangApp,
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ── Tombol Logout ───────────────────────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton.icon(
+                    onPressed: _logout,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                    ),
+                    icon: const Icon(Icons.logout_rounded, size: 18),
+                    label: const Text(
+                      'Keluar dari Akun',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 40),
               ]),
             ),
           ),

@@ -334,29 +334,43 @@ class DatabaseHelper {
 
   // ─── Utility ──────────────────────────────────────────────────────────────
 
-  /// Seed data awal: insert satu admin jika tabel member masih kosong.
+  /// Seed data awal: insert admin jika belum ada, atau update password_hash
+  /// jika admin sudah ada tapi password_hash null/kosong.
   /// password_hash adalah SHA-256 dari 'admin123'.
   Future<void> seedData() async {
     final db = await database;
-    final count = Sqflite.firstIntValue(
-      await db.rawQuery('SELECT COUNT(*) FROM member'),
+    final rows = await db.query(
+      'member',
+      where: 'nama_panggilan = ?',
+      whereArgs: ['admin'],
     );
 
-    if (count == null || count == 0) {
-      await db.insert(
-        'member',
-        {
-          'nama': 'Admin RT',
-          'nama_panggilan': 'admin',
-          'no_hp': 'admin123',
-          'role': 'admin',
-          'rt': '01',
-          // SHA-256 dari 'admin123'
-          'password_hash':
-              '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
-        },
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
+    if (rows.isEmpty) {
+      // Insert admin baru
+      await db.insert('member', {
+        'nama': 'Admin Karisma',
+        'nama_panggilan': 'admin',
+        'no_hp': 'admin123',
+        'role': 'admin',
+        'rt': '01',
+        'password_hash':
+            '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
+      }, conflictAlgorithm: ConflictAlgorithm.ignore);
+    } else {
+      // Update password_hash jika null/kosong
+      final existing = rows.first;
+      if (existing['password_hash'] == null ||
+          (existing['password_hash'] as String).isEmpty) {
+        await db.update(
+          'member',
+          {
+            'password_hash':
+                '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
+          },
+          where: 'nama_panggilan = ?',
+          whereArgs: ['admin'],
+        );
+      }
     }
   }
 

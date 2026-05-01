@@ -6,7 +6,6 @@ import '../models/keuangan_model.dart';
 import '../models/currency_model.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_widgets.dart';
-import 'konversi/konversi_view.dart';
 
 class KeuanganView extends StatefulWidget {
   const KeuanganView({super.key});
@@ -21,11 +20,6 @@ class _KeuanganViewState extends State<KeuanganView> {
 
   CurrencyModel? _currencyRates;
   bool _loadingRates = true;
-
-  final TextEditingController _nominalCtrl = TextEditingController();
-  String _fromCurrency = 'IDR';
-  String _toCurrency = 'USD';
-  double _hasilKonversi = 0.0;
 
   int _refreshKey = 0;
   String _roleUser = 'tamu'; // default tamu
@@ -55,11 +49,177 @@ class _KeuanganViewState extends State<KeuanganView> {
     }
   }
 
-  void _hitungKonversi() {
-    if (_currencyRates == null) return;
-    final nominal = double.tryParse(_nominalCtrl.text) ?? 0.0;
-    final hasil = _currencyCtrl.convert(nominal, _fromCurrency, _toCurrency, _currencyRates!);
-    setState(() => _hasilKonversi = hasil);
+  /// Tampilkan BottomSheet konversi kontekstual berdasarkan saldo/pemasukan/pengeluaran
+  void _bukaKonversiKontekstual(Map<String, dynamic> data) {
+    if (_currencyRates == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kurs belum tersedia, coba refresh')),
+      );
+      return;
+    }
+
+    String selectedNilai = 'Saldo';
+    String selectedCurrency = 'USD';
+
+    final Map<String, int> nilaiMap = {
+      'Saldo': data['saldo'] as int,
+      'Total Pemasukan': data['pemasukan'] as int,
+      'Total Pengeluaran': data['pengeluaran'] as int,
+    };
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            final nominalIDR = nilaiMap[selectedNilai]!.toDouble();
+            final hasil = _currencyCtrl.convert(
+                nominalIDR, 'IDR', selectedCurrency, _currencyRates!);
+
+            return Container(
+              decoration: const BoxDecoration(
+                color: AppTheme.surfaceContainerLowest,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppTheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Konversi Kontekstual',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.onSurface,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded,
+                            color: AppTheme.outline),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Pilih nilai
+                  DropdownButtonFormField<String>(
+                    value: selectedNilai,
+                    decoration: const InputDecoration(
+                      labelText: 'Nilai yang dikonversi',
+                      prefixIcon: Icon(Icons.account_balance_wallet_outlined,
+                          color: AppTheme.primary),
+                    ),
+                    items: nilaiMap.keys
+                        .map((k) => DropdownMenuItem(value: k, child: Text(k)))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) {
+                        setModalState(() => selectedNilai = val);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Pilih mata uang tujuan
+                  DropdownButtonFormField<String>(
+                    value: selectedCurrency,
+                    decoration: const InputDecoration(
+                      labelText: 'Mata uang tujuan',
+                      prefixIcon: Icon(Icons.currency_exchange_rounded,
+                          color: AppTheme.primary),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'USD', child: Text('USD — Dolar Amerika')),
+                      DropdownMenuItem(value: 'SAR', child: Text('SAR — Riyal Saudi')),
+                      DropdownMenuItem(value: 'EUR', child: Text('EUR — Euro')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setModalState(() => selectedCurrency = val);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Hasil konversi
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                          color: AppTheme.primary.withValues(alpha: 0.15)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$selectedNilai ${formatRupiah(nilaiMap[selectedNilai]!)}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.outline,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.arrow_forward_rounded,
+                                color: AppTheme.primary, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${hasil.toStringAsFixed(2)} $selectedCurrency',
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: AppTheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Kurs: 1 IDR = ${_currencyCtrl.convert(1, 'IDR', selectedCurrency, _currencyRates!).toStringAsFixed(6)} $selectedCurrency',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.outline,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void _refreshData() => setState(() => _refreshKey++);
@@ -72,15 +232,304 @@ class _KeuanganViewState extends State<KeuanganView> {
     return 'Rp $str';
   }
 
-  String _formatHasil(double nilai, String currency) {
-    if (currency == 'IDR') {
-      return 'Rp ${nilai.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')}';
-    }
-    return '${nilai.toStringAsFixed(2)} $currency';
-  }
-
   String _formatTanggal(DateTime dt) {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+  }
+
+  void _bukaFormEditTransaksi(KeuanganModel item) {
+    final formKey = GlobalKey<FormState>();
+    String selectedTipe = item.jenis;
+    final namaCtrl = TextEditingController(text: item.keterangan);
+    final nominalFormCtrl = TextEditingController(text: item.nominal.toString());
+    final tanggalCtrl = TextEditingController(text: item.tanggal);
+    bool isSaving = false;
+
+    double usdVal = 0, sarVal = 0, eurVal = 0;
+
+    void hitungKonversiForm(String val, StateSetter setModalState) {
+      if (_currencyRates == null) return;
+      final nominal = double.tryParse(val) ?? 0.0;
+      setModalState(() {
+        usdVal = _currencyCtrl.convert(nominal, 'IDR', 'USD', _currencyRates!);
+        sarVal = _currencyCtrl.convert(nominal, 'IDR', 'SAR', _currencyRates!);
+        eurVal = _currencyCtrl.convert(nominal, 'IDR', 'EUR', _currencyRates!);
+      });
+    }
+
+    // Hitung konversi awal
+    if (_currencyRates != null) {
+      final nominal = item.nominal.toDouble();
+      usdVal = _currencyCtrl.convert(nominal, 'IDR', 'USD', _currencyRates!);
+      sarVal = _currencyCtrl.convert(nominal, 'IDR', 'SAR', _currencyRates!);
+      eurVal = _currencyCtrl.convert(nominal, 'IDR', 'EUR', _currencyRates!);
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Container(
+              decoration: const BoxDecoration(
+                color: AppTheme.surfaceContainerLowest,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Handle bar
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppTheme.outlineVariant,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Edit Transaksi',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.onSurface,
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded, color: AppTheme.outline),
+                            onPressed: () => Navigator.pop(ctx),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Jenis transaksi toggle
+                      Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setModalState(() => selectedTipe = 'pemasukan'),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: selectedTipe == 'pemasukan'
+                                      ? Colors.green
+                                      : AppTheme.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_downward_rounded,
+                                      color: selectedTipe == 'pemasukan'
+                                          ? Colors.white
+                                          : AppTheme.outline,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Pemasukan',
+                                      style: TextStyle(
+                                        color: selectedTipe == 'pemasukan'
+                                            ? Colors.white
+                                            : AppTheme.outline,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setModalState(() => selectedTipe = 'pengeluaran'),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: selectedTipe == 'pengeluaran'
+                                      ? Colors.red
+                                      : AppTheme.surfaceContainerLow,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_upward_rounded,
+                                      color: selectedTipe == 'pengeluaran'
+                                          ? Colors.white
+                                          : AppTheme.outline,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Pengeluaran',
+                                      style: TextStyle(
+                                        color: selectedTipe == 'pengeluaran'
+                                            ? Colors.white
+                                            : AppTheme.outline,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      TextFormField(
+                        controller: namaCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Keterangan Transaksi',
+                          hintText: 'Contoh: Iuran bulanan, Beli sound system',
+                          prefixIcon: Icon(Icons.description_outlined, color: AppTheme.primary),
+                        ),
+                        validator: (v) =>
+                            (v == null || v.trim().isEmpty) ? 'Keterangan wajib diisi' : null,
+                      ),
+                      const SizedBox(height: 12),
+
+                      TextFormField(
+                        controller: nominalFormCtrl,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Nominal (Rp)',
+                          hintText: '0',
+                          prefixIcon: Icon(Icons.payments_outlined, color: AppTheme.primary),
+                        ),
+                        onChanged: (val) => hitungKonversiForm(val, setModalState),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Nominal wajib diisi';
+                          final n = int.tryParse(v);
+                          if (n == null || n <= 0) return 'Nominal harus lebih dari 0';
+                          return null;
+                        },
+                      ),
+
+                      if (_currencyRates != null) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '≈ ${usdVal.toStringAsFixed(2)} USD  ·  ${sarVal.toStringAsFixed(2)} SAR  ·  ${eurVal.toStringAsFixed(2)} EUR',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.primary,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+
+                      GestureDetector(
+                        onTap: () async {
+                          final initial = DateTime.tryParse(tanggalCtrl.text) ?? DateTime.now();
+                          final picked = await showDatePicker(
+                            context: ctx,
+                            initialDate: initial,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+                          if (picked != null) {
+                            setModalState(() => tanggalCtrl.text = _formatTanggal(picked));
+                          }
+                        },
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            controller: tanggalCtrl,
+                            decoration: const InputDecoration(
+                              labelText: 'Tanggal',
+                              prefixIcon: Icon(Icons.calendar_today_outlined, color: AppTheme.primary),
+                            ),
+                            validator: (v) =>
+                                (v == null || v.isEmpty) ? 'Tanggal wajib dipilih' : null,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: isSaving
+                              ? null
+                              : () async {
+                                  if (!formKey.currentState!.validate()) return;
+                                  setModalState(() => isSaving = true);
+                                  final messenger = ScaffoldMessenger.of(context);
+                                  final res = await _keuanganCtrl.updateKeuangan(
+                                    item.id,
+                                    selectedTipe,
+                                    namaCtrl.text,
+                                    tanggalCtrl.text,
+                                    int.tryParse(nominalFormCtrl.text) ?? 0,
+                                  );
+                                  setModalState(() => isSaving = false);
+                                  if (!ctx.mounted) return;
+                                  Navigator.pop(ctx);
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text(res['message']),
+                                      backgroundColor:
+                                          res['success'] ? Colors.green : Colors.red,
+                                    ),
+                                  );
+                                  if (res['success']) _refreshData();
+                                },
+                          child: isSaving
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('SIMPAN PERUBAHAN'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void _bukaFormTransaksi() {
@@ -246,8 +695,8 @@ class _KeuanganViewState extends State<KeuanganView> {
                       TextFormField(
                         controller: namaCtrl,
                         decoration: const InputDecoration(
-                          labelText: 'Keterangan',
-                          hintText: 'Iuran bulanan anggota',
+                          labelText: 'Keterangan Transaksi',
+                          hintText: 'Contoh: Iuran bulanan, Beli sound system',
                           prefixIcon: Icon(Icons.description_outlined, color: AppTheme.primary),
                         ),
                         validator: (v) =>
@@ -372,7 +821,6 @@ class _KeuanganViewState extends State<KeuanganView> {
 
   @override
   void dispose() {
-    _nominalCtrl.dispose();
     super.dispose();
   }
 
@@ -492,7 +940,7 @@ class _KeuanganViewState extends State<KeuanganView> {
 
                     const SizedBox(height: 20),
 
-                    // ── Konversi Card ───────────────────────────────────
+                    // ── Tombol Konversi Kontekstual ─────────────────────
                     SurfaceCard(
                       padding: const EdgeInsets.all(20),
                       borderRadius: BorderRadius.circular(20),
@@ -515,103 +963,77 @@ class _KeuanganViewState extends State<KeuanganView> {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              const Text(
-                                'Konversi Mata Uang',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.onSurface,
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Konversi Mata Uang',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppTheme.onSurface,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Konversi saldo/pemasukan/pengeluaran ke mata uang lain',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: AppTheme.outline,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _nominalCtrl,
-                            keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Nominal',
-                              hintText: 'Masukkan jumlah',
-                            ),
-                            onChanged: (_) => _hitungKonversi(),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  value: _fromCurrency,
-                                  decoration: const InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                  ),
-                                  items: CurrencyController.supportedCurrencies
-                                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      setState(() => _fromCurrency = val);
-                                      _hitungKonversi();
-                                    }
-                                  },
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                child: Icon(Icons.arrow_forward_rounded,
-                                    color: AppTheme.primary, size: 20),
-                              ),
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  value: _toCurrency,
-                                  decoration: const InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                  ),
-                                  items: CurrencyController.supportedCurrencies
-                                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (val != null) {
-                                      setState(() => _toCurrency = val);
-                                      _hitungKonversi();
-                                    }
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
                           if (_loadingRates)
-                            const Text('Memuat kurs...', style: TextStyle(color: AppTheme.outline))
-                          else if (_currencyRates == null)
-                            const Text('Kurs tidak tersedia', style: TextStyle(color: Colors.red))
-                          else
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primary.withValues(alpha: 0.06),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                'Hasil: ${_formatHasil(_hasilKonversi, _toCurrency)}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppTheme.primary,
+                            const Row(
+                              children: [
+                                SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppTheme.primary,
+                                  ),
                                 ),
+                                SizedBox(width: 10),
+                                Text(
+                                  'Memuat kurs terkini...',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppTheme.outline,
+                                  ),
+                                ),
+                              ],
+                            )
+                          else if (_currencyRates == null)
+                            Row(
+                              children: [
+                                const Icon(Icons.wifi_off_rounded,
+                                    size: 16, color: Colors.orange),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Kurs tidak tersedia (offline)',
+                                  style: TextStyle(
+                                      fontSize: 12, color: Colors.orange),
+                                ),
+                              ],
+                            )
+                          else
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () =>
+                                    _bukaKonversiKontekstual(data),
+                                icon: const Icon(
+                                    Icons.currency_exchange_rounded,
+                                    size: 18),
+                                label: const Text('Konversi Nilai Kas'),
                               ),
                             ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const KonversiView()),
-                              ),
-                              icon: const Icon(Icons.open_in_new_rounded, size: 16),
-                              label: const Text('Konversi Lengkap'),
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -740,14 +1162,37 @@ class _KeuanganViewState extends State<KeuanganView> {
                                   color: AppTheme.outline,
                                 ),
                               ),
-                              trailing: Text(
-                                formatRupiah(item.nominal),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                  color: isPemasukan ? Colors.green : Colors.red,
-                                ),
-                              ),
+                              trailing: _roleUser == 'admin'
+                                ? Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        formatRupiah(item.nominal),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 14,
+                                          color: isPemasukan ? Colors.green : Colors.red,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      GestureDetector(
+                                        onTap: () => _bukaFormEditTransaksi(item),
+                                        child: const Icon(
+                                          Icons.edit_rounded,
+                                          size: 18,
+                                          color: AppTheme.outline,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Text(
+                                    formatRupiah(item.nominal),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                      color: isPemasukan ? Colors.green : Colors.red,
+                                    ),
+                                  ),
                             ),
                           ),
                         );

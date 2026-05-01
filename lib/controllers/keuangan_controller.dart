@@ -78,4 +78,34 @@ class KeuanganController {
       return {'success': false, 'message': 'Gagal menghapus transaksi'};
     }
   }
+
+  Future<Map<String, dynamic>> updateKeuangan(
+    String id,
+    String tipe,
+    String nama,
+    String tanggal,
+    int jumlah,
+  ) async {
+    if (tipe.isEmpty || nama.trim().isEmpty || tanggal.isEmpty || jumlah <= 0) {
+      return {'success': false, 'message': 'Semua field wajib diisi dengan benar'};
+    }
+    try {
+      final db = await DatabaseHelper.instance.database;
+      await db.update(
+        'keuangan',
+        {
+          'tipe': tipe,
+          'nama': nama.trim(),
+          'tanggal': tanggal,
+          'jumlah': jumlah,
+        },
+        where: 'id_keuangan = ?',
+        whereArgs: [int.tryParse(id) ?? 0],
+      );
+      return {'success': true, 'message': 'Transaksi berhasil diperbarui'};
+    } catch (e) {
+      debugPrint('[KeuanganController] updateKeuangan error: $e');
+      return {'success': false, 'message': 'Gagal memperbarui transaksi'};
+    }
+  }
 }

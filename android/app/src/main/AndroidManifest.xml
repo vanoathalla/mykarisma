@@ -17,11 +17,7 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
-        <!-- Google Maps API Key -->
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="ISI_API_KEY_GOOGLE_MAPS_KAMU_DISINI"/>
-
+        <!-- flutter_map tidak butuh Google Maps API key -->
         <activity
             android:name=".MainActivity"
             android:exported="true"

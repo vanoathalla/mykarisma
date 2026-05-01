@@ -63,7 +63,6 @@ class AppTheme {
   static ThemeData lightTheme() {
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'Inter',
       colorScheme: const ColorScheme.light(
         primary: primary,
         onPrimary: onPrimary,
@@ -98,8 +97,7 @@ class AppTheme {
           color: onSurface,
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          fontFamily: 'Inter',
-        ),
+            ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
@@ -175,51 +173,43 @@ class AppTheme {
           fontWeight: FontWeight.w700,
           letterSpacing: -0.02 * 48,
           color: onSurface,
-          fontFamily: 'Inter',
-        ),
+            ),
         headlineMedium: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.w600,
           color: onSurface,
-          fontFamily: 'Inter',
-        ),
+            ),
         titleLarge: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w700,
           color: onSurface,
-          fontFamily: 'Inter',
-        ),
+            ),
         titleMedium: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: onSurface,
-          fontFamily: 'Inter',
-        ),
+            ),
         bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           color: onSurface,
-          fontFamily: 'Inter',
-        ),
+            ),
         bodyMedium: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: onSurface,
-          fontFamily: 'Inter',
-        ),
+            ),
         bodySmall: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w400,
           color: onSurfaceVariant,
-          fontFamily: 'Inter',
-        ),
+            ),
         labelSmall: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.05 * 11,
           color: onSurfaceVariant,
-          fontFamily: 'Inter',
-        ),
+            ),
       ),
       dividerTheme: const DividerThemeData(
         color: outlineVariant,
@@ -265,7 +255,6 @@ class AppTheme {
   static ThemeData darkTheme() {
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'Inter',
       colorScheme: const ColorScheme.dark(
         primary: inversePrimary,
         onPrimary: Color(0xFF00201B),
@@ -298,8 +287,7 @@ class AppTheme {
           color: _darkText,
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          fontFamily: 'Inter',
-        ),
+            ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
@@ -360,44 +348,37 @@ class AppTheme {
           fontSize: 24,
           fontWeight: FontWeight.w600,
           color: _darkText,
-          fontFamily: 'Inter',
-        ),
+            ),
         titleLarge: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w700,
           color: _darkText,
-          fontFamily: 'Inter',
-        ),
+            ),
         titleMedium: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
           color: _darkText,
-          fontFamily: 'Inter',
-        ),
+            ),
         bodyLarge: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           color: _darkText,
-          fontFamily: 'Inter',
-        ),
+            ),
         bodyMedium: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: _darkText,
-          fontFamily: 'Inter',
-        ),
+            ),
         bodySmall: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w400,
           color: _darkSubText,
-          fontFamily: 'Inter',
-        ),
+            ),
         labelSmall: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w500,
           color: _darkSubText,
-          fontFamily: 'Inter',
-        ),
+            ),
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: const Color(0xFFF1F1F1),
@@ -413,13 +394,11 @@ class AppTheme {
           color: _darkText,
           fontSize: 18,
           fontWeight: FontWeight.w700,
-          fontFamily: 'Inter',
-        ),
+            ),
         contentTextStyle: const TextStyle(
           color: _darkSubText,
           fontSize: 14,
-          fontFamily: 'Inter',
-        ),
+            ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: _darkSurface,

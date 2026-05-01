@@ -12,13 +12,15 @@
         "flutter",
         "flutter_compass",
         "flutter_local_notifications",
+        "flutter_map",
+        "flutter_map_cancellable_tile_provider",
         "flutter_rating_bar",
         "geolocator",
         "google_generative_ai",
-        "google_maps_flutter",
         "http",
         "image_picker",
         "intl",
+        "latlong2",
         "local_auth",
         "path",
         "sensors_plus",
@@ -255,14 +257,27 @@
       "dependencies": []
     },
     {
-      "name": "google_maps_flutter",
-      "version": "2.17.0",
+      "name": "latlong2",
+      "version": "0.9.1",
       "dependencies": [
+        "intl"
+      ]
+    },
+    {
+      "name": "flutter_map",
+      "version": "7.0.2",
+      "dependencies": [
+        "async",
+        "collection",
+        "dart_earcut",
         "flutter",
-        "google_maps_flutter_android",
-        "google_maps_flutter_ios",
-        "google_maps_flutter_platform_interface",
-        "google_maps_flutter_web"
+        "http",
+        "latlong2",
+        "logger",
+        "meta",
+        "polylabel",
+        "proj4dart",
+        "vector_math"
       ]
     },
     {
@@ -845,47 +860,19 @@
       ]
     },
     {
-      "name": "google_maps_flutter_web",
-      "version": "0.6.2",
+      "name": "proj4dart",
+      "version": "2.1.0",
       "dependencies": [
-        "collection",
-        "flutter",
-        "flutter_web_plugins",
-        "google_maps",
-        "google_maps_flutter_platform_interface",
-        "sanitize_html",
-        "stream_transform",
-        "web"
-      ]
-    },
-    {
-      "name": "google_maps_flutter_platform_interface",
-      "version": "2.15.0",
-      "dependencies": [
-        "collection",
-        "flutter",
-        "plugin_platform_interface",
-        "stream_transform"
-      ]
-    },
-    {
-      "name": "google_maps_flutter_ios",
-      "version": "2.18.1",
-      "dependencies": [
-        "flutter",
-        "google_maps_flutter_platform_interface",
-        "stream_transform"
-      ]
-    },
-    {
-      "name": "google_maps_flutter_android",
-      "version": "2.19.8",
-      "dependencies": [
-        "flutter",
-        "flutter_plugin_android_lifecycle",
-        "google_maps_flutter_platform_interface",
         "meta",
-        "stream_transform"
+        "mgrs_dart",
+        "wkt_parser"
+      ]
+    },
+    {
+      "name": "polylabel",
+      "version": "1.0.1",
+      "dependencies": [
+        "collection"
       ]
     },
     {
@@ -1292,24 +1279,15 @@
       ]
     },
     {
-      "name": "stream_transform",
-      "version": "2.1.1",
+      "name": "wkt_parser",
+      "version": "2.0.0",
       "dependencies": []
     },
     {
-      "name": "sanitize_html",
-      "version": "2.1.0",
+      "name": "mgrs_dart",
+      "version": "2.0.0",
       "dependencies": [
-        "html",
-        "meta"
-      ]
-    },
-    {
-      "name": "google_maps",
-      "version": "8.2.0",
-      "dependencies": [
-        "meta",
-        "web"
+        "unicode"
       ]
     },
     {
@@ -1414,14 +1392,6 @@
       ]
     },
     {
-      "name": "html",
-      "version": "0.15.6",
-      "dependencies": [
-        "csslib",
-        "source_span"
-      ]
-    },
-    {
       "name": "petitparser",
       "version": "7.0.2",
       "dependencies": [
@@ -1430,10 +1400,63 @@
       ]
     },
     {
-      "name": "csslib",
-      "version": "1.0.2",
+      "name": "dart_earcut",
+      "version": "1.2.0",
+      "dependencies": []
+    },
+    {
+      "name": "unicode",
+      "version": "0.3.1",
       "dependencies": [
-        "source_span"
+        "lists"
+      ]
+    },
+    {
+      "name": "lists",
+      "version": "1.0.1",
+      "dependencies": [
+        "meta"
+      ]
+    },
+    {
+      "name": "flutter_map_cancellable_tile_provider",
+      "version": "3.0.2",
+      "dependencies": [
+        "dio",
+        "flutter",
+        "flutter_map",
+        "meta"
+      ]
+    },
+    {
+      "name": "dio",
+      "version": "5.9.2",
+      "dependencies": [
+        "async",
+        "collection",
+        "dio_web_adapter",
+        "http_parser",
+        "meta",
+        "mime",
+        "path"
+      ]
+    },
+    {
+      "name": "dio_web_adapter",
+      "version": "2.1.2",
+      "dependencies": [
+        "dio",
+        "http_parser",
+        "meta",
+        "web"
+      ]
+    },
+    {
+      "name": "logger",
+      "version": "2.7.0",
+      "dependencies": [
+        "clock",
+        "meta"
       ]
     }
   ],

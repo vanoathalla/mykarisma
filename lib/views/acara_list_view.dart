@@ -321,204 +321,178 @@ class _AcaraListViewState extends State<AcaraListView> {
                                 decoration: BoxDecoration(
                                   color: cardBg,
                                   borderRadius: BorderRadius.circular(18),
-                                  border: Border(
-                                    left: BorderSide(
-                                        color: mendatang
-                                            ? color
-                                            : textSub.withValues(alpha: 0.4),
-                                        width: 4),
-                                    top: BorderSide(color: cardBorder),
-                                    right: BorderSide(color: cardBorder),
-                                    bottom: BorderSide(color: cardBorder),
-                                  ),
-                                  // Acara yang sudah lewat sedikit redup
+                                  border: Border.all(color: cardBorder),
                                   boxShadow: mendatang
                                       ? [
                                           BoxShadow(
-                                            color: Colors.black
-                                                .withValues(alpha: 0.04),
+                                            color: Colors.black.withValues(alpha: 0.04),
                                             blurRadius: 8,
                                             offset: const Offset(0, 2),
                                           ),
                                         ]
                                       : [],
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(14),
-                                  child: Row(
-                                    children: [
-                                      // Tanggal
-                                      Opacity(
-                                        opacity: mendatang ? 1.0 : 0.5,
-                                        child: Container(
-                                          width: 52,
-                                          padding: const EdgeInsets.symmetric(
-                                              vertical: 8),
-                                          decoration: BoxDecoration(
-                                            color: color.withValues(
-                                                alpha: 0.10),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Column(
-                                            children: [
-                                              Text(
-                                                day,
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.w800,
-                                                  color: color,
-                                                ),
-                                              ),
-                                              Text(
-                                                month.toUpperCase(),
-                                                style: TextStyle(
-                                                  fontSize: 9,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: color.withValues(
-                                                      alpha: 0.7),
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        // Accent bar kiri
+                                        Container(
+                                          width: 4,
+                                          color: mendatang
+                                              ? color
+                                              : textSub.withValues(alpha: 0.4),
                                         ),
-                                      ),
-                                      const SizedBox(width: 14),
-
-                                      // Info
-                                      Expanded(
-                                        child: Opacity(
-                                          opacity: mendatang ? 1.0 : 0.6,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      item.nama,
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color: textPrimary,
-                                                      ),
+                                        // Konten
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(14),
+                                            child: Row(
+                                              children: [
+                                                // Tanggal
+                                                Opacity(
+                                                  opacity: mendatang ? 1.0 : 0.5,
+                                                  child: Container(
+                                                    width: 52,
+                                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                                    decoration: BoxDecoration(
+                                                      color: color.withValues(alpha: 0.10),
+                                                      borderRadius: BorderRadius.circular(12),
+                                                    ),
+                                                    child: Column(
+                                                      children: [
+                                                        Text(
+                                                          day,
+                                                          style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight: FontWeight.w800,
+                                                            color: color,
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          month.toUpperCase(),
+                                                          style: TextStyle(
+                                                            fontSize: 9,
+                                                            fontWeight: FontWeight.w700,
+                                                            color: color.withValues(alpha: 0.7),
+                                                            letterSpacing: 0.5,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                  if (!mendatang)
-                                                    Container(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 6,
-                                                          vertical: 2),
-                                                      decoration: BoxDecoration(
-                                                        color: textSub
-                                                            .withValues(
-                                                                alpha: 0.12),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(4),
-                                                      ),
-                                                      child: Text(
-                                                        'SELESAI',
-                                                        style: TextStyle(
-                                                          fontSize: 9,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                          color: textSub,
-                                                          letterSpacing: 0.5,
+                                                ),
+                                                const SizedBox(width: 14),
+                                                // Info
+                                                Expanded(
+                                                  child: Opacity(
+                                                    opacity: mendatang ? 1.0 : 0.6,
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Expanded(
+                                                              child: Text(
+                                                                item.nama,
+                                                                style: TextStyle(
+                                                                  fontSize: 14,
+                                                                  fontWeight: FontWeight.w700,
+                                                                  color: textPrimary,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                            if (!mendatang)
+                                                              Container(
+                                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                                decoration: BoxDecoration(
+                                                                  color: textSub.withValues(alpha: 0.12),
+                                                                  borderRadius: BorderRadius.circular(4),
+                                                                ),
+                                                                child: Text(
+                                                                  'SELESAI',
+                                                                  style: TextStyle(
+                                                                    fontSize: 9,
+                                                                    fontWeight: FontWeight.w700,
+                                                                    color: textSub,
+                                                                    letterSpacing: 0.5,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(height: 4),
+                                                        Row(
+                                                          children: [
+                                                            CategoryBadge(
+                                                              label: item.tipe,
+                                                              color: color.withValues(alpha: 0.12),
+                                                              textColor: color,
+                                                            ),
+                                                            const SizedBox(width: 8),
+                                                            Flexible(
+                                                              child: Text(
+                                                                item.kategori,
+                                                                style: TextStyle(fontSize: 11, color: textSub),
+                                                                overflow: TextOverflow.ellipsis,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                // Tombol admin
+                                                if (_roleUser == 'admin') ...[
+                                                  const SizedBox(width: 8),
+                                                  Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      GestureDetector(
+                                                        onTap: () async {
+                                                          final r = await Navigator.push<bool>(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (_) => TambahAcaraView(acaraEdit: item),
+                                                            ),
+                                                          );
+                                                          if (r == true) _loadAcara();
+                                                        },
+                                                        child: Container(
+                                                          width: 32,
+                                                          height: 32,
+                                                          decoration: BoxDecoration(
+                                                            color: AppTheme.primary.withValues(alpha: 0.10),
+                                                            borderRadius: BorderRadius.circular(8),
+                                                          ),
+                                                          child: const Icon(Icons.edit_rounded, size: 16, color: AppTheme.primary),
                                                         ),
                                                       ),
-                                                    ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Row(
-                                                children: [
-                                                  CategoryBadge(
-                                                    label: item.tipe,
-                                                    color: color.withValues(
-                                                        alpha: 0.12),
-                                                    textColor: color,
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Flexible(
-                                                    child: Text(
-                                                      item.kategori,
-                                                      style: TextStyle(
-                                                          fontSize: 11,
-                                                          color: textSub),
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
+                                                      const SizedBox(height: 6),
+                                                      GestureDetector(
+                                                        onTap: () => _hapusAcara(item),
+                                                        child: Container(
+                                                          width: 32,
+                                                          height: 32,
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.red.withValues(alpha: 0.10),
+                                                            borderRadius: BorderRadius.circular(8),
+                                                          ),
+                                                          child: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ],
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-
-                                      // Tombol admin (edit & hapus)
-                                      if (_roleUser == 'admin') ...[
-                                        const SizedBox(width: 8),
-                                        Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () async {
-                                                final r =
-                                                    await Navigator.push<bool>(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        TambahAcaraView(
-                                                            acaraEdit: item),
-                                                  ),
-                                                );
-                                                if (r == true) _loadAcara();
-                                              },
-                                              child: Container(
-                                                width: 32,
-                                                height: 32,
-                                                decoration: BoxDecoration(
-                                                  color: AppTheme.primary
-                                                      .withValues(alpha: 0.10),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.edit_rounded,
-                                                  size: 16,
-                                                  color: AppTheme.primary,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            GestureDetector(
-                                              onTap: () => _hapusAcara(item),
-                                              child: Container(
-                                                width: 32,
-                                                height: 32,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red
-                                                      .withValues(alpha: 0.10),
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                ),
-                                                child: const Icon(
-                                                  Icons.delete_outline_rounded,
-                                                  size: 16,
-                                                  color: Colors.red,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
                                       ],
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ),

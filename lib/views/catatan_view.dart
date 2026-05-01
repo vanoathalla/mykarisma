@@ -350,6 +350,15 @@ class _CatatanViewState extends State<CatatanView> {
                     padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
                     child: Row(
                       children: [
+                        // Back button
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                              color: AppTheme.onSurface, size: 20),
+                          onPressed: () => Navigator.pop(context),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                        const SizedBox(width: 4),
                         const Expanded(
                           child: Text(
                             'Catatan & Notulensi',
