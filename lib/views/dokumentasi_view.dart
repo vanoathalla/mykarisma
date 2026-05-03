@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../controllers/dokumentasi_controller.dart';
 import '../helpers/auth_helper.dart';
@@ -82,6 +82,7 @@ class _DokumentasiViewState extends State<DokumentasiView> {
                 bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
               ),
               child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
                 child: Form(
                   key: formKey,
                   child: Column(
@@ -282,7 +283,7 @@ class _DokumentasiViewState extends State<DokumentasiView> {
       backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          // ── App Bar ──────────────────────────────────────────────────
+          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Container(
             color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
             child: SafeArea(
@@ -320,7 +321,7 @@ class _DokumentasiViewState extends State<DokumentasiView> {
             ),
           ),
 
-          // ── Content ──────────────────────────────────────────────────
+          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -354,6 +355,7 @@ class _DokumentasiViewState extends State<DokumentasiView> {
                         onRefresh: _loadData,
                         color: AppTheme.primary,
                         child: ListView.builder(
+                          physics: const ClampingScrollPhysics(),
                           padding:
                               const EdgeInsets.fromLTRB(20, 16, 20, 100),
                           itemCount: _list.length,

@@ -19,7 +19,6 @@ import '../keuangan_view.dart';
 import '../catatan_view.dart';
 import '../saran/saran_view.dart';
 import '../game/hijaiyah_game_view.dart';
-import '../profil/profil_view.dart';
 import '../home/home_view.dart';
 
 class BerandaView extends StatefulWidget {
@@ -119,6 +118,8 @@ class _BerandaViewState extends State<BerandaView> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? const Color(0xFF1A1C1C) : const Color(0xFFF9F9F9);
+    // Ambil tinggi status bar sekali di sini, teruskan ke delegate
+    final statusBarH = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: bg,
@@ -126,13 +127,17 @@ class _BerandaViewState extends State<BerandaView> {
         onRefresh: _loadData,
         color: AppTheme.primary,
         child: CustomScrollView(
-          // ClampingScrollPhysics: tidak ada overscroll stretch/bounce,
-          // tapi RefreshIndicator tetap bisa trigger pull-to-refresh dari atas
+          // ClampingScrollPhysics: tidak ada overscroll bounce di bawah,
+          // RefreshIndicator tetap aktif untuk pull-to-refresh dari atas
           physics: const ClampingScrollPhysics(),
           slivers: [
             SliverPersistentHeader(
               pinned: true,
-              delegate: _GlassAppBarDelegate(isDark: isDark, child: _buildTopBar(isDark)),
+              delegate: _GlassAppBarDelegate(
+                isDark: isDark,
+                child: _buildTopBar(isDark),
+                statusBarHeight: statusBarH,
+              ),
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
@@ -830,16 +835,26 @@ class _QAItem {
   const _QAItem(this.icon, this.label, this.onTap);
 }
 
-//  Sticky Glass App Bar 
+// ─── Sticky Glass App Bar ─────────────────────────────────────────────────────
 class _GlassAppBarDelegate extends SliverPersistentHeaderDelegate {
   final bool isDark;
   final Widget child;
-  const _GlassAppBarDelegate({required this.isDark, required this.child});
+  // statusBarHeight diteruskan dari build() agar delegate tahu tinggi status bar
+  final double statusBarHeight;
+
+  const _GlassAppBarDelegate({
+    required this.isDark,
+    required this.child,
+    required this.statusBarHeight,
+  });
+
+  // Tinggi total = status bar + konten bar (56px)
+  double get _total => statusBarHeight + 56;
 
   @override
-  double get minExtent => 64;
+  double get minExtent => _total;
   @override
-  double get maxExtent => 64;
+  double get maxExtent => _total;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -847,20 +862,36 @@ class _GlassAppBarDelegate extends SliverPersistentHeaderDelegate {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          height: 64,
+          height: _total,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1C1C).withValues(alpha: 0.85) : Colors.white.withValues(alpha: 0.75),
-            border: Border(bottom: BorderSide(color: AppTheme.primary.withValues(alpha: 0.08))),
-            boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.06), blurRadius: 24, offset: const Offset(0, 4))],
+            color: isDark
+                ? const Color(0xFF1A1C1C).withValues(alpha: 0.85)
+                : Colors.white.withValues(alpha: 0.75),
+            border: Border(
+              bottom: BorderSide(color: AppTheme.primary.withValues(alpha: 0.08)),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primary.withValues(alpha: 0.06),
+                blurRadius: 24,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: SafeArea(bottom: false, child: child),
+          // Padding manual = status bar, bukan SafeArea,
+          // supaya tinggi delegate tidak berubah-ubah
+          child: Padding(
+            padding: EdgeInsets.only(top: statusBarHeight),
+            child: child,
+          ),
         ),
       ),
     );
   }
 
   @override
-  bool shouldRebuild(covariant _GlassAppBarDelegate old) => old.isDark != isDark;
+  bool shouldRebuild(covariant _GlassAppBarDelegate old) =>
+      old.isDark != isDark || old.statusBarHeight != statusBarHeight;
 }
 
 //  Bouncing Dots (AI typing indicator) 
@@ -888,7 +919,9 @@ class _BouncingDotsState extends State<_BouncingDots> with TickerProviderStateMi
 
   @override
   void dispose() {
-    for (final c in _ctrls) c.dispose();
+    for (final c in _ctrls) {
+      c.dispose();
+    }
     super.dispose();
   }
 

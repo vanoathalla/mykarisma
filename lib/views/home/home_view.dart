@@ -229,7 +229,7 @@ class _GuestViewState extends State<_GuestView> {
               onRefresh: _loadData,
               color: AppTheme.primary,
               child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../controllers/catatan_controller.dart';
 import '../controllers/acara_controller.dart';
 import '../helpers/auth_helper.dart';
@@ -114,6 +114,7 @@ class _CatatanViewState extends State<CatatanView> {
                 bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
               ),
               child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
                 child: Form(
                   key: formKey,
                   child: Column(
@@ -339,7 +340,7 @@ class _CatatanViewState extends State<CatatanView> {
       backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          // ── App Bar ────────────────────────────────────────────────────
+          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Container(
             color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
             child: SafeArea(
@@ -402,7 +403,7 @@ class _CatatanViewState extends State<CatatanView> {
             ),
           ),
 
-          // ── Content ────────────────────────────────────────────────────
+          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Expanded(
             child: _loading
                 ? const Center(
@@ -434,6 +435,7 @@ class _CatatanViewState extends State<CatatanView> {
                         ),
                       )
                     : ListView.builder(
+                        physics: const ClampingScrollPhysics(),
                         padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
                         itemCount: _filteredCatatan.length,
                         itemBuilder: (context, i) {

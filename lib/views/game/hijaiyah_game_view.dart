@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../controllers/game_controller.dart';
 import '../../models/game_session_model.dart';
 import '../../theme/app_theme.dart';
@@ -89,7 +89,7 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
       backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          // ── App Bar ──────────────────────────────────────────────────
+          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           if (!_showLeaderboard)
             Container(
               color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
@@ -127,7 +127,7 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
               ),
             ),
 
-          // ── Content ──────────────────────────────────────────────────
+          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Expanded(
             child: _showLeaderboard
                 ? _buildLeaderboard()
@@ -451,6 +451,7 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
                       ),
                     )
                   : ListView.builder(
+                      physics: const ClampingScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                       itemCount: sessions.length,
                       itemBuilder: (ctx, i) {
@@ -496,7 +497,7 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
                               ),
                             ),
                             subtitle: Text(
-                              'Level ${s.level} · ${s.tanggal}',
+                              'Level ${s.level} Â· ${s.tanggal}',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppTheme.outline,

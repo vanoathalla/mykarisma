@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../helpers/auth_helper.dart';
 import '../../helpers/database_helper.dart';
@@ -169,6 +169,7 @@ class _RegisterViewState extends State<RegisterView> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minHeight: MediaQuery.of(context).size.height -
@@ -180,7 +181,7 @@ class _RegisterViewState extends State<RegisterView> {
                   children: [
                     const SizedBox(height: 40),
 
-                    // ── Logo & Title ──────────────────────────────────────
+                    // â”€â”€ Logo & Title â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     Container(
                       width: 72,
                       height: 72,
@@ -215,7 +216,7 @@ class _RegisterViewState extends State<RegisterView> {
 
                     const Spacer(),
 
-                    // ── Register Card ─────────────────────────────────────
+                    // â”€â”€ Register Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     Container(
                       margin: const EdgeInsets.fromLTRB(24, 32, 24, 24),
                       padding: const EdgeInsets.all(24),
@@ -296,7 +297,7 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Usia — BottomSheet picker
+                            // Usia â€” BottomSheet picker
                             GestureDetector(
                               onTap: _pilihUsia,
                               child: AbsorbPointer(
@@ -507,7 +508,7 @@ class _RegisterViewState extends State<RegisterView> {
 
                     const SizedBox(height: 16),
                     Text(
-                      '© 2024 MyKarisma',
+                      'Â© 2024 MyKarisma',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.white.withValues(alpha: 0.5),

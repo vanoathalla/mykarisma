@@ -283,6 +283,7 @@ class _KeuanganViewState extends State<KeuanganView> {
                 bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
               ),
               child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
                 child: Form(
                   key: formKey,
                   child: Column(
@@ -571,6 +572,7 @@ class _KeuanganViewState extends State<KeuanganView> {
                 bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
               ),
               child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
                 child: Form(
                   key: formKey,
                   child: Column(
@@ -845,6 +847,7 @@ class _KeuanganViewState extends State<KeuanganView> {
           final List<KeuanganModel> riwayat = data['data'];
 
           return CustomScrollView(
+            physics: const ClampingScrollPhysics(),
             slivers: [
               // ── App Bar ──────────────────────────────────────────────
               SliverAppBar(

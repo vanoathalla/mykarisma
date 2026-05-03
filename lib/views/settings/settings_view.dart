@@ -26,6 +26,7 @@ class _SettingsViewState extends State<SettingsView> {
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF1A1C1C) : AppTheme.background,
       body: CustomScrollView(
+        physics: const ClampingScrollPhysics(),
         slivers: [
           // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           SliverAppBar(

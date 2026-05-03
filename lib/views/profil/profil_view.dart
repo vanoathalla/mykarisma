@@ -1,4 +1,4 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,7 +104,7 @@ class _ProfilViewState extends State<ProfilView> {
     if (confirm != true) return;
     await AuthHelper.clearSession();
     if (mounted) {
-      // Kembali ke HomeView — HomeView akan detect tamu otomatis
+      // Kembali ke HomeView â€” HomeView akan detect tamu otomatis
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeView()),
         (route) => false,
@@ -136,7 +136,7 @@ class _ProfilViewState extends State<ProfilView> {
             ),
             SizedBox(height: 12),
             Text('Versi: 1.0.0', style: TextStyle(fontSize: 12, color: AppTheme.outline)),
-            Text('© 2024 MyKarisma', style: TextStyle(fontSize: 12, color: AppTheme.outline)),
+            Text('Â© 2024 MyKarisma', style: TextStyle(fontSize: 12, color: AppTheme.outline)),
           ],
         ),
         actions: [
@@ -183,8 +183,9 @@ class _ProfilViewState extends State<ProfilView> {
     return Scaffold(
       backgroundColor: bg,
       body: CustomScrollView(
+        physics: const ClampingScrollPhysics(),
         slivers: [
-          // ── App Bar ──────────────────────────────────────────────────
+          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           SliverAppBar(
             floating: true,
             snap: true,
@@ -238,7 +239,7 @@ class _ProfilViewState extends State<ProfilView> {
           SliverToBoxAdapter(
             child: Column(
               children: [
-                // ── Hero Header ─────────────────────────────────────────
+                // â”€â”€ Hero Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -347,7 +348,7 @@ class _ProfilViewState extends State<ProfilView> {
                   ),
                 ),
 
-                // ── Curved clip ─────────────────────────────────────────
+                // â”€â”€ Curved clip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 Container(
                   height: 28,
                   decoration: BoxDecoration(
@@ -362,7 +363,7 @@ class _ProfilViewState extends State<ProfilView> {
             ),
           ),
 
-          // ── Info Cards ────────────────────────────────────────────────
+          // â”€â”€ Info Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
             sliver: SliverList(
@@ -521,7 +522,7 @@ class _ProfilViewState extends State<ProfilView> {
 
                 const SizedBox(height: 20),
 
-                // ── Pengaturan ──────────────────────────────────────────
+                // â”€â”€ Pengaturan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 Text(
                   'Pengaturan',
                   style: TextStyle(
@@ -618,7 +619,7 @@ class _ProfilViewState extends State<ProfilView> {
 
                 const SizedBox(height: 20),
 
-                // ── Tombol Logout ───────────────────────────────────────
+                // â”€â”€ Tombol Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -652,7 +653,7 @@ class _ProfilViewState extends State<ProfilView> {
   }
 }
 
-// ─── Helper Widgets ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Helper Widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _Badge extends StatelessWidget {
   final String label;
   final Color bg;

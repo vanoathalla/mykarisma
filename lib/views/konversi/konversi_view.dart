@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../controllers/currency_controller.dart';
 import '../../models/currency_model.dart';
 import '../../theme/app_theme.dart';
@@ -154,8 +154,9 @@ class _KonversiViewState extends State<KonversiView> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: CustomScrollView(
+        physics: const ClampingScrollPhysics(),
         slivers: [
-          // ── App Bar ──────────────────────────────────────────────────
+          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           SliverAppBar(
             floating: true,
             snap: true,
@@ -193,7 +194,7 @@ class _KonversiViewState extends State<KonversiView> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // ── Mata Uang ─────────────────────────────────────────
+                // â”€â”€ Mata Uang â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 SectionHeader(title: 'Konversi Mata Uang'),
                 const SizedBox(height: 14),
                 SurfaceCard(
@@ -314,7 +315,7 @@ class _KonversiViewState extends State<KonversiView> {
 
                 const SizedBox(height: 24),
 
-                // ── Zona Waktu ────────────────────────────────────────
+                // â”€â”€ Zona Waktu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 SectionHeader(title: 'Konversi Zona Waktu'),
                 const SizedBox(height: 14),
                 SurfaceCard(
@@ -418,7 +419,7 @@ class _KonversiViewState extends State<KonversiView> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'UTC${_zoneOffset[_fromZone]! >= 0 ? '+' : ''}${_zoneOffset[_fromZone]} → UTC${_zoneOffset[_toZone]! >= 0 ? '+' : ''}${_zoneOffset[_toZone]}',
+                                'UTC${_zoneOffset[_fromZone]! >= 0 ? '+' : ''}${_zoneOffset[_fromZone]} â†’ UTC${_zoneOffset[_toZone]! >= 0 ? '+' : ''}${_zoneOffset[_toZone]}',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: AppTheme.outline,

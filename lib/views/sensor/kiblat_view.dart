@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -116,7 +116,7 @@ class _KiblatViewState extends State<KiblatView>
       backgroundColor: bg,
       body: Column(
         children: [
-          // ── App Bar ──────────────────────────────────────────────────
+          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Container(
             color: isDark
                 ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
@@ -159,7 +159,7 @@ class _KiblatViewState extends State<KiblatView>
             ),
           ),
 
-          // ── Content ──────────────────────────────────────────────────
+          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Expanded(
             child: _loading
                 ? const Center(
@@ -191,6 +191,7 @@ class _KiblatViewState extends State<KiblatView>
                         ),
                       )
                     : SingleChildScrollView(
+                        physics: const ClampingScrollPhysics(),
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           children: [
@@ -228,7 +229,7 @@ class _KiblatViewState extends State<KiblatView>
                                           ),
                                         ),
                                         Text(
-                                          '${_qiblaDirection.toStringAsFixed(1)}° dari Utara Magnetik',
+                                          '${_qiblaDirection.toStringAsFixed(1)}Â° dari Utara Magnetik',
                                           style: TextStyle(
                                               fontSize: 12, color: textSub),
                                         ),
@@ -269,7 +270,7 @@ class _KiblatViewState extends State<KiblatView>
 
                             // Heading info
                             Text(
-                              'Heading: ${_compassHeading.toStringAsFixed(0)}°',
+                              'Heading: ${_compassHeading.toStringAsFixed(0)}Â°',
                               style: TextStyle(fontSize: 13, color: textSub),
                             ),
 
@@ -366,7 +367,7 @@ class _CompassPainter extends CustomPainter {
       );
     }
 
-    // Red needle (Ka'bah direction — north of compass)
+    // Red needle (Ka'bah direction â€” north of compass)
     final needlePath = Path();
     needlePath.moveTo(center.dx, center.dy - radius * 0.75);
     needlePath.lineTo(center.dx - 10, center.dy + 10);
@@ -406,7 +407,7 @@ class _CompassPainter extends CustomPainter {
     // Ka'bah label
     final tp = TextPainter(
       text: TextSpan(
-        text: "Ka'bah ▲",
+        text: "Ka'bah â–²",
         style: TextStyle(
           color: Colors.red.shade600,
           fontSize: 11,

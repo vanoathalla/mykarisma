@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../controllers/ai_controller.dart';
 import '../../controllers/keuangan_controller.dart';
 import '../../models/keuangan_model.dart';
@@ -98,6 +98,7 @@ class _AnalisisKeuanganViewState extends State<AnalisisKeuanganView> {
               ),
             )
           : SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

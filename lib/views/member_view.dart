@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../controllers/member_controller.dart';
 import '../models/member_model.dart';
 import '../theme/app_theme.dart';
@@ -77,7 +77,7 @@ class _MemberViewState extends State<MemberView> {
       backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          // ── App Bar ──────────────────────────────────────────────────
+          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Container(
             color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
             child: SafeArea(
@@ -137,7 +137,7 @@ class _MemberViewState extends State<MemberView> {
             ),
           ),
 
-          // ── Content ──────────────────────────────────────────────────
+          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Expanded(
             child: _loading
                 ? const Center(
@@ -161,6 +161,7 @@ class _MemberViewState extends State<MemberView> {
                         ),
                       )
                     : ListView.builder(
+                        physics: const ClampingScrollPhysics(),
                         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
                         itemCount: _filteredMembers.length,
                         itemBuilder: (context, i) {

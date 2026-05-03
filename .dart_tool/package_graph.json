@@ -264,6 +264,16 @@
       ]
     },
     {
+      "name": "flutter_map_cancellable_tile_provider",
+      "version": "3.0.2",
+      "dependencies": [
+        "dio",
+        "flutter",
+        "flutter_map",
+        "meta"
+      ]
+    },
+    {
       "name": "flutter_map",
       "version": "7.0.2",
       "dependencies": [
@@ -860,6 +870,19 @@
       ]
     },
     {
+      "name": "dio",
+      "version": "5.9.2",
+      "dependencies": [
+        "async",
+        "collection",
+        "dio_web_adapter",
+        "http_parser",
+        "meta",
+        "mime",
+        "path"
+      ]
+    },
+    {
       "name": "proj4dart",
       "version": "2.1.0",
       "dependencies": [
@@ -874,6 +897,19 @@
       "dependencies": [
         "collection"
       ]
+    },
+    {
+      "name": "logger",
+      "version": "2.7.0",
+      "dependencies": [
+        "clock",
+        "meta"
+      ]
+    },
+    {
+      "name": "dart_earcut",
+      "version": "1.2.0",
+      "dependencies": []
     },
     {
       "name": "sky_engine",
@@ -1279,6 +1315,16 @@
       ]
     },
     {
+      "name": "dio_web_adapter",
+      "version": "2.1.2",
+      "dependencies": [
+        "dio",
+        "http_parser",
+        "meta",
+        "web"
+      ]
+    },
+    {
       "name": "wkt_parser",
       "version": "2.0.0",
       "dependencies": []
@@ -1392,6 +1438,13 @@
       ]
     },
     {
+      "name": "unicode",
+      "version": "0.3.1",
+      "dependencies": [
+        "lists"
+      ]
+    },
+    {
       "name": "petitparser",
       "version": "7.0.2",
       "dependencies": [
@@ -1400,62 +1453,9 @@
       ]
     },
     {
-      "name": "dart_earcut",
-      "version": "1.2.0",
-      "dependencies": []
-    },
-    {
-      "name": "unicode",
-      "version": "0.3.1",
-      "dependencies": [
-        "lists"
-      ]
-    },
-    {
       "name": "lists",
       "version": "1.0.1",
       "dependencies": [
-        "meta"
-      ]
-    },
-    {
-      "name": "flutter_map_cancellable_tile_provider",
-      "version": "3.0.2",
-      "dependencies": [
-        "dio",
-        "flutter",
-        "flutter_map",
-        "meta"
-      ]
-    },
-    {
-      "name": "dio",
-      "version": "5.9.2",
-      "dependencies": [
-        "async",
-        "collection",
-        "dio_web_adapter",
-        "http_parser",
-        "meta",
-        "mime",
-        "path"
-      ]
-    },
-    {
-      "name": "dio_web_adapter",
-      "version": "2.1.2",
-      "dependencies": [
-        "dio",
-        "http_parser",
-        "meta",
-        "web"
-      ]
-    },
-    {
-      "name": "logger",
-      "version": "2.7.0",
-      "dependencies": [
-        "clock",
         "meta"
       ]
     }

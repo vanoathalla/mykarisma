@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,7 +15,7 @@ class PetaView extends StatefulWidget {
 }
 
 class _PetaViewState extends State<PetaView> {
-  // Koordinat default — wilayah Karisma (bisa disesuaikan)
+  // Koordinat default â€” wilayah Karisma (bisa disesuaikan)
   static const LatLng _lokasiDefault = LatLng(-7.7828, 110.3676);
 
   final MapController _mapController = MapController();
@@ -191,6 +191,7 @@ class _PetaViewState extends State<PetaView> {
       builder: (ctx) => AlertDialog(
         title: const Text('Tambah Landmark'),
         content: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -408,7 +409,7 @@ class _PetaViewState extends State<PetaView> {
           // Attribution OSM
           const RichAttributionWidget(
             attributions: [
-              TextSourceAttribution('© OpenStreetMap contributors'),
+              TextSourceAttribution('Â© OpenStreetMap contributors'),
             ],
           ),
         ],

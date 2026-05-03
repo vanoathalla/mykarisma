@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/acara_controller.dart';
 import '../models/acara_model.dart';
@@ -138,6 +138,7 @@ class _BerandaViewState extends State<BerandaView> {
                 }
 
                 return ListView.builder(
+                  physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   itemCount: snapshot.data!.length,
                   itemBuilder: (context, i) {

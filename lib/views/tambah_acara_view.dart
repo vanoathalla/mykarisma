@@ -138,6 +138,7 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: CustomScrollView(
+        physics: const ClampingScrollPhysics(),
         slivers: [
           // ── App Bar ──────────────────────────────────────────────────
           SliverAppBar(

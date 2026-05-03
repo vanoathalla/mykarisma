@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../controllers/acara_controller.dart';
 import '../helpers/auth_helper.dart';
 import '../models/acara_model.dart';
@@ -153,7 +153,7 @@ class _AcaraListViewState extends State<AcaraListView> {
       backgroundColor: bg,
       body: Column(
         children: [
-          // ── App Bar ──────────────────────────────────────────────────
+          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Container(
             color: isDark
                 ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
@@ -197,8 +197,8 @@ class _AcaraListViewState extends State<AcaraListView> {
                                     ),
                                     child: Text(
                                       _roleUser == 'admin'
-                                          ? 'Mode Admin — Bisa tambah/edit/hapus'
-                                          : 'Mode Tamu — Hanya lihat',
+                                          ? 'Mode Admin â€” Bisa tambah/edit/hapus'
+                                          : 'Mode Tamu â€” Hanya lihat',
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
@@ -252,7 +252,7 @@ class _AcaraListViewState extends State<AcaraListView> {
             ),
           ),
 
-          // ── Content ──────────────────────────────────────────────────
+          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Expanded(
             child: _loading
                 ? const Center(
@@ -300,6 +300,7 @@ class _AcaraListViewState extends State<AcaraListView> {
                         onRefresh: _loadAcara,
                         color: AppTheme.primary,
                         child: ListView.builder(
+                          physics: const ClampingScrollPhysics(),
                           padding:
                               const EdgeInsets.fromLTRB(20, 16, 20, 120),
                           itemCount: _filteredAcara.length,

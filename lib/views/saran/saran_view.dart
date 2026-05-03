@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import '../../helpers/database_helper.dart';
 import '../../models/feedback_model.dart';
@@ -87,8 +87,9 @@ class _SaranViewState extends State<SaranView> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       body: CustomScrollView(
+        physics: const ClampingScrollPhysics(),
         slivers: [
-          // ── App Bar ──────────────────────────────────────────────────
+          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           SliverAppBar(
             floating: true,
             snap: true,
@@ -104,7 +105,7 @@ class _SaranViewState extends State<SaranView> {
                 if (Navigator.canPop(context)) {
                   Navigator.pop(context);
                 } else {
-                  // Dari navbar — kembali ke Beranda
+                  // Dari navbar â€” kembali ke Beranda
                   homeTabNotifier.switchTo(1);
                 }
               },
@@ -127,7 +128,7 @@ class _SaranViewState extends State<SaranView> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // ── Header Card ─────────────────────────────────────────
+                // â”€â”€ Header Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 AiMeshCard(
                   child: Padding(
                     padding: const EdgeInsets.all(20),
@@ -178,7 +179,7 @@ class _SaranViewState extends State<SaranView> {
 
                 const SizedBox(height: 24),
 
-                // ── Form ────────────────────────────────────────────────
+                // â”€â”€ Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 Form(
                   key: _formKey,
                   child: Column(

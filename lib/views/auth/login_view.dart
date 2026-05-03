@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../controllers/auth_controller.dart';
 import '../../theme/app_theme.dart';
 import '../home/home_view.dart';
@@ -101,6 +101,7 @@ class _LoginViewState extends State<LoginView> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minHeight: MediaQuery.of(context).size.height -
@@ -112,7 +113,7 @@ class _LoginViewState extends State<LoginView> {
                   children: [
                     const SizedBox(height: 60),
 
-                    // ── Logo & Title ──────────────────────────────────────
+                    // â”€â”€ Logo & Title â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     Container(
                       width: 80,
                       height: 80,
@@ -148,7 +149,7 @@ class _LoginViewState extends State<LoginView> {
 
                     const Spacer(),
 
-                    // ── Login Card ────────────────────────────────────────
+                    // â”€â”€ Login Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     Container(
                       margin: const EdgeInsets.fromLTRB(24, 40, 24, 24),
                       padding: const EdgeInsets.all(28),
@@ -306,7 +307,7 @@ class _LoginViewState extends State<LoginView> {
 
                     const SizedBox(height: 16),
                     Text(
-                      '© 2024 MyKarisma',
+                      'Â© 2024 MyKarisma',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.white.withValues(alpha: 0.5),

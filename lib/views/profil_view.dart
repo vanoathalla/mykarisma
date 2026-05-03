@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // IMPORT HALAMAN BARU
@@ -36,6 +36,7 @@ class _ProfilViewState extends State<ProfilView> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
       child: Column(
         children: [
           // HEADER PROFIL
