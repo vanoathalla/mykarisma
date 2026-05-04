@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../controllers/acara_controller.dart';
+import '../controllers/notification_controller.dart';
 import '../helpers/auth_helper.dart';
 import '../models/acara_model.dart';
 import '../theme/app_theme.dart';
@@ -153,7 +154,7 @@ class _AcaraListViewState extends State<AcaraListView> {
       backgroundColor: bg,
       body: Column(
         children: [
-          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '"-'"- App Bar '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           Container(
             color: isDark
                 ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
@@ -197,8 +198,8 @@ class _AcaraListViewState extends State<AcaraListView> {
                                     ),
                                     child: Text(
                                       _roleUser == 'admin'
-                                          ? 'Mode Admin â€” Bisa tambah/edit/hapus'
-                                          : 'Mode Tamu â€” Hanya lihat',
+                                          ? 'Mode Admin - Bisa tambah/edit/hapus'
+                                          : 'Mode Tamu - Hanya lihat',
                                       style: TextStyle(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
@@ -252,7 +253,7 @@ class _AcaraListViewState extends State<AcaraListView> {
             ),
           ),
 
-          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '"-'"- Content '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           Expanded(
             child: _loading
                 ? const Center(
@@ -446,7 +447,7 @@ class _AcaraListViewState extends State<AcaraListView> {
                                                     ),
                                                   ),
                                                 ),
-                                                // Tombol admin
+                                                // Tombol admin (edit & hapus)
                                                 if (_roleUser == 'admin') ...[
                                                   const SizedBox(width: 8),
                                                   Column(
@@ -485,8 +486,16 @@ class _AcaraListViewState extends State<AcaraListView> {
                                                           child: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
                                                         ),
                                                       ),
+                                                      const SizedBox(height: 6),
+                                                      // Tombol pengingat hari-H (admin)
+                                                      _ReminderButton(acara: item),
                                                     ],
                                                   ),
+                                                ],
+                                                // Tombol pengingat hari-H (member/tamu)
+                                                if (_roleUser != 'admin') ...[
+                                                  const SizedBox(width: 8),
+                                                  _ReminderButton(acara: item),
                                                 ],
                                               ],
                                             ),
@@ -524,6 +533,105 @@ class _AcaraListViewState extends State<AcaraListView> {
               child: const Icon(Icons.add_rounded, size: 28),
             )
           : null,
+    );
+  }
+}
+
+//  Tombol Pengingat Hari-H 
+/// Widget stateful yang cek apakah pengingat sudah diset untuk acara ini,
+/// lalu tampilkan ikon bell aktif/nonaktif.
+class _ReminderButton extends StatefulWidget {
+  final AcaraModel acara;
+  const _ReminderButton({required this.acara});
+
+  @override
+  State<_ReminderButton> createState() => _ReminderButtonState();
+}
+
+class _ReminderButtonState extends State<_ReminderButton> {
+  bool _isSet = false;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkStatus();
+  }
+
+  Future<void> _checkStatus() async {
+    final set = await NotificationController.isHariHScheduled(widget.acara.idAcara);
+    if (mounted) setState(() => _isSet = set);
+  }
+
+  Future<void> _toggle() async {
+    setState(() => _loading = true);
+
+    if (_isSet) {
+      // Batalkan pengingat
+      await NotificationController.cancelHariHNotification(widget.acara.idAcara);
+      if (mounted) {
+        setState(() { _isSet = false; _loading = false; });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(' Pengingat hari-H dibatalkan'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      // Set pengingat
+      final berhasil = await NotificationController.scheduleHariHNotification(widget.acara);
+      if (mounted) {
+        setState(() { _isSet = berhasil; _loading = false; });
+        if (berhasil) {
+          // Tampilkan info waktu pengingat
+          final waktu = widget.acara.tanggal.contains(' ')
+              ? widget.acara.tanggal
+              : '${widget.acara.tanggal} 07:00';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(' Pengingat diset: $waktu'),
+              backgroundColor: AppTheme.primary,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(' Tidak bisa set pengingat. Waktu acara sudah lewat atau notifikasi dinonaktifkan di Pengaturan.'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _loading ? null : _toggle,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: _isSet
+              ? Colors.orange.withValues(alpha: 0.15)
+              : AppTheme.outline.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: _loading
+            ? const Padding(
+                padding: EdgeInsets.all(8),
+                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
+              )
+            : Icon(
+                _isSet ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
+                size: 16,
+                color: _isSet ? Colors.orange : AppTheme.outline,
+              ),
+      ),
     );
   }
 }

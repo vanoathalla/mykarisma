@@ -34,8 +34,8 @@ class AcaraController {
         'tipe': tipe,
       });
 
-      // Jadwalkan notifikasi jika tanggal di masa depan
-      final tanggalDate = DateTime.tryParse(tanggal);
+      // Jadwalkan notifikasi H-1 jika tanggal di masa depan
+      final tanggalDate = DateTime.tryParse(tanggal.split(' ').first);
       if (tanggalDate != null && tanggalDate.isAfter(DateTime.now())) {
         final acara = AcaraModel(
           idAcara: newId.toString(),
@@ -47,13 +47,18 @@ class AcaraController {
         await NotificationController.scheduleAcaraNotification(acara);
       }
 
+      // Notif update ke semua member yang login
+      await NotificationController.showUpdateNotif(
+        judul: '📅 Acara Baru Ditambahkan',
+        isi: '$nama — $tanggal',
+        id: newId % 100000,
+      );
+
       return {"success": true, "message": "Acara berhasil ditambahkan"};
     } catch (e) {
       return {"success": false, "message": "Gagal menyimpan data"};
     }
   }
-
-  // Fungsi untuk menghapus acara dari SQLite dan membatalkan notifikasi
   Future<Map<String, dynamic>> hapusAcara(String idAcara) async {
     try {
       final db = await DatabaseHelper.instance.database;
@@ -92,7 +97,7 @@ class AcaraController {
 
       // Batalkan notifikasi lama dan jadwalkan ulang
       await NotificationController.cancelNotification(int.tryParse(id) ?? 0);
-      final tanggalDate = DateTime.tryParse(tanggal);
+      final tanggalDate = DateTime.tryParse(tanggal.split(' ').first);
       if (tanggalDate != null && tanggalDate.isAfter(DateTime.now())) {
         final acara = AcaraModel(
           idAcara: id,
@@ -103,6 +108,13 @@ class AcaraController {
         );
         await NotificationController.scheduleAcaraNotification(acara);
       }
+
+      // Notif update ke semua member
+      await NotificationController.showUpdateNotif(
+        judul: '📅 Acara Diperbarui',
+        isi: '$nama — $tanggal',
+        id: (int.tryParse(id) ?? 0) + 30000,
+      );
 
       return {"success": true, "message": "Acara berhasil diperbarui"};
     } catch (e) {

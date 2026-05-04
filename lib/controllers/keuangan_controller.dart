@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../helpers/database_helper.dart';
 import '../models/keuangan_model.dart';
+import 'notification_controller.dart';
 
 class KeuanganController {
   Future<Map<String, dynamic>> fetchKeuangan() async {
@@ -62,6 +63,15 @@ class KeuanganController {
         'tanggal': tanggal,
         'jumlah': jumlah,
       });
+
+      // Notif update ke semua member
+      final tipeLbl = tipe == 'pemasukan' ? '💰 Pemasukan Baru' : '💸 Pengeluaran Baru';
+      await NotificationController.showUpdateNotif(
+        judul: tipeLbl,
+        isi: '${nama.trim()} — Rp ${jumlah.toString().replaceAllMapped(RegExp(r"(\d{1,3})(?=(\d{3})+(?!\d))"), (m) => "${m[1]}.")}',
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+      );
+
       return {'success': true, 'message': 'Transaksi berhasil disimpan'};
     } catch (e) {
       debugPrint('[KeuanganController] insertKeuangan error: $e');

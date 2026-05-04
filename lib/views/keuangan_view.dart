@@ -829,6 +829,7 @@ class _KeuanganViewState extends State<KeuanganView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: AppTheme.background,
       body: FutureBuilder<Map<String, dynamic>>(
         key: ValueKey(_refreshKey),

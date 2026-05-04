@@ -104,7 +104,7 @@ class _ProfilViewState extends State<ProfilView> {
     if (confirm != true) return;
     await AuthHelper.clearSession();
     if (mounted) {
-      // Kembali ke HomeView â€” HomeView akan detect tamu otomatis
+      // Kembali ke HomeView '-" HomeView akan detect tamu otomatis
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeView()),
         (route) => false,
@@ -136,7 +136,7 @@ class _ProfilViewState extends State<ProfilView> {
             ),
             SizedBox(height: 12),
             Text('Versi: 1.0.0', style: TextStyle(fontSize: 12, color: AppTheme.outline)),
-            Text('Â© 2024 MyKarisma', style: TextStyle(fontSize: 12, color: AppTheme.outline)),
+            Text('(c) 2024 MyKarisma', style: TextStyle(fontSize: 12, color: AppTheme.outline)),
           ],
         ),
         actions: [
@@ -181,14 +181,16 @@ class _ProfilViewState extends State<ProfilView> {
     final roleColor = _getRoleColor(_role);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: bg,
       body: CustomScrollView(
         physics: const ClampingScrollPhysics(),
         slivers: [
-          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '"-'"- App Bar '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           SliverAppBar(
-            floating: true,
-            snap: true,
+            pinned: true,
+            floating: false,
+            snap: false,
             backgroundColor: isDark
                 ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
                 : AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
@@ -239,7 +241,7 @@ class _ProfilViewState extends State<ProfilView> {
           SliverToBoxAdapter(
             child: Column(
               children: [
-                // â”€â”€ Hero Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // '"-'"- Hero Header '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -348,7 +350,7 @@ class _ProfilViewState extends State<ProfilView> {
                   ),
                 ),
 
-                // â”€â”€ Curved clip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // '"-'"- Curved clip '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                 Container(
                   height: 28,
                   decoration: BoxDecoration(
@@ -363,7 +365,7 @@ class _ProfilViewState extends State<ProfilView> {
             ),
           ),
 
-          // â”€â”€ Info Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '"-'"- Info Cards '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
             sliver: SliverList(
@@ -522,7 +524,7 @@ class _ProfilViewState extends State<ProfilView> {
 
                 const SizedBox(height: 20),
 
-                // â”€â”€ Pengaturan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // '"-'"- Pengaturan '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                 Text(
                   'Pengaturan',
                   style: TextStyle(
@@ -575,7 +577,7 @@ class _ProfilViewState extends State<ProfilView> {
                               style: TextStyle(fontSize: 12, color: textSub),
                             ),
                             value: mode == ThemeMode.dark,
-                            activeColor: AppTheme.primary,
+                            activeThumbColor: AppTheme.primary,
                             onChanged: (val) {
                               themeNotifier.value =
                                   val ? ThemeMode.dark : ThemeMode.light;
@@ -619,7 +621,7 @@ class _ProfilViewState extends State<ProfilView> {
 
                 const SizedBox(height: 20),
 
-                // â”€â”€ Tombol Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // '"-'"- Tombol Logout '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -653,7 +655,7 @@ class _ProfilViewState extends State<ProfilView> {
   }
 }
 
-// â”€â”€â”€ Helper Widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// '"-'"-'"- Helper Widgets '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
 class _Badge extends StatelessWidget {
   final String label;
   final Color bg;

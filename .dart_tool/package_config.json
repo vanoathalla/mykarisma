@@ -296,12 +296,6 @@
       "languageVersion": "3.3"
     },
     {
-      "name": "google_generative_ai",
-      "rootUri": "file:///C:/Users/Lenovo/AppData/Local/Pub/Cache/hosted/pub.dev/google_generative_ai-0.4.7",
-      "packageUri": "lib/",
-      "languageVersion": "3.1"
-    },
-    {
       "name": "hooks",
       "rootUri": "file:///C:/Users/Lenovo/AppData/Local/Pub/Cache/hosted/pub.dev/hooks-1.0.3",
       "packageUri": "lib/",
@@ -939,8 +933,8 @@
     }
   ],
   "generator": "pub",
-  "generatorVersion": "3.11.1",
+  "generatorVersion": "3.11.5",
   "flutterRoot": "file:///D:/src/flutter",
-  "flutterVersion": "3.41.4",
+  "flutterVersion": "3.41.9",
   "pubCache": "file:///C:/Users/Lenovo/AppData/Local/Pub/Cache"
 }

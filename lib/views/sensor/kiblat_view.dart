@@ -113,10 +113,11 @@ class _KiblatViewState extends State<KiblatView>
         : AppTheme.outlineVariant.withValues(alpha: 0.5);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: bg,
       body: Column(
         children: [
-          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '"-'"- App Bar '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           Container(
             color: isDark
                 ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
@@ -159,7 +160,7 @@ class _KiblatViewState extends State<KiblatView>
             ),
           ),
 
-          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '"-'"- Content '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           Expanded(
             child: _loading
                 ? const Center(
@@ -229,7 +230,7 @@ class _KiblatViewState extends State<KiblatView>
                                           ),
                                         ),
                                         Text(
-                                          '${_qiblaDirection.toStringAsFixed(1)}Â° dari Utara Magnetik',
+                                          '${_qiblaDirection.toStringAsFixed(1)} derajat dari Utara Magnetik',
                                           style: TextStyle(
                                               fontSize: 12, color: textSub),
                                         ),
@@ -270,7 +271,7 @@ class _KiblatViewState extends State<KiblatView>
 
                             // Heading info
                             Text(
-                              'Heading: ${_compassHeading.toStringAsFixed(0)}Â°',
+                              'Heading: ${_compassHeading.toStringAsFixed(0)} derajat',
                               style: TextStyle(fontSize: 13, color: textSub),
                             ),
 
@@ -367,7 +368,7 @@ class _CompassPainter extends CustomPainter {
       );
     }
 
-    // Red needle (Ka'bah direction â€” north of compass)
+    // Red needle (Ka'bah direction '-" north of compass)
     final needlePath = Path();
     needlePath.moveTo(center.dx, center.dy - radius * 0.75);
     needlePath.lineTo(center.dx - 10, center.dy + 10);
@@ -407,7 +408,7 @@ class _CompassPainter extends CustomPainter {
     // Ka'bah label
     final tp = TextPainter(
       text: TextSpan(
-        text: "Ka'bah â–²",
+        text: "Ka'bah '-²",
         style: TextStyle(
           color: Colors.red.shade600,
           fontSize: 11,

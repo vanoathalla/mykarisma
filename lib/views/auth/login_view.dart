@@ -23,13 +23,20 @@ class _LoginViewState extends State<LoginView> {
   @override
   void initState() {
     super.initState();
-    _checkBiometric();
+    _checkBiometricAndAutoLogin();
   }
 
-  Future<void> _checkBiometric() async {
+  /// Cek ketersediaan biometrik dan langsung trigger prompt
+  /// tanpa user perlu klik tombol — sesuai sensor HP (sidik jari / Face ID)
+  Future<void> _checkBiometricAndAutoLogin() async {
     final available = await _authCtrl.isBiometricAvailable();
-    if (mounted) {
-      setState(() => _biometricAvailable = available);
+    if (mounted) setState(() => _biometricAvailable = available);
+
+    // Auto-trigger biometrik jika tersedia dan belum ada session
+    if (available && mounted) {
+      // Delay singkat agar UI sudah render
+      await Future.delayed(const Duration(milliseconds: 600));
+      if (mounted) _doBiometricLogin();
     }
   }
 
@@ -91,6 +98,7 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -111,9 +119,35 @@ class _LoginViewState extends State<LoginView> {
               child: IntrinsicHeight(
                 child: Column(
                   children: [
-                    const SizedBox(height: 60),
+                    // Tombol kembali — muncul hanya jika bisa pop
+                    if (Navigator.canPop(context))
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(8, 8, 0, 0),
+                          child: IconButton(
+                            icon: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.close_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            tooltip: 'Kembali',
+                          ),
+                        ),
+                      )
+                    else
+                      const SizedBox(height: 60),
 
-                    // â”€â”€ Logo & Title â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // '”€'”€ Logo & Title '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
                     Container(
                       width: 80,
                       height: 80,
@@ -149,7 +183,7 @@ class _LoginViewState extends State<LoginView> {
 
                     const Spacer(),
 
-                    // â”€â”€ Login Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // '”€'”€ Login Card '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
                     Container(
                       margin: const EdgeInsets.fromLTRB(24, 40, 24, 24),
                       padding: const EdgeInsets.all(28),
@@ -307,7 +341,7 @@ class _LoginViewState extends State<LoginView> {
 
                     const SizedBox(height: 16),
                     Text(
-                      'Â© 2024 MyKarisma',
+                      '(c) 2024 MyKarisma',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.white.withValues(alpha: 0.5),

@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:ui';
+import 'package:flutter/material.dart';
 import '../controllers/catatan_controller.dart';
 import '../controllers/acara_controller.dart';
 import '../helpers/auth_helper.dart';
@@ -336,76 +337,92 @@ class _CatatanViewState extends State<CatatanView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? const Color(0xFF1A1C1C) : AppTheme.background;
+    final textPrimary = isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface;
+    final barBg = isDark
+        ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
+        : AppTheme.surfaceContainerLowest.withValues(alpha: 0.92);
+
     return Scaffold(
-      backgroundColor: AppTheme.background,
-      body: Column(
-        children: [
-          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          Container(
-            color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                    child: Row(
-                      children: [
-                        // Back button
-                        IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                              color: AppTheme.onSurface, size: 20),
-                          onPressed: () => Navigator.pop(context),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
-                        const SizedBox(width: 4),
-                        const Expanded(
-                          child: Text(
-                            'Catatan & Notulensi',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: AppTheme.onSurface,
+      resizeToAvoidBottomInset: true,
+      backgroundColor: bg,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight + 56),
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              color: barBg,
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.arrow_back_ios_new_rounded,
+                                color: textPrimary, size: 20),
+                            onPressed: () => Navigator.pop(context),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Catatan & Notulensi',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: textPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.refresh_rounded, color: AppTheme.primary),
-                          onPressed: _loadCatatan,
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Search bar
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                    child: TextField(
-                      onChanged: _onSearchChanged,
-                      decoration: InputDecoration(
-                        hintText: 'Cari catatan...',
-                        prefixIcon: const Icon(Icons.search_rounded, color: AppTheme.primary, size: 20),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear_rounded, size: 18),
-                                onPressed: () {
-                                  _onSearchChanged('');
-                                },
-                              )
-                            : null,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          IconButton(
+                            icon: const Icon(Icons.refresh_rounded,
+                                color: AppTheme.primary),
+                            onPressed: _loadCatatan,
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  Container(height: 1, color: AppTheme.primary.withValues(alpha: 0.08)),
-                ],
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                      child: TextField(
+                        onChanged: _onSearchChanged,
+                        style: TextStyle(color: textPrimary),
+                        decoration: InputDecoration(
+                          hintText: 'Cari catatan...',
+                          hintStyle: TextStyle(
+                              color: isDark
+                                  ? const Color(0xFF889390)
+                                  : AppTheme.outline),
+                          prefixIcon: const Icon(Icons.search_rounded,
+                              color: AppTheme.primary, size: 20),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear_rounded, size: 18),
+                                  onPressed: () => _onSearchChanged(''),
+                                )
+                              : null,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                        ),
+                      ),
+                    ),
+                    Container(
+                        height: 1,
+                        color: AppTheme.primary.withValues(alpha: 0.08)),
+                  ],
+                ),
               ),
             ),
           ),
-
-          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-          Expanded(
-            child: _loading
+        ),
+      ),
+      body: _loading
                 ? const Center(
                     child: CircularProgressIndicator(color: AppTheme.primary),
                   )
@@ -609,9 +626,6 @@ class _CatatanViewState extends State<CatatanView> {
                           );
                         },
                       ),
-          ),
-        ],
-      ),
       floatingActionButton: _roleUser == 'admin'
           ? FloatingActionButton(
               backgroundColor: AppTheme.secondary,

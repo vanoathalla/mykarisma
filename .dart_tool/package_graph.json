@@ -16,7 +16,6 @@
         "flutter_map_cancellable_tile_provider",
         "flutter_rating_bar",
         "geolocator",
-        "google_generative_ai",
         "http",
         "image_picker",
         "intl",
@@ -139,13 +138,6 @@
         "image_picker_macos",
         "image_picker_platform_interface",
         "image_picker_windows"
-      ]
-    },
-    {
-      "name": "google_generative_ai",
-      "version": "0.4.7",
-      "dependencies": [
-        "http"
       ]
     },
     {

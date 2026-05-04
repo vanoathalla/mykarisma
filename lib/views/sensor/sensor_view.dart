@@ -83,7 +83,7 @@ class _SensorViewState extends State<SensorView> {
       backgroundColor: bg,
       body: Column(
         children: [
-          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '”€'”€ App Bar '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
           Container(
             color: isDark
                 ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
@@ -136,17 +136,17 @@ class _SensorViewState extends State<SensorView> {
             ),
           ),
 
-          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '”€'”€ Content '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
           Expanded(
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  // â”€â”€ Accelerometer Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // '”€'”€ Accelerometer Card '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
                   _SensorCard(
                     title: 'Accelerometer',
-                    subtitle: 'Percepatan linear (m/sÂ²)',
+                    subtitle: 'Percepatan linear (m/s'²)',
                     icon: Icons.vibration_rounded,
                     iconColor: AppTheme.primary,
                     cardBg: cardBg,
@@ -157,15 +157,15 @@ class _SensorViewState extends State<SensorView> {
                     waveColor: AppTheme.primary,
                     maxVal: 400,
                     values: [
-                      _SensorValue(label: 'X', value: _accX, unit: 'm/sÂ²', color: Colors.red),
-                      _SensorValue(label: 'Y', value: _accY, unit: 'm/sÂ²', color: Colors.green),
-                      _SensorValue(label: 'Z', value: _accZ, unit: 'm/sÂ²', color: Colors.blue),
+                      _SensorValue(label: 'X', value: _accX, unit: 'm/s'²', color: Colors.red),
+                      _SensorValue(label: 'Y', value: _accY, unit: 'm/s'²', color: Colors.green),
+                      _SensorValue(label: 'Z', value: _accZ, unit: 'm/s'²', color: Colors.blue),
                     ],
                   ),
 
                   const SizedBox(height: 20),
 
-                  // â”€â”€ Gyroscope Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                  // '”€'”€ Gyroscope Card '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
                   _SensorCard(
                     title: 'Gyroscope',
                     subtitle: 'Kecepatan rotasi (rad/s)',
@@ -194,7 +194,7 @@ class _SensorViewState extends State<SensorView> {
   }
 }
 
-// â”€â”€â”€ Sensor Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// '”€'”€'”€ Sensor Card '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
 class _SensorCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -338,7 +338,7 @@ class _SensorValue {
   });
 }
 
-// â”€â”€â”€ Waveform Painter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// '”€'”€'”€ Waveform Painter '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
 class _WaveformPainter extends CustomPainter {
   final List<double> data;
   final Color color;

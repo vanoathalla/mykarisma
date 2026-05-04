@@ -89,7 +89,7 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
       backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '"-'"- App Bar '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           if (!_showLeaderboard)
             Container(
               color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
@@ -127,7 +127,7 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
               ),
             ),
 
-          // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '"-'"- Content '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           Expanded(
             child: _showLeaderboard
                 ? _buildLeaderboard()
@@ -497,7 +497,7 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView> {
                               ),
                             ),
                             subtitle: Text(
-                              'Level ${s.level} Â· ${s.tanggal}',
+                              'Level ${s.level} - ${s.tanggal}',
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppTheme.outline,

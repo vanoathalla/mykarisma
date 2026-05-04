@@ -136,6 +136,7 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: AppTheme.background,
       body: CustomScrollView(
         physics: const ClampingScrollPhysics(),

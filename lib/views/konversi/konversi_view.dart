@@ -152,11 +152,12 @@ class _KonversiViewState extends State<KonversiView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: AppTheme.background,
       body: CustomScrollView(
         physics: const ClampingScrollPhysics(),
         slivers: [
-          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // '"-'"- App Bar '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           SliverAppBar(
             floating: true,
             snap: true,
@@ -194,7 +195,7 @@ class _KonversiViewState extends State<KonversiView> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // â”€â”€ Mata Uang â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // '"-'"- Mata Uang '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                 SectionHeader(title: 'Konversi Mata Uang'),
                 const SizedBox(height: 14),
                 SurfaceCard(
@@ -315,7 +316,7 @@ class _KonversiViewState extends State<KonversiView> {
 
                 const SizedBox(height: 24),
 
-                // â”€â”€ Zona Waktu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // '"-'"- Zona Waktu '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                 SectionHeader(title: 'Konversi Zona Waktu'),
                 const SizedBox(height: 14),
                 SurfaceCard(
@@ -419,7 +420,7 @@ class _KonversiViewState extends State<KonversiView> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'UTC${_zoneOffset[_fromZone]! >= 0 ? '+' : ''}${_zoneOffset[_fromZone]} â†’ UTC${_zoneOffset[_toZone]! >= 0 ? '+' : ''}${_zoneOffset[_toZone]}',
+                                'UTC${_zoneOffset[_fromZone]! >= 0 ? '+' : ''}${_zoneOffset[_fromZone]} -> UTC${_zoneOffset[_toZone]! >= 0 ? '+' : ''}${_zoneOffset[_toZone]}',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   color: AppTheme.outline,

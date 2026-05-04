@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../helpers/database_helper.dart';
 import '../models/catatan_model.dart';
+import 'notification_controller.dart';
 
 class CatatanController {
   Future<List<CatatanModel>> fetchCatatan() async {
@@ -29,6 +30,14 @@ class CatatanController {
         'isi': isi.trim(),
         'tanggal': tanggal,
       });
+
+      // Notif update ke semua member
+      await NotificationController.showUpdateNotif(
+        judul: '📝 Notulensi Baru Ditambahkan',
+        isi: judul.trim(),
+        id: DateTime.now().millisecondsSinceEpoch % 100000,
+      );
+
       return {'success': true, 'message': 'Catatan berhasil disimpan'};
     } catch (e) {
       debugPrint('[CatatanController] insertCatatan error: $e');

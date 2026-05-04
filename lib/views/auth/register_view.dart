@@ -181,7 +181,7 @@ class _RegisterViewState extends State<RegisterView> {
                   children: [
                     const SizedBox(height: 40),
 
-                    // â”€â”€ Logo & Title â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // '"-'"- Logo & Title '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                     Container(
                       width: 72,
                       height: 72,
@@ -216,7 +216,7 @@ class _RegisterViewState extends State<RegisterView> {
 
                     const Spacer(),
 
-                    // â”€â”€ Register Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // '"-'"- Register Card '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                     Container(
                       margin: const EdgeInsets.fromLTRB(24, 32, 24, 24),
                       padding: const EdgeInsets.all(24),
@@ -297,7 +297,7 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Usia â€” BottomSheet picker
+                            // Usia '-" BottomSheet picker
                             GestureDetector(
                               onTap: _pilihUsia,
                               child: AbsorbPointer(
@@ -508,7 +508,7 @@ class _RegisterViewState extends State<RegisterView> {
 
                     const SizedBox(height: 16),
                     Text(
-                      'Â© 2024 MyKarisma',
+                      '(c) 2024 MyKarisma',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.white.withValues(alpha: 0.5),

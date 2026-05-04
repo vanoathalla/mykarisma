@@ -1,10 +1,13 @@
-﻿import 'dart:ui';
+﻿import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../helpers/auth_helper.dart';
 import '../../theme/app_theme.dart';
 import '../../controllers/keuangan_controller.dart';
 import '../../controllers/acara_controller.dart';
 import '../../controllers/catatan_controller.dart';
+import '../../controllers/pedometer_controller.dart';
 import '../../models/acara_model.dart';
 import '../../models/catatan_model.dart';
 import '../tambah_acara_view.dart';
@@ -15,11 +18,13 @@ import '../member_view.dart';
 import '../dokumentasi_view.dart';
 import '../konversi/konversi_view.dart';
 import '../sensor/kiblat_view.dart';
+import '../sensor/langkah_ibadah_view.dart';
 import '../keuangan_view.dart';
 import '../catatan_view.dart';
 import '../saran/saran_view.dart';
 import '../game/hijaiyah_game_view.dart';
 import '../home/home_view.dart';
+import '../notifikasi/notifikasi_view.dart';
 
 class BerandaView extends StatefulWidget {
   const BerandaView({super.key});
@@ -38,11 +43,29 @@ class _BerandaViewState extends State<BerandaView> {
   int _totalSaldo = 0;
   List<AcaraModel> _acaraMendatang = [];
   List<CatatanModel> _catatanTerbaru = [];
+  int _stepsToday = 0;
+  String? _fotoPath; // foto profil user
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _loadSteps();
+    _loadFotoProfil();
+  }
+
+  Future<void> _loadFotoProfil() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() => _fotoPath = prefs.getString('foto_path'));
+    }
+  }
+
+  Future<void> _loadSteps() async {
+    final session = await AuthHelper.getActiveSession();
+    final userId = session?['id_member']?.toString() ?? 'guest';
+    final steps = await PedometerController.readStepsTodayCached(userId: userId);
+    if (mounted) setState(() => _stepsToday = steps);
   }
 
   @override
@@ -111,6 +134,20 @@ class _BerandaViewState extends State<BerandaView> {
     return months[m - 1];
   }
 
+  String _formatTanggalRapi(String tanggal) {
+    try {
+      final parts = tanggal.split(' ');
+      final datePart = parts[0];
+      final timePart = parts.length > 1 ? parts[1] : null;
+      final dt = DateTime.tryParse(datePart);
+      if (dt == null) return tanggal;
+      const hariList = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+      const bulanList = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+      final base = '${hariList[dt.weekday-1]}, ${dt.day} ${bulanList[dt.month-1]} ${dt.year}';
+      return timePart != null ? '$base  $timePart' : base;
+    } catch (_) { return tanggal; }
+  }
+
   void _go(Widget page) =>
       Navigator.push(context, MaterialPageRoute(builder: (_) => page));
 
@@ -156,28 +193,15 @@ class _BerandaViewState extends State<BerandaView> {
                   _buildNotulensi(isDark),
                   const SizedBox(height: 24),
                   _buildMap(isDark),
+                  const SizedBox(height: 24),
+                  _buildLangkahCard(isDark),
                 ]),
               ),
             ),
           ],
         ),
       ),
-      floatingActionButton: _roleUser == 'admin'
-          ? FloatingActionButton(
-              backgroundColor: AppTheme.secondaryContainer,
-              foregroundColor: Colors.white,
-              elevation: 6,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-              onPressed: () async {
-                final r = await Navigator.push<bool>(
-                  context,
-                  MaterialPageRoute(builder: (_) => const TambahAcaraView()),
-                );
-                if (r == true) _loadData();
-              },
-              child: const Icon(Icons.add_rounded, size: 28),
-            )
-          : null,
+      floatingActionButton: null, // FAB + dihapus dari beranda — ada di dalam masing-masing fitur
     );
   }
 
@@ -197,7 +221,11 @@ class _BerandaViewState extends State<BerandaView> {
                   color: AppTheme.primary.withValues(alpha: 0.12),
                   border: Border.all(color: AppTheme.primary.withValues(alpha: 0.20), width: 2),
                 ),
-                child: const Icon(Icons.person_rounded, color: AppTheme.primary, size: 22),
+                child: ClipOval(
+                  child: _fotoPath != null && File(_fotoPath!).existsSync()
+                      ? Image.file(File(_fotoPath!), fit: BoxFit.cover, width: 40, height: 40)
+                      : const Icon(Icons.person_rounded, color: AppTheme.primary, size: 22),
+                ),
               ),
               Positioned(
                 bottom: 0, right: 0,
@@ -226,7 +254,10 @@ class _BerandaViewState extends State<BerandaView> {
         IconButton(
           icon: Icon(Icons.notifications_outlined,
               color: isDark ? const Color(0xFF84D5C5) : AppTheme.primary),
-          onPressed: () {},
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NotifikasiView()),
+          ),
         ),
         const SizedBox(width: 8),
       ],
@@ -395,9 +426,11 @@ class _BerandaViewState extends State<BerandaView> {
       _QAItem(Icons.folder_open_rounded, 'Dokumentasi', () => _go(const DokumentasiView())),
       _QAItem(Icons.location_on_rounded, 'Lokasi', () => _go(const PetaView())),
       _QAItem(Icons.explore_rounded, 'Kiblat', () => _go(const KiblatView())),
+      _QAItem(Icons.directions_walk_rounded, 'Langkah', () => _go(const LangkahIbadahView())),
       _QAItem(Icons.currency_exchange_rounded, 'Konversi', () => _go(const KonversiView())),
       _QAItem(Icons.games_rounded, 'Mini Game', () => _go(const HijaiyahGameView())),
       _QAItem(Icons.feedback_outlined, 'Saran', () => _go(const SaranView())),
+      _QAItem(Icons.smart_toy_rounded, 'AI Chat', () => _go(const ChatbotView())),
     ];
 
     return GridView.builder(
@@ -593,7 +626,7 @@ class _BerandaViewState extends State<BerandaView> {
                               Row(children: [
                                 Icon(Icons.schedule_rounded, size: 12, color: textSub),
                                 const SizedBox(width: 4),
-                                Text(item.tanggal, style: TextStyle(fontSize: 11, color: textSub)),
+                                Text(_formatTanggalRapi(item.tanggal), style: TextStyle(fontSize: 11, color: textSub)),
                               ]),
                               const SizedBox(height: 6),
                               Row(children: [
@@ -822,8 +855,169 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  //  8. SENSOR WIDGET — dihapus 
-  //  MORE SHEET — dihapus, semua fitur sudah ada di grid 
+  // ── 8. LANGKAH IBADAH CARD ────────────────────────────────────────────────
+  Widget _buildLangkahCard(bool isDark) {
+    final cardBg = isDark ? const Color(0xFF252828) : Colors.white;
+    final cardBorder = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : const Color(0xFFEEEEEE);
+    final textPrimary = isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface;
+    final textSub = isDark ? const Color(0xFF889390) : AppTheme.outline;
+
+    final progress = (_stepsToday / PedometerController.dailyTarget).clamp(0.0, 1.0);
+    final targetReached = _stepsToday >= PedometerController.dailyTarget;
+
+    return GestureDetector(
+      onTap: () => _go(const LangkahIbadahView()),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: cardBorder),
+          boxShadow: isDark
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primary.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.directions_walk_rounded,
+                          color: AppTheme.primary, size: 18),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Langkah Ibadah',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: textPrimary,
+                          ),
+                        ),
+                        Text(
+                          'Target: ${PedometerController.dailyTarget} langkah/hari',
+                          style: TextStyle(fontSize: 11, color: textSub),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                if (targetReached)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.emoji_events_rounded,
+                            color: Colors.amber, size: 12),
+                        SizedBox(width: 4),
+                        Text(
+                          'TERCAPAI',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.amber,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            // Langkah count + progress bar
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$_stepsToday',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    color: targetReached ? Colors.amber : textPrimary,
+                    height: 1.0,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    '/ ${PedometerController.dailyTarget} langkah',
+                    style: TextStyle(fontSize: 12, color: textSub),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // Linear progress bar
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 6,
+                backgroundColor: isDark
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : AppTheme.primary.withValues(alpha: 0.08),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  targetReached ? Colors.amber : AppTheme.primary,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Teks dinamis
+            Text(
+              _stepsToday == 0
+                  ? 'Mulai berjalan untuk menghitung langkah Anda 🚶'
+                  : targetReached
+                      ? '🎉 Selamat! Target harian tercapai!'
+                      : 'Langkah Anda hari ini: $_stepsToday',
+              style: TextStyle(
+                fontSize: 12,
+                color: targetReached ? Colors.amber : textSub,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── MORE SHEET ────────────────────────────────────────────────────────────
 }
 
 //  Helper Classes 
@@ -931,7 +1125,7 @@ class _BouncingDotsState extends State<_BouncingDots> with TickerProviderStateMi
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (i) => AnimatedBuilder(
         animation: _anims[i],
-        builder: (_, __) => Transform.translate(
+        builder: (_, child) => Transform.translate(
           offset: Offset(0, _anims[i].value),
           child: Container(
             width: 6, height: 6,

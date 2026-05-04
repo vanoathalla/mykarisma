@@ -12,9 +12,32 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  bool _notifAcara = true;
-  bool _notifKeuangan = false;
+  // Notifikasi
+  bool _notifUpdate = true;   // notif saat admin tambah/update data
+  bool _notifAcara = true;    // pengingat H-1 otomatis
+  bool _notifHariH = true;    // pengingat hari-H (diset per acara)
+
+  // Tampilan
   String _bahasa = 'Indonesia';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrefs();
+  }
+
+  Future<void> _loadPrefs() async {
+    final update = await NotificationController.isNotifUpdateAktif();
+    final acara = await NotificationController.isNotifAcaraAktif();
+    final hariH = await NotificationController.isNotifHariHAktif();
+    if (mounted) {
+      setState(() {
+        _notifUpdate = update;
+        _notifAcara = acara;
+        _notifHariH = hariH;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +45,15 @@ class _SettingsViewState extends State<SettingsView> {
     final textColor = isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface;
     final subColor = isDark ? const Color(0xFF889390) : AppTheme.outline;
     final cardColor = isDark ? const Color(0xFF252828) : AppTheme.surfaceContainerLowest;
+    final divColor = isDark ? Colors.white12 : AppTheme.outlineVariant.withValues(alpha: 0.4);
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: isDark ? const Color(0xFF1A1C1C) : AppTheme.background,
       body: CustomScrollView(
         physics: const ClampingScrollPhysics(),
         slivers: [
-          // â”€â”€ App Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── App Bar ──────────────────────────────────────────────────
           SliverAppBar(
             floating: true,
             snap: true,
@@ -50,9 +75,7 @@ class _SettingsViewState extends State<SettingsView> {
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(1),
               child: Container(
-                height: 1,
-                color: AppTheme.primary.withValues(alpha: 0.08),
-              ),
+                  height: 1, color: AppTheme.primary.withValues(alpha: 0.08)),
             ),
           ),
 
@@ -61,7 +84,7 @@ class _SettingsViewState extends State<SettingsView> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
 
-                // â”€â”€ Tampilan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Tampilan ─────────────────────────────────────────
                 _SectionLabel(label: 'Tampilan', color: subColor),
                 const SizedBox(height: 10),
                 _SettingsCard(
@@ -88,7 +111,7 @@ class _SettingsViewState extends State<SettingsView> {
                         );
                       },
                     ),
-                    _Divider(color: isDark ? Colors.white12 : AppTheme.outlineVariant.withValues(alpha: 0.4)),
+                    _Divider(color: divColor),
                     _SettingsTile(
                       icon: Icons.language_rounded,
                       iconColor: AppTheme.primaryContainer,
@@ -96,62 +119,151 @@ class _SettingsViewState extends State<SettingsView> {
                       subtitle: _bahasa,
                       textColor: textColor,
                       subColor: subColor,
-                      trailing: Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 14,
-                        color: subColor,
-                      ),
-                      onTap: () => _showBahasaSheet(context, isDark, textColor, subColor),
+                      trailing: Icon(Icons.arrow_forward_ios_rounded,
+                          size: 14, color: subColor),
+                      onTap: () =>
+                          _showBahasaSheet(context, isDark, textColor, subColor),
                     ),
                   ],
                 ),
 
                 const SizedBox(height: 20),
 
-                // â”€â”€ Notifikasi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Notifikasi ────────────────────────────────────────
                 _SectionLabel(label: 'Notifikasi', color: subColor),
+                const SizedBox(height: 6),
+                // Info box
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary.withValues(alpha: isDark ? 0.12 : 0.06),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                        color: AppTheme.primary.withValues(alpha: 0.15)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline_rounded,
+                          color: AppTheme.primary, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Notifikasi mengikuti pengaturan suara HP kamu. '
+                          'Jika HP dalam mode senyap, notifikasi tidak berbunyi.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? const Color(0xFF84D5C5)
+                                : AppTheme.primaryContainer,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 10),
                 _SettingsCard(
                   color: cardColor,
                   children: [
+                    // Notif update data
+                    _SettingsTile(
+                      icon: Icons.notifications_active_rounded,
+                      iconColor: AppTheme.secondaryContainer,
+                      title: 'Update Data',
+                      subtitle: 'Notif saat admin tambah/perbarui acara, keuangan, atau catatan',
+                      textColor: textColor,
+                      subColor: subColor,
+                      trailing: Switch(
+                        value: _notifUpdate,
+                        activeThumbColor: AppTheme.primary,
+                        onChanged: (val) async {
+                          if (val) await NotificationController.requestPermission();
+                          await NotificationController.setNotifUpdate(val);
+                          setState(() => _notifUpdate = val);
+                        },
+                      ),
+                    ),
+                    _Divider(color: divColor),
+                    // Pengingat H-1
                     _SettingsTile(
                       icon: Icons.event_rounded,
                       iconColor: AppTheme.secondary,
-                      title: 'Pengingat Acara',
-                      subtitle: 'Notifikasi H-1 sebelum acara',
+                      title: 'Pengingat H-1 Acara',
+                      subtitle: 'Notif otomatis jam 08:00 sehari sebelum acara',
                       textColor: textColor,
                       subColor: subColor,
                       trailing: Switch(
                         value: _notifAcara,
                         activeThumbColor: AppTheme.primary,
                         onChanged: (val) async {
-                          if (val) {
-                            await NotificationController.requestPermission();
-                          }
+                          if (val) await NotificationController.requestPermission();
+                          await NotificationController.setNotifAcara(val);
                           setState(() => _notifAcara = val);
                         },
                       ),
                     ),
-                    _Divider(color: isDark ? Colors.white12 : AppTheme.outlineVariant.withValues(alpha: 0.4)),
+                    _Divider(color: divColor),
+                    // Pengingat hari-H
                     _SettingsTile(
-                      icon: Icons.account_balance_wallet_rounded,
-                      iconColor: Colors.green,
-                      title: 'Laporan Keuangan',
-                      subtitle: 'Notifikasi transaksi baru',
+                      icon: Icons.alarm_rounded,
+                      iconColor: Colors.orange,
+                      title: 'Pengingat Hari-H',
+                      subtitle: 'Aktifkan agar bisa set pengingat tepat saat acara berlangsung (dari halaman Acara)',
                       textColor: textColor,
                       subColor: subColor,
                       trailing: Switch(
-                        value: _notifKeuangan,
+                        value: _notifHariH,
                         activeThumbColor: AppTheme.primary,
-                        onChanged: (val) => setState(() => _notifKeuangan = val),
+                        onChanged: (val) async {
+                          if (val) await NotificationController.requestPermission();
+                          await NotificationController.setNotifHariH(val);
+                          setState(() => _notifHariH = val);
+                        },
                       ),
                     ),
                   ],
                 ),
 
+                // Panduan pengingat hari-H
+                if (_notifHariH) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withValues(alpha: isDark ? 0.12 : 0.06),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                          color: Colors.orange.withValues(alpha: 0.20)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.tips_and_updates_rounded,
+                            color: Colors.orange, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Cara set pengingat hari-H: Buka menu Acara → '
+                            'tap ikon 🔔 di samping acara yang ingin diingatkan.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark
+                                  ? Colors.orange.shade200
+                                  : Colors.orange.shade800,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
                 const SizedBox(height: 20),
 
-                // â”€â”€ Preferensi Aplikasi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Preferensi Aplikasi ───────────────────────────────
                 _SectionLabel(label: 'Preferensi Aplikasi', color: subColor),
                 const SizedBox(height: 10),
                 _SettingsCard(
@@ -165,7 +277,7 @@ class _SettingsViewState extends State<SettingsView> {
                       textColor: textColor,
                       subColor: subColor,
                     ),
-                    _Divider(color: isDark ? Colors.white12 : AppTheme.outlineVariant.withValues(alpha: 0.4)),
+                    _Divider(color: divColor),
                     _SettingsTile(
                       icon: Icons.privacy_tip_outlined,
                       iconColor: AppTheme.tertiary,
@@ -173,14 +285,11 @@ class _SettingsViewState extends State<SettingsView> {
                       subtitle: 'Lihat kebijakan privasi kami',
                       textColor: textColor,
                       subColor: subColor,
-                      trailing: Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 14,
-                        color: subColor,
-                      ),
+                      trailing: Icon(Icons.arrow_forward_ios_rounded,
+                          size: 14, color: subColor),
                       onTap: () {},
                     ),
-                    _Divider(color: isDark ? Colors.white12 : AppTheme.outlineVariant.withValues(alpha: 0.4)),
+                    _Divider(color: divColor),
                     _SettingsTile(
                       icon: Icons.help_outline_rounded,
                       iconColor: AppTheme.primaryContainer,
@@ -188,11 +297,8 @@ class _SettingsViewState extends State<SettingsView> {
                       subtitle: 'FAQ dan kontak support',
                       textColor: textColor,
                       subColor: subColor,
-                      trailing: Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 14,
-                        color: subColor,
-                      ),
+                      trailing: Icon(Icons.arrow_forward_ios_rounded,
+                          size: 14, color: subColor),
                       onTap: () {},
                     ),
                   ],
@@ -200,7 +306,7 @@ class _SettingsViewState extends State<SettingsView> {
 
                 const SizedBox(height: 28),
 
-                // â”€â”€ Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // ── Logout ────────────────────────────────────────────
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -215,8 +321,7 @@ class _SettingsViewState extends State<SettingsView> {
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(50),
-                      ),
+                          borderRadius: BorderRadius.circular(50)),
                     ),
                   ),
                 ),
@@ -229,18 +334,14 @@ class _SettingsViewState extends State<SettingsView> {
   }
 
   void _showBahasaSheet(
-    BuildContext context,
-    bool isDark,
-    Color textColor,
-    Color subColor,
-  ) {
-    final options = ['Indonesia', 'English', 'Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©'];
+      BuildContext context, bool isDark, Color textColor, Color subColor) {
+    final options = ['Indonesia', 'English', 'العربية'];
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? const Color(0xFF252828) : AppTheme.surfaceContainerLowest,
+      backgroundColor:
+          isDark ? const Color(0xFF252828) : AppTheme.surfaceContainerLowest,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-      ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       builder: (ctx) => Padding(
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
         child: Column(
@@ -252,30 +353,22 @@ class _SettingsViewState extends State<SettingsView> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppTheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+                    color: AppTheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2)),
               ),
             ),
             const SizedBox(height: 20),
-            Text(
-              'Pilih Bahasa',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: textColor,
-              ),
-            ),
+            Text('Pilih Bahasa',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: textColor)),
             const SizedBox(height: 16),
             ...options.map((lang) => ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    lang,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
-                    ),
-                  ),
+                  title: Text(lang,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600, color: textColor)),
                   trailing: _bahasa == lang
                       ? const Icon(Icons.check_circle_rounded,
                           color: AppTheme.primary)
@@ -299,9 +392,8 @@ class _SettingsViewState extends State<SettingsView> {
         content: const Text('Apakah Anda yakin ingin keluar?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
-          ),
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Batal')),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -322,7 +414,7 @@ class _SettingsViewState extends State<SettingsView> {
   }
 }
 
-// â”€â”€â”€ Helper Widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Helper Widgets ───────────────────────────────────────────────────────────
 class _SectionLabel extends StatelessWidget {
   final String label;
   final Color color;
@@ -333,11 +425,10 @@ class _SectionLabel extends StatelessWidget {
     return Text(
       label.toUpperCase(),
       style: TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w700,
-        color: color,
-        letterSpacing: 0.8,
-      ),
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: color,
+          letterSpacing: 0.8),
     );
   }
 }
@@ -353,9 +444,7 @@ class _SettingsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppTheme.outlineVariant.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: AppTheme.outlineVariant.withValues(alpha: 0.3)),
       ),
       child: Column(children: children),
     );
@@ -397,18 +486,11 @@ class _SettingsTile extends StatelessWidget {
         ),
         child: Icon(icon, color: iconColor, size: 20),
       ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: textColor,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(fontSize: 12, color: subColor),
-      ),
+      title: Text(title,
+          style: TextStyle(
+              fontSize: 14, fontWeight: FontWeight.w600, color: textColor)),
+      subtitle: Text(subtitle,
+          style: TextStyle(fontSize: 12, color: subColor)),
       trailing: trailing,
     );
   }
@@ -420,11 +502,6 @@ class _Divider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Divider(
-      height: 1,
-      indent: 68,
-      endIndent: 16,
-      color: color,
-    );
+    return Divider(height: 1, indent: 68, endIndent: 16, color: color);
   }
 }
