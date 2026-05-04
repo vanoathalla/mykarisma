@@ -4,6 +4,7 @@ import '../../helpers/auth_helper.dart';
 import '../../helpers/database_helper.dart';
 import '../../theme/app_theme.dart';
 import 'login_view.dart';
+import '../../widgets/karisma_logo.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -181,38 +182,12 @@ class _RegisterViewState extends State<RegisterView> {
                   children: [
                     const SizedBox(height: 40),
 
-                    // '"-'"- Logo & Title '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                      child: const Icon(
-                        Icons.group_add_rounded,
-                        size: 38,
-                        color: Colors.white,
-                      ),
+                    // Logo KARISMA
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: const KarismaLogo(size: 110),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'MyKarisma',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Daftar sebagai anggota baru',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.75),
-                      ),
-                    ),
+                    const SizedBox(height: 8),
 
                     const Spacer(),
 

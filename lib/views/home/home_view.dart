@@ -385,22 +385,12 @@ class _GuestViewState extends State<_GuestView> {
                     titleSpacing: 20,
                     title: Row(
                       children: [
-                        Container(
-                          width: 32, height: 32,
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary,
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                          child: const Center(
-                            child: KarismaLogo(size: 22, color: Colors.white),
-                          ),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(9),
+                          child: const KarismaLogo(size: 32),
                         ),
                         const SizedBox(width: 10),
-                        Text('MyKarisma',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.w800,
-                                color: isDark ? const Color(0xFF90CAF9) : AppTheme.primary,
-                                letterSpacing: -0.3)),
+                        // Teks MyKarisma dihapus, logo sudah cukup
                       ],
                     ),
                     actions: [
@@ -580,11 +570,10 @@ class _GuestViewState extends State<_GuestView> {
                               Row(children: [
                                 Container(
                                   width: 44, height: 44,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primary.withValues(alpha: 0.10),
+                                  child: ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
+                                    child: const KarismaLogo(size: 44),
                                   ),
-                                  child: const KarismaLogo(size: 26),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -665,7 +654,7 @@ class _GuestViewState extends State<_GuestView> {
                         //  Footer 
                         Center(
                           child: Text(
-                            ' 2024 MyKarisma  Karang Taruna Pemuda Desa',
+                            '© 2024 KARISMA',
                             style: TextStyle(fontSize: 11, color: textSub),
                             textAlign: TextAlign.center,
                           ),

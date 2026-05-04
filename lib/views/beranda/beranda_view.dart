@@ -25,6 +25,7 @@ import '../saran/saran_view.dart';
 import '../game/hijaiyah_game_view.dart';
 import '../home/home_view.dart';
 import '../notifikasi/notifikasi_view.dart';
+import '../../widgets/karisma_logo.dart';
 
 class BerandaView extends StatefulWidget {
   const BerandaView({super.key});
@@ -228,14 +229,7 @@ class _BerandaViewState extends State<BerandaView> {
           ),
         ),
         const SizedBox(width: 10),
-        Text(
-          'MyKarisma',
-          style: TextStyle(
-            fontSize: 18, fontWeight: FontWeight.w800,
-            color: isDark ? const Color(0xFF84D5C5) : AppTheme.primary,
-            letterSpacing: -0.3,
-          ),
-        ),
+        const KarismaLogo(size: 36),
         const Spacer(),
         IconButton(
           icon: Icon(Icons.notifications_outlined,

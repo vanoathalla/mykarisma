@@ -3,6 +3,7 @@ import '../../controllers/auth_controller.dart';
 import '../../theme/app_theme.dart';
 import '../home/home_view.dart';
 import 'register_view.dart';
+import '../../widgets/karisma_logo.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -147,39 +148,12 @@ class _LoginViewState extends State<LoginView> {
                     else
                       const SizedBox(height: 60),
 
-                    // '”€'”€ Logo & Title '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      child: const Icon(
-                        Icons.groups_rounded,
-                        size: 44,
-                        color: Colors.white,
-                      ),
+                    // Logo KARISMA
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: const KarismaLogo(size: 100),
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'MyKarisma',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Karang Taruna Pemuda Desa',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withValues(alpha: 0.75),
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
+                    const SizedBox(height: 8),
 
                     const Spacer(),
 

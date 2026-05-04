@@ -20,7 +20,7 @@ class PetaView extends StatefulWidget {
 class _PetaViewState extends State<PetaView> {
   // Koordinat tujuan  Kemiri Sewu, Sidorejo, Godean, Sleman
   static const LatLng _lokasiTujuan = LatLng(-7.7473727, 110.2731459);
-  static const String _namaTujuan = 'Sekretariat KARISMA';
+  static const String _namaTujuan = 'Lokasi KARISMA';
   static const String _deskripsiTujuan = 'Sidorejo, Kec. Godean, Sleman, Yogyakarta';
 
   final MapController _mapController = MapController();
@@ -261,16 +261,19 @@ class _PetaViewState extends State<PetaView> {
             const SizedBox(height: 16),
             Row(
               children: [
-                Container(
-                  width: 44, height: 44,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: isMain
-                      ? const KarismaLogo(size: 26)
-                      : const Icon(Icons.place_rounded, color: AppTheme.primary, size: 22),
-                ),
+                isMain
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: const KarismaLogo(size: 44),
+                      )
+                    : Container(
+                        width: 44, height: 44,
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.place_rounded, color: AppTheme.primary, size: 22),
+                      ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -435,13 +438,9 @@ class _PetaViewState extends State<PetaView> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 44, height: 44,
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const KarismaLogo(size: 26),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: const KarismaLogo(size: 44),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -562,25 +561,18 @@ class _PetaViewState extends State<PetaView> {
     final cardBg = isDark ? const Color(0xFF252828) : Colors.white;
 
     final markers = <Marker>[
-      // Marker tujuan (masjid)
+      // Marker tujuan — pakai logo KARISMA
       Marker(
         point: _lokasiTujuan,
-        width: 60, height: 60,
+        width: 56, height: 56,
         child: GestureDetector(
           onTap: () => _showLokasiDetail(
             nama: _namaTujuan, deskripsi: _deskripsiTujuan,
             lokasi: _lokasiTujuan, isMain: true,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: AppTheme.primary, borderRadius: BorderRadius.circular(6)),
-                child: const Text('KARISMA', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w800)),
-              ),
-              const Icon(Icons.location_on_rounded, color: AppTheme.primary, size: 36),
-            ],
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: const KarismaLogo(size: 56),
           ),
         ),
       ),
@@ -612,16 +604,19 @@ class _PetaViewState extends State<PetaView> {
             ),
           ),
         ),
-      // Landmarks dari DB
+      // Landmarks dari DB — pakai logo KARISMA
       ..._landmarks.map((lm) => Marker(
         point: LatLng(lm.latitude, lm.longitude),
-        width: 40, height: 40,
+        width: 44, height: 44,
         child: GestureDetector(
           onTap: () => _showLokasiDetail(
             nama: lm.nama, deskripsi: lm.deskripsi ?? '',
             lokasi: LatLng(lm.latitude, lm.longitude),
           ),
-          child: const Icon(Icons.place_rounded, color: Colors.orange, size: 40),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: const KarismaLogo(size: 44),
+          ),
         ),
       )),
     ];
@@ -648,9 +643,12 @@ class _PetaViewState extends State<PetaView> {
             tooltip: 'Ke lokasi saya',
           ),
           IconButton(
-            icon: const KarismaLogo(size: 24),
+            icon: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: const KarismaLogo(size: 28),
+            ),
             onPressed: () => _mapController.move(_lokasiTujuan, 16),
-            tooltip: 'Ke Sekretariat',
+            tooltip: 'Ke Lokasi KARISMA',
           ),
           const SizedBox(width: 4),
         ],
@@ -831,8 +829,8 @@ class _PetaViewState extends State<PetaView> {
           // FAB tambah landmark (admin only) — di dalam Stack agar tidak menumpuk bottom card
           if (_isAdmin)
             Positioned(
-              // Letakkan di kanan bawah, di atas bottom card (bottom card ~160px)
-              bottom: 190,
+              // Letakkan di kanan bawah, tepat di atas bottom card (~160px tinggi)
+              bottom: 100,
               right: 16,
               child: FloatingActionButton(
                 backgroundColor: AppTheme.secondary,
