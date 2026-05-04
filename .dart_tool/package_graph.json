@@ -11,6 +11,7 @@
         "cupertino_icons",
         "flutter",
         "flutter_compass",
+        "flutter_dotenv",
         "flutter_local_notifications",
         "flutter_map",
         "flutter_map_cancellable_tile_provider",
@@ -68,6 +69,13 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "flutter_dotenv",
+      "version": "5.2.1",
+      "dependencies": [
+        "flutter"
       ]
     },
     {

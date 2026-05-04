@@ -1,5 +1,6 @@
 ﻿import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import '../models/acara_model.dart';
 import '../models/catatan_model.dart';
@@ -15,10 +16,12 @@ import '../models/member_model.dart';
 /// 3. AI akan menjawab pertanyaan berdasarkan data nyata dari aplikasi,
 ///    bukan mengarang sendiri.
 class AIController {
-  // -- Groq API (key moved to .env) --
-  static String get _groqApiKey => '';
+  // ── Groq API — dibaca dari .env (tidak pernah hardcode di source code) ────
+  static String get _groqApiKey =>
+      dotenv.env['GROQ_API_KEY'] ?? '';
 
-  static const String _groqEndpoint =
+  static String get _groqEndpoint =>
+      dotenv.env['GROQ_ENDPOINT'] ??
       'https://api.groq.com/openai/v1/chat/completions';
 
   static const String _model = 'llama-3.3-70b-versatile';
