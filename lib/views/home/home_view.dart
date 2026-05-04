@@ -13,6 +13,7 @@ import '../profil/profil_view.dart';
 import '../saran/saran_view.dart';
 import '../auth/login_view.dart';
 import '../peta/peta_view.dart';
+import '../../widgets/karisma_logo.dart';
 
 // ─── Global tab notifier ──────────────────────────────────────────────────────
 class _HomeTabController extends ValueNotifier<int> {
@@ -390,7 +391,9 @@ class _GuestViewState extends State<_GuestView> {
                             color: AppTheme.primary,
                             borderRadius: BorderRadius.circular(9),
                           ),
-                          child: const Icon(Icons.mosque_rounded, color: Colors.white, size: 18),
+                          child: const Center(
+                            child: KarismaLogo(size: 22, color: Colors.white),
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Text('MyKarisma',
@@ -581,7 +584,7 @@ class _GuestViewState extends State<_GuestView> {
                                     color: AppTheme.primary.withValues(alpha: 0.10),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Icon(Icons.mosque_rounded, color: AppTheme.primary, size: 22),
+                                  child: const KarismaLogo(size: 26),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(

@@ -31,7 +31,7 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
     );
@@ -57,7 +57,8 @@ class DatabaseHelper {
         nama      TEXT NOT NULL,
         tanggal   TEXT NOT NULL,
         kategori  TEXT NOT NULL,
-        tipe      TEXT NOT NULL
+        tipe      TEXT NOT NULL,
+        lokasi    TEXT
       )
     ''');
 
@@ -96,8 +97,7 @@ class DatabaseHelper {
         nama        TEXT NOT NULL,
         latitude    REAL NOT NULL,
         longitude   REAL NOT NULL,
-        deskripsi   TEXT,
-        id_acara    INTEGER
+        deskripsi   TEXT
       )
     ''');
 
@@ -156,6 +156,10 @@ class DatabaseHelper {
           tanggal     TEXT NOT NULL
         )
       ''');
+    }
+    if (oldVersion < 3) {
+      // Add lokasi column to acara table
+      await db.execute('ALTER TABLE acara ADD COLUMN lokasi TEXT');
     }
   }
 

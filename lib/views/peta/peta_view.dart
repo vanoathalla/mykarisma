@@ -8,6 +8,7 @@ import '../../helpers/auth_helper.dart';
 import '../../helpers/database_helper.dart';
 import '../../models/landmark_model.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/karisma_logo.dart';
 
 class PetaView extends StatefulWidget {
   const PetaView({super.key});
@@ -35,6 +36,9 @@ class _PetaViewState extends State<PetaView> {
   bool _loadingRute = false;
   bool _ruteAktif = false;
   String _infoRute = '';
+
+  // Mode selector
+  bool _modeLihatLandmark = false;
 
   final _namaCtrl = TextEditingController();
   final _deskripsiCtrl = TextEditingController();
@@ -263,10 +267,9 @@ class _PetaViewState extends State<PetaView> {
                     color: AppTheme.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    isMain ? Icons.mosque_rounded : Icons.place_rounded,
-                    color: AppTheme.primary, size: 22,
-                  ),
+                  child: isMain
+                      ? const KarismaLogo(size: 26)
+                      : const Icon(Icons.place_rounded, color: AppTheme.primary, size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -419,6 +422,139 @@ class _PetaViewState extends State<PetaView> {
     );
   }
 
+  // ── Bottom card builders ──────────────────────────────────────────────────
+
+  Widget _buildNavigasiCard(Color cardBg, Color textPrimary, bool isDark) {
+    return Container(
+      key: const ValueKey('navigasi'),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 16, offset: const Offset(0, 4))],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const KarismaLogo(size: 26),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_namaTujuan, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
+                Text(
+                  _lokasiUser != null
+                      ? 'Jarak: ${_hitungJarak(_lokasiTujuan)}'
+                      : _deskripsiTujuan,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: _lokasiUser != null ? AppTheme.primary : (isDark ? const Color(0xFF889390) : AppTheme.outline),
+                    fontWeight: _lokasiUser != null ? FontWeight.w500 : FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: _loadingRute ? null : () => _tampilkanRute(_lokasiTujuan),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: _ruteAktif ? Colors.orange : AppTheme.primary,
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: _loadingRute
+                  ? const SizedBox(
+                      width: 16, height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(_ruteAktif ? Icons.close_rounded : Icons.directions_rounded, color: Colors.white, size: 16),
+                        const SizedBox(width: 4),
+                        Text(
+                          _ruteAktif ? 'Tutup' : 'Rute',
+                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLandmarkPanel(Color cardBg, Color textPrimary, bool isDark) {
+    final textSub = isDark ? const Color(0xFF889390) : AppTheme.outline;
+    return Container(
+      key: const ValueKey('landmark'),
+      constraints: const BoxConstraints(maxHeight: 260),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 16, offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Daftar Landmark', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
+          const SizedBox(height: 8),
+          if (_landmarks.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Text('Belum ada landmark', style: TextStyle(fontSize: 12, color: textSub)),
+            )
+          else
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const ClampingScrollPhysics(),
+                itemCount: _landmarks.length,
+                separatorBuilder: (context, index) => const Divider(height: 1),
+                itemBuilder: (context, i) {
+                  final lm = _landmarks[i];
+                  return ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.place_rounded, color: Colors.orange, size: 22),
+                    title: Text(lm.nama, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textPrimary)),
+                    subtitle: lm.deskripsi != null && lm.deskripsi!.isNotEmpty
+                        ? Text(lm.deskripsi!, style: TextStyle(fontSize: 11, color: textSub), maxLines: 1, overflow: TextOverflow.ellipsis)
+                        : null,
+                    trailing: TextButton(
+                      onPressed: () {
+                        _mapController.move(LatLng(lm.latitude, lm.longitude), 17);
+                        setState(() => _modeLihatLandmark = false);
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text('Lihat', style: TextStyle(fontSize: 12, color: AppTheme.primary, fontWeight: FontWeight.w600)),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -512,7 +648,7 @@ class _PetaViewState extends State<PetaView> {
             tooltip: 'Ke lokasi saya',
           ),
           IconButton(
-            icon: const Icon(Icons.mosque_rounded, color: AppTheme.primary),
+            icon: const KarismaLogo(size: 24),
             onPressed: () => _mapController.move(_lokasiTujuan, 16),
             tooltip: 'Ke Sekretariat',
           ),
@@ -567,7 +703,7 @@ class _PetaViewState extends State<PetaView> {
           //  Info rute (muncul saat rute aktif) 
           if (_ruteAktif && _infoRute.isNotEmpty)
             Positioned(
-              top: 12,
+              top: 72,
               left: 16,
               right: 16,
               child: Container(
@@ -599,69 +735,68 @@ class _PetaViewState extends State<PetaView> {
           //  Bottom card 
           Positioned(
             bottom: 16, left: 16, right: 16,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: _modeLihatLandmark
+                  ? _buildLandmarkPanel(cardBg, textPrimary, isDark)
+                  : _buildNavigasiCard(cardBg, textPrimary, isDark),
+            ),
+          ),
+
+          // Mode selector - positioned at top of map
+          Positioned(
+            top: 12,
+            left: 16,
+            right: 16,
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: cardBg,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 16, offset: const Offset(0, 4))],
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.10), blurRadius: 8, offset: const Offset(0, 2))],
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: 44, height: 44,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.mosque_rounded, color: AppTheme.primary, size: 22),
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_namaTujuan, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: textPrimary)),
-                        Text(
-                          _lokasiUser != null
-                              ? 'Jarak: ${_hitungJarak(_lokasiTujuan)}'
-                              : _deskripsiTujuan,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: _lokasiUser != null ? AppTheme.primary : (isDark ? const Color(0xFF889390) : AppTheme.outline),
-                            fontWeight: _lokasiUser != null ? FontWeight.w500 : FontWeight.w400,
-                          ),
+                    child: GestureDetector(
+                      onTap: () => setState(() => _modeLihatLandmark = false),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: !_modeLihatLandmark ? AppTheme.primary : Colors.transparent,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.directions_rounded, size: 16, color: !_modeLihatLandmark ? Colors.white : AppTheme.outline),
+                            const SizedBox(width: 6),
+                            Text('Navigasi', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: !_modeLihatLandmark ? Colors.white : AppTheme.outline)),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  // Tombol navigasi  tampilkan rute di peta
-                  GestureDetector(
-                    onTap: _loadingRute ? null : () => _tampilkanRute(_lokasiTujuan),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: _ruteAktif ? Colors.orange : AppTheme.primary,
-                        borderRadius: BorderRadius.circular(50),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _modeLihatLandmark = true),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: _modeLihatLandmark ? AppTheme.primary : Colors.transparent,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.place_rounded, size: 16, color: _modeLihatLandmark ? Colors.white : AppTheme.outline),
+                            const SizedBox(width: 6),
+                            Text('Landmark', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: _modeLihatLandmark ? Colors.white : AppTheme.outline)),
+                          ],
+                        ),
                       ),
-                      child: _loadingRute
-                          ? const SizedBox(
-                              width: 16, height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                            )
-                          : Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(_ruteAktif ? Icons.close_rounded : Icons.directions_rounded, color: Colors.white, size: 16),
-                                const SizedBox(width: 4),
-                                Text(
-                                  _ruteAktif ? 'Tutup' : 'Rute',
-                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
-                                ),
-                              ],
-                            ),
                     ),
                   ),
                 ],
@@ -672,7 +807,7 @@ class _PetaViewState extends State<PetaView> {
           //  Loading lokasi indicator 
           if (_loadingLokasi)
             Positioned(
-              top: 12, left: 0, right: 0,
+              top: 72, left: 0, right: 0,
               child: Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -692,19 +827,26 @@ class _PetaViewState extends State<PetaView> {
                 ),
               ),
             ),
+
+          // FAB tambah landmark (admin only) — di dalam Stack agar tidak menumpuk bottom card
+          if (_isAdmin)
+            Positioned(
+              // Letakkan di kanan bawah, di atas bottom card (bottom card ~160px)
+              bottom: 190,
+              right: 16,
+              child: FloatingActionButton(
+                backgroundColor: AppTheme.secondary,
+                foregroundColor: Colors.white,
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                onPressed: _showAddLandmarkDialog,
+                tooltip: 'Tambah Landmark',
+                child: const Icon(Icons.add_rounded, size: 28),
+              ),
+            ),
         ],
       ),
-      floatingActionButton: _isAdmin
-          ? FloatingActionButton(
-              backgroundColor: AppTheme.secondary,
-              foregroundColor: Colors.white,
-              elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-              onPressed: _showAddLandmarkDialog,
-              tooltip: 'Tambah Landmark',
-              child: const Icon(Icons.add_rounded, size: 28),
-            )
-          : null,
+      floatingActionButton: null,
     );
   }
 }

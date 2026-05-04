@@ -4,7 +4,6 @@ class LandmarkModel {
   final double latitude;
   final double longitude;
   final String? deskripsi;
-  final int? idAcara;
 
   LandmarkModel({
     this.idLandmark,
@@ -12,7 +11,6 @@ class LandmarkModel {
     required this.latitude,
     required this.longitude,
     this.deskripsi,
-    this.idAcara,
   });
 
   factory LandmarkModel.fromJson(Map<String, dynamic> json) => LandmarkModel(
@@ -21,7 +19,6 @@ class LandmarkModel {
     latitude: (json['latitude'] as num).toDouble(),
     longitude: (json['longitude'] as num).toDouble(),
     deskripsi: json['deskripsi'] as String?,
-    idAcara: json['id_acara'] as int?,
   );
 
   Map<String, dynamic> toMap() => {
@@ -30,6 +27,5 @@ class LandmarkModel {
     'latitude': latitude,
     'longitude': longitude,
     'deskripsi': deskripsi,
-    'id_acara': idAcara,
   };
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
@@ -13,7 +13,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load environment variables dari .env
-  await dotenv.load(fileName: '.env');
+  // Wrapped try-catch agar tidak crash jika file belum ter-bundle
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    debugPrint('[main] dotenv load error (ignored): $e');
+  }
 
   // Inisialisasi database factory sesuai platform
   if (kIsWeb) {
@@ -22,7 +27,11 @@ void main() async {
 
   // Inisialisasi notifikasi lokal (hanya di non-web)
   if (!kIsWeb) {
-    await NotificationController.initialize();
+    try {
+      await NotificationController.initialize();
+    } catch (e) {
+      debugPrint('[main] NotificationController init error (ignored): $e');
+    }
   }
 
   // Seed data admin awal

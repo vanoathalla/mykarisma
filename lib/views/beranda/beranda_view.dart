@@ -134,20 +134,6 @@ class _BerandaViewState extends State<BerandaView> {
     return months[m - 1];
   }
 
-  String _formatTanggalRapi(String tanggal) {
-    try {
-      final parts = tanggal.split(' ');
-      final datePart = parts[0];
-      final timePart = parts.length > 1 ? parts[1] : null;
-      final dt = DateTime.tryParse(datePart);
-      if (dt == null) return tanggal;
-      const hariList = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
-      const bulanList = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-      final base = '${hariList[dt.weekday-1]}, ${dt.day} ${bulanList[dt.month-1]} ${dt.year}';
-      return timePart != null ? '$base  $timePart' : base;
-    } catch (_) { return tanggal; }
-  }
-
   void _go(Widget page) =>
       Navigator.push(context, MaterialPageRoute(builder: (_) => page));
 
@@ -581,9 +567,18 @@ class _BerandaViewState extends State<BerandaView> {
           Column(
             children: _acaraMendatang.map((item) {
               final color = _acaraColor(item.tipe);
-              final parts = item.tanggal.split('-');
-              final day = parts.length >= 3 ? parts[2] : '--';
-              final month = parts.length >= 2 ? _monthName(int.tryParse(parts[1]) ?? 1) : '---';
+              // Parse tanggal dan waktu
+              final parts = item.tanggal.split(' ');
+              final dateParts = parts[0].split('-');
+              final day   = dateParts.length >= 3 ? dateParts[2] : '--';
+              final month = dateParts.length >= 2 ? _monthName(int.tryParse(dateParts[1]) ?? 1) : '---';
+              final year  = dateParts.isNotEmpty ? dateParts[0] : '----';
+              // Ambil jam jika ada
+              String? waktu;
+              if (parts.length > 1) {
+                final tp = parts[1].split(':');
+                if (tp.length >= 2) waktu = '${tp[0]}:${tp[1]}';
+              }
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Container(
@@ -607,14 +602,34 @@ class _BerandaViewState extends State<BerandaView> {
                     padding: const EdgeInsets.all(14),
                     child: Row(
                       children: [
+                        // Date box — tanggal, bulan, tahun, jam
                         Container(
-                          width: 56,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          decoration: BoxDecoration(color: color.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12)),
-                          child: Column(children: [
-                            Text(day, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color)),
-                            Text(month, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: color.withValues(alpha: 0.70), letterSpacing: 0.5)),
-                          ]),
+                          width: 60,
+                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(day, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color, height: 1.0)),
+                              const SizedBox(height: 2),
+                              Text(month, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: color, letterSpacing: 0.5)),
+                              Text(year, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w500, color: color.withValues(alpha: 0.6))),
+                              if (waktu != null) ...[
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: color.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(waktu, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: color)),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -622,21 +637,19 @@ class _BerandaViewState extends State<BerandaView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(item.nama, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: isDark ? const Color(0xFFF1F1F1) : Colors.black87)),
-                              const SizedBox(height: 4),
-                              Row(children: [
-                                Icon(Icons.schedule_rounded, size: 12, color: textSub),
-                                const SizedBox(width: 4),
-                                Text(_formatTanggalRapi(item.tanggal), style: TextStyle(fontSize: 11, color: textSub)),
-                              ]),
                               const SizedBox(height: 6),
                               Row(children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                   decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(5)),
-                                  child: Text(item.tipe.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: color, letterSpacing: 0.5)),
+                                  child: Text(item.kategori.toUpperCase(), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: color, letterSpacing: 0.5)),
                                 ),
-                                const SizedBox(width: 8),
-                                Flexible(child: Text(item.kategori, style: TextStyle(fontSize: 11, color: textSub), overflow: TextOverflow.ellipsis)),
+                                if (item.lokasi != null && item.lokasi!.isNotEmpty) ...[
+                                  const SizedBox(width: 6),
+                                  Icon(Icons.location_on_outlined, size: 11, color: textSub),
+                                  const SizedBox(width: 2),
+                                  Flexible(child: Text(item.lokasi!, style: TextStyle(fontSize: 11, color: textSub), overflow: TextOverflow.ellipsis)),
+                                ],
                               ]),
                             ],
                           ),

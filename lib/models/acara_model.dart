@@ -3,7 +3,8 @@ class AcaraModel {
   final String nama;
   final String tanggal;
   final String kategori;
-  final String tipe;
+  final String tipe; // kept for DB backward-compat (not shown in UI)
+  final String? lokasi;
 
   AcaraModel({
     required this.idAcara,
@@ -11,9 +12,10 @@ class AcaraModel {
     required this.tanggal,
     required this.kategori,
     required this.tipe,
+    this.lokasi,
   });
 
-  // Fungsi untuk mengubah format JSON dari PHP menjadi Object di Flutter
+  // Fungsi untuk mengubah format JSON dari DB menjadi Object di Flutter
   factory AcaraModel.fromJson(Map<String, dynamic> json) {
     return AcaraModel(
       idAcara: json['id_acara']?.toString() ?? '0',
@@ -21,6 +23,7 @@ class AcaraModel {
       tanggal: json['tanggal'] ?? '',
       kategori: json['kategori'] ?? '',
       tipe: json['tipe'] ?? '',
+      lokasi: json['lokasi'] as String?,
     );
   }
 
@@ -31,6 +34,7 @@ class AcaraModel {
       'tanggal': tanggal,
       'kategori': kategori,
       'tipe': tipe,
+      'lokasi': lokasi,
     };
   }
 }

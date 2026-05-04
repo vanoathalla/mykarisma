@@ -37,6 +37,9 @@ class _ProfilViewState extends State<ProfilView> {
   Future<void> _loadDataProfil() async {
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
+      final id = prefs.getString('session_id_member') ??
+          prefs.getString('id_member') ??
+          '-';
       setState(() {
         _namaLengkap = prefs.getString('session_nama') ??
             prefs.getString('nama') ??
@@ -44,10 +47,9 @@ class _ProfilViewState extends State<ProfilView> {
         _role = prefs.getString('session_role') ??
             prefs.getString('role') ??
             'Tamu';
-        _idMember = prefs.getString('session_id_member') ??
-            prefs.getString('id_member') ??
-            '-';
-        _fotoPath = prefs.getString('foto_path');
+        _idMember = id;
+        // Key foto per-user: foto_path_<id_member> agar tiap akun punya foto sendiri
+        _fotoPath = prefs.getString('foto_path_$id');
         _namaCtrl.text = _namaLengkap;
       });
     }
@@ -61,7 +63,8 @@ class _ProfilViewState extends State<ProfilView> {
     );
     if (picked == null) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('foto_path', picked.path);
+    // Simpan dengan key per-user supaya foto tidak tercampur antar akun
+    await prefs.setString('foto_path_$_idMember', picked.path);
     if (mounted) setState(() => _fotoPath = picked.path);
   }
 

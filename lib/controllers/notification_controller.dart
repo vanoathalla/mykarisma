@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,7 +25,9 @@ class NotificationController {
   // ── Channel IDs ────────────────────────────────────────────────────────────
   static const String _chUpdate = 'karisma_update';
   static const String _chAcara = 'karisma_acara';
-  static const String _chHariH = 'karisma_hariH';
+  // ID baru (v3) agar Android membuat ulang channel dengan Importance.max
+  // Channel lama 'karisma_hariH' dan 'karisma_hariH_v2' sudah terlanjur dibuat dengan importance rendah
+  static const String _chHariH = 'karisma_hariH_v3';
   static const String _chLangkah = 'karisma_langkah';
 
   // ── Prefs keys ─────────────────────────────────────────────────────────────
@@ -37,16 +40,18 @@ class NotificationController {
     if (_initialized) return;
 
     tz.initializeTimeZones();
+    // Set timezone ke WIB agar jadwal notifikasi tepat waktu di Indonesia
+    tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const initSettings = InitializationSettings(android: androidSettings);
     await _plugin.initialize(initSettings);
 
-    // Buat semua channel sekaligus
-    // Importance.defaultImportance = ikuti pengaturan HP (suara/getar/diam)
     final androidImpl = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
 
+    // Update channel — karisma_update & karisma_acara pakai defaultImportance
+    // karisma_hariH pakai Importance.max agar muncul sebagai heads-up (pop-up)
     await androidImpl?.createNotificationChannel(const AndroidNotificationChannel(
       _chUpdate,
       'Update Data KARISMA',
@@ -61,11 +66,16 @@ class NotificationController {
       importance: Importance.defaultImportance,
     ));
 
+    // MAX importance = heads-up notification (pop-up di atas layar)
+    // Ini adalah level tertinggi untuk memastikan notifikasi muncul sebagai pop-up
     await androidImpl?.createNotificationChannel(const AndroidNotificationChannel(
       _chHariH,
       'Pengingat Hari-H Acara',
       description: 'Pengingat tepat pada hari dan jam acara berlangsung',
-      importance: Importance.defaultImportance,
+      importance: Importance.max,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
     ));
 
     await androidImpl?.createNotificationChannel(const AndroidNotificationChannel(
@@ -148,9 +158,28 @@ class NotificationController {
         isi,
         details,
       );
+      // Save to local inbox so NotifikasiView can display it
+      await _saveToInbox(judul: judul, isi: isi);
     } catch (e) {
       debugPrint('[NotificationController] showUpdateNotif error: $e');
     }
+  }
+
+  /// Saves a notification entry to SharedPreferences inbox.
+  static Future<void> _saveToInbox({required String judul, required String isi}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getStringList('notif_inbox') ?? [];
+      final entry = jsonEncode({
+        'title': judul,
+        'body': isi,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+      raw.insert(0, entry); // newest first
+      // Keep max 50
+      if (raw.length > 50) raw.removeRange(50, raw.length);
+      await prefs.setStringList('notif_inbox', raw);
+    } catch (_) {}
   }
 
   // ── 2. Pengingat H-1 otomatis ─────────────────────────────────────────────
@@ -199,89 +228,12 @@ class NotificationController {
     }
   }
 
-  // ── 3. Pengingat Hari-H (diset oleh member) ───────────────────────────────
-  /// Member bisa set pengingat tepat pada hari & jam acara.
-  /// Jika acara punya waktu (format "2025-06-10 16:30"), pakai jam tersebut.
-  /// Jika tidak ada jam, default jam 07:00 hari-H.
-  static Future<bool> scheduleHariHNotification(AcaraModel acara) async {
-    if (!_initialized) return false;
-    if (!await isNotifHariHAktif()) return false;
-
-    try {
-      DateTime? waktuAcara;
-
-      // Coba parse tanggal + waktu (format: "2025-06-10 16:30")
-      if (acara.tanggal.contains(' ')) {
-        waktuAcara = DateTime.tryParse(acara.tanggal);
-      } else {
-        // Hanya tanggal — default jam 07:00
-        final tgl = DateTime.tryParse(acara.tanggal);
-        if (tgl != null) {
-          waktuAcara = DateTime(tgl.year, tgl.month, tgl.day, 7, 0);
-        }
-      }
-
-      if (waktuAcara == null || waktuAcara.isBefore(DateTime.now())) {
-        return false; // Waktu sudah lewat
-      }
-
-      final tzTime = tz.TZDateTime.from(waktuAcara, tz.local);
-      // ID unik: id acara + 20000 (beda dari H-1)
-      final notifId = (int.tryParse(acara.idAcara) ?? acara.nama.hashCode) + 20000;
-
-      const details = NotificationDetails(
-        android: AndroidNotificationDetails(
-          _chHariH,
-          'Pengingat Hari-H Acara',
-          channelDescription: 'Pengingat tepat pada hari dan jam acara berlangsung',
-          importance: Importance.defaultImportance,
-          priority: Priority.defaultPriority,
-          icon: '@mipmap/ic_launcher',
-        ),
-      );
-
-      await _plugin.zonedSchedule(
-        notifId,
-        '🕌 Acara Sekarang: ${acara.nama}',
-        'Acara "${acara.nama}" sedang berlangsung. Jangan sampai terlewat!',
-        tzTime,
-        details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-      );
-      debugPrint('[NotificationController] Hari-H scheduled: ${acara.nama} at $waktuAcara');
-      return true;
-    } catch (e) {
-      debugPrint('[NotificationController] scheduleHariHNotification error: $e');
-      return false;
-    }
-  }
-
-  /// Batalkan pengingat hari-H untuk acara tertentu
-  static Future<void> cancelHariHNotification(String idAcara) async {
-    final notifId = (int.tryParse(idAcara) ?? 0) + 20000;
-    await _plugin.cancel(notifId);
-  }
-
-  /// Cek apakah pengingat hari-H sudah diset untuk acara ini
-  static Future<bool> isHariHScheduled(String idAcara) async {
-    try {
-      final pending = await _plugin.pendingNotificationRequests();
-      final notifId = (int.tryParse(idAcara) ?? 0) + 20000;
-      return pending.any((n) => n.id == notifId);
-    } catch (_) {
-      return false;
-    }
-  }
-
-  // ── 4. Batalkan notif H-1 ─────────────────────────────────────────────────
+  // ── 3. Batalkan notif H-1 ─────────────────────────────────────────────────
   static Future<void> cancelNotification(int idAcara) async {
     await _plugin.cancel(idAcara + 10000); // H-1
-    await _plugin.cancel(idAcara + 20000); // Hari-H
   }
 
-  // ── 5. Pencapaian langkah ─────────────────────────────────────────────────
+  // ── 4. Pencapaian langkah ─────────────────────────────────────────────────
   static Future<void> showStepAchievement(int targetSteps) async {
     if (!_initialized) return;
     try {

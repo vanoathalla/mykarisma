@@ -18,9 +18,9 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
   final _namaCtrl = TextEditingController();
   final _tanggalCtrl = TextEditingController();
   final _waktuCtrl = TextEditingController();
+  final _lokasiCtrl = TextEditingController();
 
   String? _selectedKategori;
-  String? _selectedTipe;
   TimeOfDay? _selectedTime;
 
   String _wib = '';
@@ -29,7 +29,6 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
   String _london = '';
 
   final List<String> _kategoriOptions = ['Umum', 'Internal', 'Sosial', 'Keagamaan'];
-  final List<String> _tipeOptions = ['Wajib', 'Sunnah', 'Opsional'];
 
   final AcaraController _acaraCtrl = AcaraController();
   bool _isLoading = false;
@@ -58,7 +57,7 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
         _tanggalCtrl.text = a.tanggal;
       }
       _selectedKategori = a.kategori;
-      _selectedTipe = a.tipe;
+      _lokasiCtrl.text = a.lokasi ?? '';
     }
   }
 
@@ -67,6 +66,7 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
     _namaCtrl.dispose();
     _tanggalCtrl.dispose();
     _waktuCtrl.dispose();
+    _lokasiCtrl.dispose();
     super.dispose();
   }
 
@@ -108,14 +108,14 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
         _namaCtrl.text.trim(),
         tanggalFinal,
         _selectedKategori ?? '',
-        _selectedTipe ?? '',
+        _lokasiCtrl.text.trim(),
       );
     } else {
       res = await _acaraCtrl.tambahAcara(
         _namaCtrl.text.trim(),
         tanggalFinal,
         _selectedKategori ?? '',
-        _selectedTipe ?? '',
+        _lokasiCtrl.text.trim(),
       );
     }
 
@@ -290,7 +290,7 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
 
                       // Kategori
                       DropdownButtonFormField<String>(
-                        value: _selectedKategori,
+                        initialValue: _selectedKategori,
                         decoration: const InputDecoration(
                           labelText: 'Kategori',
                           prefixIcon: Icon(Icons.category_outlined, color: AppTheme.primary),
@@ -304,20 +304,14 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
                       ),
                       const SizedBox(height: 14),
 
-                      // Tipe
-                      DropdownButtonFormField<String>(
-                        value: _selectedTipe,
+                      // Lokasi
+                      TextFormField(
+                        controller: _lokasiCtrl,
                         decoration: const InputDecoration(
-                          labelText: 'Tipe',
-                          prefixIcon: Icon(Icons.label_outline_rounded,
-                              color: AppTheme.primary),
+                          labelText: 'Lokasi Acara (opsional)',
+                          hintText: 'Contoh: Masjid Al-Ikhlas, Balai Desa',
+                          prefixIcon: Icon(Icons.location_on_outlined, color: AppTheme.primary),
                         ),
-                        items: _tipeOptions
-                            .map((t) => DropdownMenuItem<String>(value: t, child: Text(t)))
-                            .toList(),
-                        onChanged: (v) => setState(() => _selectedTipe = v),
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Tipe wajib dipilih' : null,
                       ),
                       const SizedBox(height: 28),
 

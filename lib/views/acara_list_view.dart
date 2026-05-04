@@ -73,7 +73,7 @@ class _AcaraListViewState extends State<AcaraListView> {
         _filteredAcara = _allAcara.where((a) {
           return a.nama.toLowerCase().contains(q) ||
               a.kategori.toLowerCase().contains(q) ||
-              a.tipe.toLowerCase().contains(q);
+              (a.lokasi ?? '').toLowerCase().contains(q);
         }).toList();
       }
     });
@@ -111,11 +111,11 @@ class _AcaraListViewState extends State<AcaraListView> {
     }
   }
 
-  Color _getAcaraColor(String tipe) {
-    switch (tipe.toLowerCase()) {
-      case 'kajian':
+  Color _getAcaraColor(String kategori) {
+    switch (kategori.toLowerCase()) {
+      case 'keagamaan':
         return AppTheme.secondary;
-      case 'ibadah':
+      case 'internal':
         return AppTheme.primary;
       case 'sosial':
         return AppTheme.tertiary;
@@ -173,45 +173,13 @@ class _AcaraListViewState extends State<AcaraListView> {
                           onPressed: () => Navigator.pop(context),
                         ),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Jadwal Acara',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: textPrimary,
-                                ),
-                              ),
-                              // Badge role
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      color: _roleUser == 'admin'
-                                          ? AppTheme.primary.withValues(alpha: 0.12)
-                                          : AppTheme.outline.withValues(alpha: 0.10),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      _roleUser == 'admin'
-                                          ? 'Mode Admin - Bisa tambah/edit/hapus'
-                                          : 'Mode Tamu - Hanya lihat',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        color: _roleUser == 'admin'
-                                            ? AppTheme.primary
-                                            : textSub,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          child: Text(
+                            'Jadwal Acara',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: textPrimary,
+                            ),
                           ),
                         ),
                         IconButton(
@@ -303,19 +271,30 @@ class _AcaraListViewState extends State<AcaraListView> {
                         child: ListView.builder(
                           physics: const ClampingScrollPhysics(),
                           padding:
-                              const EdgeInsets.fromLTRB(20, 16, 20, 120),
+                              const EdgeInsets.fromLTRB(20, 16, 20, 100),
                           itemCount: _filteredAcara.length,
                           itemBuilder: (context, i) {
                             final item = _filteredAcara[i];
-                            final color = _getAcaraColor(item.tipe);
+                            final color = _getAcaraColor(item.kategori);
                             final mendatang = _isMendatang(item.tanggal);
-                            final parts = item.tanggal.split('-');
-                            final day =
-                                parts.length >= 3 ? parts[2] : '--';
-                            final month = parts.length >= 2
-                                ? _getMonthName(
-                                    int.tryParse(parts[1]) ?? 1)
+                            
+                            // Parse tanggal dan waktu
+                            final parts = item.tanggal.split(' ');
+                            final dateParts = parts[0].split('-');
+                            final day = dateParts.length >= 3 ? dateParts[2] : '--';
+                            final month = dateParts.length >= 2
+                                ? _getMonthName(int.tryParse(dateParts[1]) ?? 1)
                                 : '---';
+                            final year = dateParts.isNotEmpty ? dateParts[0] : '----';
+                            
+                            // Ambil waktu jika ada (format HH:MM)
+                            String? waktu;
+                            if (parts.length > 1) {
+                              final timeParts = parts[1].split(':');
+                              if (timeParts.length >= 2) {
+                                waktu = '${timeParts[0]}:${timeParts[1]}';
+                              }
+                            }
 
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
@@ -323,13 +302,17 @@ class _AcaraListViewState extends State<AcaraListView> {
                                 decoration: BoxDecoration(
                                   color: cardBg,
                                   borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(color: cardBorder),
+                                  border: Border.all(
+                                    color: mendatang
+                                        ? color.withValues(alpha: 0.25)
+                                        : cardBorder,
+                                  ),
                                   boxShadow: mendatang
                                       ? [
                                           BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.04),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
+                                            color: color.withValues(alpha: 0.06),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 3),
                                           ),
                                         ]
                                       : [],
@@ -340,162 +323,249 @@ class _AcaraListViewState extends State<AcaraListView> {
                                     child: Row(
                                       crossAxisAlignment: CrossAxisAlignment.stretch,
                                       children: [
-                                        // Accent bar kiri
+                                        // ── Accent bar kiri ──────────────────
                                         Container(
                                           width: 4,
                                           color: mendatang
                                               ? color
-                                              : textSub.withValues(alpha: 0.4),
+                                              : textSub.withValues(alpha: 0.3),
                                         ),
-                                        // Konten
+
+                                        // ── Konten utama ─────────────────────
                                         Expanded(
                                           child: Padding(
-                                            padding: const EdgeInsets.all(14),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 14, vertical: 12),
                                             child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
                                               children: [
-                                                // Tanggal
+                                                // ── Date box ─────────────────
                                                 Opacity(
-                                                  opacity: mendatang ? 1.0 : 0.5,
+                                                  opacity: mendatang ? 1.0 : 0.45,
                                                   child: Container(
-                                                    width: 52,
-                                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                                    width: 60,
+                                                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
                                                     decoration: BoxDecoration(
-                                                      color: color.withValues(alpha: 0.10),
+                                                      color: color.withValues(alpha: mendatang ? 0.10 : 0.06),
                                                       borderRadius: BorderRadius.circular(12),
                                                     ),
                                                     child: Column(
+                                                      mainAxisSize: MainAxisSize.min,
                                                       children: [
+                                                        // Tanggal
                                                         Text(
                                                           day,
                                                           style: TextStyle(
-                                                            fontSize: 18,
+                                                            fontSize: 22,
                                                             fontWeight: FontWeight.w800,
                                                             color: color,
+                                                            height: 1.0,
                                                           ),
                                                         ),
+                                                        const SizedBox(height: 2),
+                                                        // Bulan
                                                         Text(
                                                           month.toUpperCase(),
                                                           style: TextStyle(
-                                                            fontSize: 9,
+                                                            fontSize: 10,
                                                             fontWeight: FontWeight.w700,
-                                                            color: color.withValues(alpha: 0.7),
+                                                            color: color,
                                                             letterSpacing: 0.5,
                                                           ),
                                                         ),
+                                                        // Tahun
+                                                        Text(
+                                                          year,
+                                                          style: TextStyle(
+                                                            fontSize: 9,
+                                                            fontWeight: FontWeight.w500,
+                                                            color: color.withValues(alpha: 0.6),
+                                                          ),
+                                                        ),
+                                                        // Jam (jika ada)
+                                                        if (waktu != null) ...[
+                                                          const SizedBox(height: 4),
+                                                          Container(
+                                                            padding: const EdgeInsets.symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2,
+                                                            ),
+                                                            decoration: BoxDecoration(
+                                                              color: color.withValues(alpha: 0.15),
+                                                              borderRadius: BorderRadius.circular(4),
+                                                            ),
+                                                            child: Text(
+                                                              waktu,
+                                                              style: TextStyle(
+                                                                fontSize: 9,
+                                                                fontWeight: FontWeight.w700,
+                                                                color: color,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ],
                                                     ),
                                                   ),
                                                 ),
+
                                                 const SizedBox(width: 14),
-                                                // Info
+
+                                                // ── Info acara ───────────────
                                                 Expanded(
                                                   child: Opacity(
-                                                    opacity: mendatang ? 1.0 : 0.6,
+                                                    opacity:
+                                                        mendatang ? 1.0 : 0.55,
                                                     child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
                                                       children: [
+                                                        // Nama + badge selesai
                                                         Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
                                                           children: [
                                                             Expanded(
                                                               child: Text(
                                                                 item.nama,
                                                                 style: TextStyle(
                                                                   fontSize: 14,
-                                                                  fontWeight: FontWeight.w700,
-                                                                  color: textPrimary,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w700,
+                                                                  color:
+                                                                      textPrimary,
+                                                                  height: 1.3,
                                                                 ),
                                                               ),
                                                             ),
-                                                            if (!mendatang)
+                                                            if (!mendatang) ...[
+                                                              const SizedBox(
+                                                                  width: 6),
                                                               Container(
-                                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                                                decoration: BoxDecoration(
-                                                                  color: textSub.withValues(alpha: 0.12),
-                                                                  borderRadius: BorderRadius.circular(4),
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .symmetric(
+                                                                        horizontal:
+                                                                            6,
+                                                                        vertical:
+                                                                            2),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  color: textSub
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.12),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              4),
                                                                 ),
                                                                 child: Text(
                                                                   'SELESAI',
-                                                                  style: TextStyle(
-                                                                    fontSize: 9,
-                                                                    fontWeight: FontWeight.w700,
-                                                                    color: textSub,
-                                                                    letterSpacing: 0.5,
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontSize: 8,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w700,
+                                                                    color:
+                                                                        textSub,
+                                                                    letterSpacing:
+                                                                        0.5,
                                                                   ),
                                                                 ),
                                                               ),
+                                                            ],
                                                           ],
                                                         ),
-                                                        const SizedBox(height: 4),
+                                                        const SizedBox(height: 6),
+                                                        // Kategori + lokasi
                                                         Row(
                                                           children: [
                                                             CategoryBadge(
-                                                              label: item.tipe,
-                                                              color: color.withValues(alpha: 0.12),
+                                                              label: item.kategori,
+                                                              color: color
+                                                                  .withValues(
+                                                                      alpha:
+                                                                          0.12),
                                                               textColor: color,
                                                             ),
-                                                            const SizedBox(width: 8),
-                                                            Flexible(
-                                                              child: Text(
-                                                                item.kategori,
-                                                                style: TextStyle(fontSize: 11, color: textSub),
-                                                                overflow: TextOverflow.ellipsis,
+                                                            if (item.lokasi != null && item.lokasi!.isNotEmpty) ...[
+                                                              const SizedBox(
+                                                                  width: 6),
+                                                              Flexible(
+                                                                child: Row(
+                                                                  children: [
+                                                                    Icon(Icons.location_on_outlined, size: 11, color: textSub),
+                                                                    const SizedBox(width: 2),
+                                                                    Flexible(
+                                                                      child: Text(
+                                                                        item.lokasi!,
+                                                                        style: TextStyle(
+                                                                            fontSize: 11,
+                                                                            color:
+                                                                                textSub),
+                                                                        overflow:
+                                                                            TextOverflow
+                                                                                .ellipsis,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
                                                               ),
-                                                            ),
+                                                            ],
                                                           ],
                                                         ),
                                                       ],
                                                     ),
                                                   ),
                                                 ),
-                                                // Tombol admin (edit & hapus)
+
+                                                // ── Tombol aksi ──────────────
                                                 if (_roleUser == 'admin') ...[
                                                   const SizedBox(width: 8),
                                                   Column(
                                                     mainAxisSize: MainAxisSize.min,
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment.center,
                                                     children: [
-                                                      GestureDetector(
+                                                      _ActionBtn(
+                                                        icon: Icons.edit_rounded,
+                                                        color: AppTheme.primary,
                                                         onTap: () async {
-                                                          final r = await Navigator.push<bool>(
+                                                          final r =
+                                                              await Navigator
+                                                                  .push<bool>(
                                                             context,
                                                             MaterialPageRoute(
-                                                              builder: (_) => TambahAcaraView(acaraEdit: item),
+                                                              builder: (_) =>
+                                                                  TambahAcaraView(
+                                                                      acaraEdit:
+                                                                          item),
                                                             ),
                                                           );
-                                                          if (r == true) _loadAcara();
+                                                          if (r == true) {
+                                                            _loadAcara();
+                                                          }
                                                         },
-                                                        child: Container(
-                                                          width: 32,
-                                                          height: 32,
-                                                          decoration: BoxDecoration(
-                                                            color: AppTheme.primary.withValues(alpha: 0.10),
-                                                            borderRadius: BorderRadius.circular(8),
-                                                          ),
-                                                          child: const Icon(Icons.edit_rounded, size: 16, color: AppTheme.primary),
-                                                        ),
                                                       ),
                                                       const SizedBox(height: 6),
-                                                      GestureDetector(
-                                                        onTap: () => _hapusAcara(item),
-                                                        child: Container(
-                                                          width: 32,
-                                                          height: 32,
-                                                          decoration: BoxDecoration(
-                                                            color: Colors.red.withValues(alpha: 0.10),
-                                                            borderRadius: BorderRadius.circular(8),
-                                                          ),
-                                                          child: const Icon(Icons.delete_outline_rounded, size: 16, color: Colors.red),
-                                                        ),
+                                                      _ActionBtn(
+                                                        icon: Icons
+                                                            .delete_outline_rounded,
+                                                        color: Colors.red,
+                                                        onTap: () =>
+                                                            _hapusAcara(item),
                                                       ),
-                                                      const SizedBox(height: 6),
-                                                      // Tombol pengingat hari-H (admin)
-                                                      _ReminderButton(acara: item),
                                                     ],
                                                   ),
-                                                ],
-                                                // Tombol pengingat hari-H (member/tamu)
-                                                if (_roleUser != 'admin') ...[
-                                                  const SizedBox(width: 8),
-                                                  _ReminderButton(acara: item),
                                                 ],
                                               ],
                                             ),
@@ -515,6 +585,7 @@ class _AcaraListViewState extends State<AcaraListView> {
       ),
 
       // FAB hanya untuk admin
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: _roleUser == 'admin'
           ? FloatingActionButton(
               backgroundColor: AppTheme.secondary,
@@ -537,100 +608,29 @@ class _AcaraListViewState extends State<AcaraListView> {
   }
 }
 
-//  Tombol Pengingat Hari-H 
-/// Widget stateful yang cek apakah pengingat sudah diset untuk acara ini,
-/// lalu tampilkan ikon bell aktif/nonaktif.
-class _ReminderButton extends StatefulWidget {
-  final AcaraModel acara;
-  const _ReminderButton({required this.acara});
-
-  @override
-  State<_ReminderButton> createState() => _ReminderButtonState();
-}
-
-class _ReminderButtonState extends State<_ReminderButton> {
-  bool _isSet = false;
-  bool _loading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkStatus();
-  }
-
-  Future<void> _checkStatus() async {
-    final set = await NotificationController.isHariHScheduled(widget.acara.idAcara);
-    if (mounted) setState(() => _isSet = set);
-  }
-
-  Future<void> _toggle() async {
-    setState(() => _loading = true);
-
-    if (_isSet) {
-      // Batalkan pengingat
-      await NotificationController.cancelHariHNotification(widget.acara.idAcara);
-      if (mounted) {
-        setState(() { _isSet = false; _loading = false; });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(' Pengingat hari-H dibatalkan'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } else {
-      // Set pengingat
-      final berhasil = await NotificationController.scheduleHariHNotification(widget.acara);
-      if (mounted) {
-        setState(() { _isSet = berhasil; _loading = false; });
-        if (berhasil) {
-          // Tampilkan info waktu pengingat
-          final waktu = widget.acara.tanggal.contains(' ')
-              ? widget.acara.tanggal
-              : '${widget.acara.tanggal} 07:00';
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(' Pengingat diset: $waktu'),
-              backgroundColor: AppTheme.primary,
-              duration: const Duration(seconds: 3),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(' Tidak bisa set pengingat. Waktu acara sudah lewat atau notifikasi dinonaktifkan di Pengaturan.'),
-              backgroundColor: Colors.orange,
-              duration: Duration(seconds: 4),
-            ),
-          );
-        }
-      }
-    }
-  }
+// ── Helper widget: tombol aksi kecil (edit / hapus) ──────────────────────────
+class _ActionBtn extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  const _ActionBtn({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _loading ? null : _toggle,
+      onTap: onTap,
       child: Container(
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: _isSet
-              ? Colors.orange.withValues(alpha: 0.15)
-              : AppTheme.outline.withValues(alpha: 0.08),
+          color: color.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: _loading
-            ? const Padding(
-                padding: EdgeInsets.all(8),
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
-              )
-            : Icon(
-                _isSet ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
-                size: 16,
-                color: _isSet ? Colors.orange : AppTheme.outline,
-              ),
+        child: Icon(icon, size: 16, color: color),
       ),
     );
   }

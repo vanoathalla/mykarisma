@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/app_theme.dart';
 
 /// Halaman inbox notifikasi — menampilkan semua notifikasi yang sudah dikirim.
+/// Notifikasi disimpan di SharedPreferences key 'notif_inbox' sebagai JSON list.
 class NotifikasiView extends StatefulWidget {
   const NotifikasiView({super.key});
 
@@ -11,30 +13,71 @@ class NotifikasiView extends StatefulWidget {
 }
 
 class _NotifikasiViewState extends State<NotifikasiView> {
-  final FlutterLocalNotificationsPlugin _plugin =
-      FlutterLocalNotificationsPlugin();
-
-  List<PendingNotificationRequest> _pending = [];
+  List<Map<String, dynamic>> _inbox = [];
   bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadNotifikasi();
+    _loadInbox();
   }
 
-  Future<void> _loadNotifikasi() async {
+  Future<void> _loadInbox() async {
     setState(() => _loading = true);
     try {
-      final pending = await _plugin.pendingNotificationRequests();
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getStringList('notif_inbox') ?? [];
+      final parsed = raw.map((s) {
+        try {
+          return jsonDecode(s) as Map<String, dynamic>;
+        } catch (_) {
+          return <String, dynamic>{};
+        }
+      }).where((m) => m.isNotEmpty).toList();
       if (mounted) {
         setState(() {
-          _pending = pending;
+          _inbox = parsed;
           _loading = false;
         });
       }
     } catch (_) {
       if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _hapusSemua() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('notif_inbox');
+    if (mounted) setState(() => _inbox = []);
+  }
+
+  Future<void> _hapusSatu(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList('notif_inbox') ?? [];
+    if (index < raw.length) {
+      raw.removeAt(index);
+      await prefs.setStringList('notif_inbox', raw);
+    }
+    if (mounted) {
+      setState(() => _inbox.removeAt(index));
+    }
+  }
+
+  String _formatTimestamp(String? iso) {
+    if (iso == null) return '';
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+      if (diff.inMinutes < 1) return 'Baru saja';
+      if (diff.inMinutes < 60) return '${diff.inMinutes} menit lalu';
+      if (diff.inHours < 24) return '${diff.inHours} jam lalu';
+      if (diff.inDays < 7) return '${diff.inDays} hari lalu';
+      return '${dt.day.toString().padLeft(2, '0')}/'
+          '${dt.month.toString().padLeft(2, '0')}/'
+          '${dt.year}';
+    } catch (_) {
+      return '';
     }
   }
 
@@ -71,12 +114,9 @@ class _NotifikasiViewState extends State<NotifikasiView> {
           ),
         ),
         actions: [
-          if (_pending.isNotEmpty)
+          if (_inbox.isNotEmpty)
             TextButton(
-              onPressed: () async {
-                await _plugin.cancelAll();
-                _loadNotifikasi();
-              },
+              onPressed: _hapusSemua,
               child: const Text(
                 'Hapus Semua',
                 style: TextStyle(
@@ -97,7 +137,7 @@ class _NotifikasiViewState extends State<NotifikasiView> {
       body: _loading
           ? const Center(
               child: CircularProgressIndicator(color: AppTheme.primary))
-          : _pending.isEmpty
+          : _inbox.isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -106,7 +146,7 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                           size: 64, color: textSub),
                       const SizedBox(height: 16),
                       Text(
-                        'Belum ada notifikasi terjadwal',
+                        'Belum ada notifikasi',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -117,20 +157,25 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                       Text(
                         'Notifikasi akan muncul saat admin\nmenambahkan data atau acara baru',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 13, color: textSub, height: 1.5),
+                        style:
+                            TextStyle(fontSize: 13, color: textSub, height: 1.5),
                       ),
                     ],
                   ),
                 )
               : RefreshIndicator(
-                  onRefresh: _loadNotifikasi,
+                  onRefresh: _loadInbox,
                   color: AppTheme.primary,
                   child: ListView.builder(
                     physics: const ClampingScrollPhysics(),
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
-                    itemCount: _pending.length,
+                    itemCount: _inbox.length,
                     itemBuilder: (context, i) {
-                      final notif = _pending[i];
+                      final notif = _inbox[i];
+                      final title = notif['title'] as String? ?? 'Notifikasi';
+                      final body = notif['body'] as String? ?? '';
+                      final ts = _formatTimestamp(notif['timestamp'] as String?);
+
                       return Container(
                         margin: const EdgeInsets.only(bottom: 10),
                         padding: const EdgeInsets.all(16),
@@ -149,6 +194,7 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                                 ],
                         ),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
                               width: 44,
@@ -168,21 +214,32 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    notif.title ?? 'Notifikasi',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: textPrimary,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          title,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w700,
+                                            color: textPrimary,
+                                          ),
+                                        ),
+                                      ),
+                                      if (ts.isNotEmpty)
+                                        Text(
+                                          ts,
+                                          style: TextStyle(
+                                              fontSize: 10, color: textSub),
+                                        ),
+                                    ],
                                   ),
-                                  if (notif.body != null &&
-                                      notif.body!.isNotEmpty) ...[
+                                  if (body.isNotEmpty) ...[
                                     const SizedBox(height: 4),
                                     Text(
-                                      notif.body!,
-                                      style: TextStyle(
-                                          fontSize: 12, color: textSub),
+                                      body,
+                                      style:
+                                          TextStyle(fontSize: 12, color: textSub),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -193,10 +250,7 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                             IconButton(
                               icon: Icon(Icons.close_rounded,
                                   size: 18, color: textSub),
-                              onPressed: () async {
-                                await _plugin.cancel(notif.id);
-                                _loadNotifikasi();
-                              },
+                              onPressed: () => _hapusSatu(i),
                             ),
                           ],
                         ),

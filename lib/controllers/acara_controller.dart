@@ -20,9 +20,9 @@ class AcaraController {
     String nama,
     String tanggal,
     String kategori,
-    String tipe,
+    String lokasi,
   ) async {
-    if (nama.isEmpty || tanggal.isEmpty || kategori.isEmpty || tipe.isEmpty) {
+    if (nama.isEmpty || tanggal.isEmpty || kategori.isEmpty) {
       return {"success": false, "message": "Data tidak boleh kosong"};
     }
 
@@ -31,7 +31,8 @@ class AcaraController {
         'nama': nama,
         'tanggal': tanggal,
         'kategori': kategori,
-        'tipe': tipe,
+        'tipe': '',
+        'lokasi': lokasi,
       });
 
       // Jadwalkan notifikasi H-1 jika tanggal di masa depan
@@ -42,7 +43,8 @@ class AcaraController {
           nama: nama,
           tanggal: tanggal,
           kategori: kategori,
-          tipe: tipe,
+          tipe: '',
+          lokasi: lokasi,
         );
         await NotificationController.scheduleAcaraNotification(acara);
       }
@@ -82,9 +84,9 @@ class AcaraController {
     String nama,
     String tanggal,
     String kategori,
-    String tipe,
+    String lokasi,
   ) async {
-    if (nama.isEmpty || tanggal.isEmpty || kategori.isEmpty || tipe.isEmpty) {
+    if (nama.isEmpty || tanggal.isEmpty || kategori.isEmpty) {
       return {"success": false, "message": "Data tidak boleh kosong"};
     }
     try {
@@ -92,7 +94,8 @@ class AcaraController {
         'nama': nama,
         'tanggal': tanggal,
         'kategori': kategori,
-        'tipe': tipe,
+        'tipe': '',
+        'lokasi': lokasi,
       });
 
       // Batalkan notifikasi lama dan jadwalkan ulang
@@ -104,7 +107,8 @@ class AcaraController {
           nama: nama,
           tanggal: tanggal,
           kategori: kategori,
-          tipe: tipe,
+          tipe: '',
+          lokasi: lokasi,
         );
         await NotificationController.scheduleAcaraNotification(acara);
       }
