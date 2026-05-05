@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/app_theme.dart';
@@ -7,8 +7,6 @@ import '../keuangan_view.dart';
 import '../catatan_view.dart';
 import '../member_view.dart';
 
-/// Halaman inbox notifikasi — menampilkan semua notifikasi yang sudah dikirim.
-/// Notifikasi disimpan di SharedPreferences key 'notif_inbox' sebagai JSON list.
 class NotifikasiView extends StatefulWidget {
   const NotifikasiView({super.key});
 
@@ -24,10 +22,8 @@ class _NotifikasiViewState extends State<NotifikasiView> {
   void initState() {
     super.initState();
     _loadInbox();
-    // Badge TIDAK langsung di-reset — hanya berkurang saat notif di-tap
   }
 
-  /// Tandai satu notif sebagai sudah dibaca
   Future<void> _tandaiSudahDibaca(int index) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -35,13 +31,12 @@ class _NotifikasiViewState extends State<NotifikasiView> {
       if (index >= raw.length) return;
 
       final notif = jsonDecode(raw[index]) as Map<String, dynamic>;
-      if (notif['read'] == true) return; // sudah dibaca, skip
+      if (notif['read'] == true) return;
 
       notif['read'] = true;
       raw[index] = jsonEncode(notif);
       await prefs.setStringList('notif_inbox', raw);
 
-      // Tambah seen_count sebesar 1
       final seen = prefs.getInt('notif_seen_count') ?? 0;
       await prefs.setInt('notif_seen_count', seen + 1);
 
@@ -49,7 +44,6 @@ class _NotifikasiViewState extends State<NotifikasiView> {
     } catch (_) {}
   }
 
-  /// Tandai semua sebagai sudah dibaca (tombol "Baca Semua")
   Future<void> _tandaiSemuaDibaca() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -125,7 +119,6 @@ class _NotifikasiViewState extends State<NotifikasiView> {
         combined.contains('pengurus')) {
       Navigator.push(context, MaterialPageRoute(builder: (_) => const MemberView()));
     }
-    // Jika tidak cocok, tidak navigasi (tetap di halaman notifikasi)
   }
 
   String _formatTimestamp(String? iso) {
@@ -180,7 +173,6 @@ class _NotifikasiViewState extends State<NotifikasiView> {
         ),
         actions: [
           if (_inbox.isNotEmpty) ...[
-            // Tandai semua dibaca
             TextButton(
               onPressed: _tandaiSemuaDibaca,
               child: const Text('Baca Semua',
@@ -253,7 +245,6 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                           margin: const EdgeInsets.only(bottom: 10),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            // Belum dibaca: sedikit lebih terang/berwarna
                             color: isRead
                                 ? cardBg
                                 : (isDark
@@ -279,7 +270,6 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Icon — biru jika belum dibaca, abu jika sudah
                               Container(
                                 width: 44, height: 44,
                                 decoration: BoxDecoration(
@@ -313,7 +303,6 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                                             title,
                                             style: TextStyle(
                                               fontSize: 14,
-                                              // Bold jika belum dibaca
                                               fontWeight: isRead
                                                   ? FontWeight.w500
                                                   : FontWeight.w700,
@@ -328,7 +317,6 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                                             if (ts.isNotEmpty)
                                               Text(ts,
                                                 style: TextStyle(fontSize: 10, color: textSub)),
-                                            // Dot biru jika belum dibaca
                                             if (!isRead) ...[
                                               const SizedBox(height: 4),
                                               Container(

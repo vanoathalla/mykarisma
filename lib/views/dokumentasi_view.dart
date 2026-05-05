@@ -89,7 +89,6 @@ class _DokumentasiViewState extends State<DokumentasiView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Handle bar
                       Center(
                         child: Container(
                           width: 40,
@@ -121,7 +120,6 @@ class _DokumentasiViewState extends State<DokumentasiView> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Nama Kegiatan
                       TextFormField(
                         controller: namaCtrl,
                         decoration: const InputDecoration(
@@ -136,7 +134,6 @@ class _DokumentasiViewState extends State<DokumentasiView> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Tanggal
                       GestureDetector(
                         onTap: () async {
                           final initial =
@@ -169,7 +166,6 @@ class _DokumentasiViewState extends State<DokumentasiView> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Link Google Drive / Foto
                       TextFormField(
                         controller: urlCtrl,
                         keyboardType: TextInputType.url,
@@ -283,7 +279,6 @@ class _DokumentasiViewState extends State<DokumentasiView> {
       backgroundColor: AppTheme.background,
       body: Column(
         children: [
-          // '”€'”€ App Bar '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
           Container(
             color: AppTheme.surfaceContainerLowest.withValues(alpha: 0.92),
             child: SafeArea(
@@ -321,7 +316,6 @@ class _DokumentasiViewState extends State<DokumentasiView> {
             ),
           ),
 
-          // '”€'”€ Content '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -453,7 +447,6 @@ class _DokumentasiViewState extends State<DokumentasiView> {
             children: [
               Row(
                 children: [
-                  // Ikon folder
                   Container(
                     width: 40,
                     height: 40,
@@ -490,7 +483,6 @@ class _DokumentasiViewState extends State<DokumentasiView> {
                       ],
                     ),
                   ),
-                  // Tombol admin
                   if (_isAdmin)
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -525,7 +517,6 @@ class _DokumentasiViewState extends State<DokumentasiView> {
                 ],
               ),
               const SizedBox(height: 10),
-              // Link
               GestureDetector(
                 onTap: () => _copyLink(item.url),
                 child: Container(

@@ -7,9 +7,6 @@ import '../theme/app_theme.dart';
 import '../widgets/app_widgets.dart';
 import 'tambah_acara_view.dart';
 
-/// Halaman daftar acara.
-/// - Semua role (tamu & admin) bisa melihat daftar acara.
-/// - Hanya admin yang bisa tambah, edit, dan hapus acara.
 class AcaraListView extends StatefulWidget {
   const AcaraListView({super.key});
 
@@ -43,7 +40,6 @@ class _AcaraListViewState extends State<AcaraListView> {
   Future<void> _loadAcara() async {
     setState(() => _loading = true);
     final data = await _acaraCtrl.fetchAcara();
-    // Urutkan: acara mendatang dulu, lalu yang sudah lewat
     final today = DateTime.now();
     final todayStr =
         '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
@@ -154,7 +150,6 @@ class _AcaraListViewState extends State<AcaraListView> {
       backgroundColor: bg,
       body: Column(
         children: [
-          // '"-'"- App Bar '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           Container(
             color: isDark
                 ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
@@ -190,7 +185,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                       ],
                     ),
                   ),
-                  // Search bar
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                     child: TextField(
@@ -221,7 +215,6 @@ class _AcaraListViewState extends State<AcaraListView> {
             ),
           ),
 
-          // '"-'"- Content '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           Expanded(
             child: _loading
                 ? const Center(
@@ -278,7 +271,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                             final color = _getAcaraColor(item.kategori);
                             final mendatang = _isMendatang(item.tanggal);
                             
-                            // Parse tanggal dan waktu
                             final parts = item.tanggal.split(' ');
                             final dateParts = parts[0].split('-');
                             final day = dateParts.length >= 3 ? dateParts[2] : '--';
@@ -287,7 +279,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                 : '---';
                             final year = dateParts.isNotEmpty ? dateParts[0] : '----';
                             
-                            // Ambil waktu jika ada (format HH:MM)
                             String? waktu;
                             if (parts.length > 1) {
                               final timeParts = parts[1].split(':');
@@ -323,7 +314,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                     child: Row(
                                       crossAxisAlignment: CrossAxisAlignment.stretch,
                                       children: [
-                                        // ── Accent bar kiri ──────────────────
                                         Container(
                                           width: 4,
                                           color: mendatang
@@ -331,7 +321,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                               : textSub.withValues(alpha: 0.3),
                                         ),
 
-                                        // ── Konten utama ─────────────────────
                                         Expanded(
                                           child: Padding(
                                             padding: const EdgeInsets.symmetric(
@@ -340,7 +329,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.center,
                                               children: [
-                                                // ── Date box ─────────────────
                                                 Opacity(
                                                   opacity: mendatang ? 1.0 : 0.45,
                                                   child: Container(
@@ -353,7 +341,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                                     child: Column(
                                                       mainAxisSize: MainAxisSize.min,
                                                       children: [
-                                                        // Tanggal
                                                         Text(
                                                           day,
                                                           style: TextStyle(
@@ -364,7 +351,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                                           ),
                                                         ),
                                                         const SizedBox(height: 2),
-                                                        // Bulan
                                                         Text(
                                                           month.toUpperCase(),
                                                           style: TextStyle(
@@ -374,7 +360,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                                             letterSpacing: 0.5,
                                                           ),
                                                         ),
-                                                        // Tahun
                                                         Text(
                                                           year,
                                                           style: TextStyle(
@@ -383,7 +368,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                                             color: color.withValues(alpha: 0.6),
                                                           ),
                                                         ),
-                                                        // Jam (jika ada)
                                                         if (waktu != null) ...[
                                                           const SizedBox(height: 4),
                                                           Container(
@@ -412,7 +396,6 @@ class _AcaraListViewState extends State<AcaraListView> {
 
                                                 const SizedBox(width: 14),
 
-                                                // ── Info acara ───────────────
                                                 Expanded(
                                                   child: Opacity(
                                                     opacity:
@@ -425,7 +408,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                                           MainAxisAlignment
                                                               .center,
                                                       children: [
-                                                        // Nama + badge selesai
                                                         Row(
                                                           crossAxisAlignment:
                                                               CrossAxisAlignment
@@ -486,7 +468,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                                           ],
                                                         ),
                                                         const SizedBox(height: 6),
-                                                        // Kategori + lokasi
                                                         Row(
                                                           children: [
                                                             CategoryBadge(
@@ -528,7 +509,6 @@ class _AcaraListViewState extends State<AcaraListView> {
                                                   ),
                                                 ),
 
-                                                // ── Tombol aksi ──────────────
                                                 if (_roleUser == 'admin') ...[
                                                   const SizedBox(width: 8),
                                                   Column(
@@ -584,7 +564,6 @@ class _AcaraListViewState extends State<AcaraListView> {
         ],
       ),
 
-      // FAB hanya untuk admin
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: _roleUser == 'admin'
           ? FloatingActionButton(
@@ -608,7 +587,6 @@ class _AcaraListViewState extends State<AcaraListView> {
   }
 }
 
-// ── Helper widget: tombol aksi kecil (edit / hapus) ──────────────────────────
 class _ActionBtn extends StatelessWidget {
   final IconData icon;
   final Color color;

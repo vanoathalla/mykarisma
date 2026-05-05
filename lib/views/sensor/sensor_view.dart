@@ -16,11 +16,9 @@ class SensorView extends StatefulWidget {
 class _SensorViewState extends State<SensorView> {
   final SensorController _sensorCtrl = SensorController();
 
-  // Accelerometer
   double _accX = 0, _accY = 0, _accZ = 9.81;
   final Queue<double> _accHistory = Queue();
 
-  // Gyroscope
   double _gyroX = 0, _gyroY = 0, _gyroZ = 0;
   final Queue<double> _gyroHistory = Queue();
 
@@ -83,7 +81,6 @@ class _SensorViewState extends State<SensorView> {
       backgroundColor: bg,
       body: Column(
         children: [
-          // '”€'”€ App Bar '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
           Container(
             color: isDark
                 ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
@@ -136,17 +133,15 @@ class _SensorViewState extends State<SensorView> {
             ),
           ),
 
-          // '”€'”€ Content '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
           Expanded(
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  // '”€'”€ Accelerometer Card '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
                   _SensorCard(
                     title: 'Accelerometer',
-                    subtitle: 'Percepatan linear (m/s'²)',
+                    subtitle: 'Percepatan linear (m/s\u00B2)',
                     icon: Icons.vibration_rounded,
                     iconColor: AppTheme.primary,
                     cardBg: cardBg,
@@ -157,15 +152,14 @@ class _SensorViewState extends State<SensorView> {
                     waveColor: AppTheme.primary,
                     maxVal: 400,
                     values: [
-                      _SensorValue(label: 'X', value: _accX, unit: 'm/s'²', color: Colors.red),
-                      _SensorValue(label: 'Y', value: _accY, unit: 'm/s'²', color: Colors.green),
-                      _SensorValue(label: 'Z', value: _accZ, unit: 'm/s'²', color: Colors.blue),
+                      _SensorValue(label: 'X', value: _accX, unit: 'm/s\u00B2', color: Colors.red),
+                      _SensorValue(label: 'Y', value: _accY, unit: 'm/s\u00B2', color: Colors.green),
+                      _SensorValue(label: 'Z', value: _accZ, unit: 'm/s\u00B2', color: Colors.blue),
                     ],
                   ),
 
                   const SizedBox(height: 20),
 
-                  // '”€'”€ Gyroscope Card '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
                   _SensorCard(
                     title: 'Gyroscope',
                     subtitle: 'Kecepatan rotasi (rad/s)',
@@ -194,7 +188,6 @@ class _SensorViewState extends State<SensorView> {
   }
 }
 
-// '”€'”€'”€ Sensor Card '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
 class _SensorCard extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -236,7 +229,6 @@ class _SensorCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Row(
             children: [
               Container(
@@ -273,7 +265,6 @@ class _SensorCard extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // Waveform
           SizedBox(
             height: 80,
             child: CustomPaint(
@@ -288,7 +279,6 @@ class _SensorCard extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // Values
           Row(
             children: values.map((v) => Expanded(
               child: Column(
@@ -338,7 +328,6 @@ class _SensorValue {
   });
 }
 
-// '”€'”€'”€ Waveform Painter '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
 class _WaveformPainter extends CustomPainter {
   final List<double> data;
   final Color color;
@@ -366,7 +355,6 @@ class _WaveformPainter extends CustomPainter {
       final x = i * barWidth + barWidth / 2;
       final centerY = size.height / 2;
 
-      // Gradient opacity based on recency
       final opacity = 0.2 + (i / data.length) * 0.8;
       paint.color = color.withValues(alpha: opacity);
 

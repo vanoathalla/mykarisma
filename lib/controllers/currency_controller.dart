@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,8 +27,6 @@ class CurrencyController {
     }
   }
 
-  /// Konversi [amount] dari mata uang [from] ke [to].
-  /// [rates] adalah CurrencyModel dengan base IDR (rates[IDR] = 1.0).
   double convert(
     double amount,
     String from,
@@ -38,7 +36,6 @@ class CurrencyController {
     if (from == to) return amount;
     final fromRate = rates.rates[from] ?? 1.0;
     final toRate = rates.rates[to] ?? 1.0;
-    // from → IDR → to
     if (from == 'IDR') return amount * toRate;
     if (to == 'IDR') return amount / fromRate;
     return (amount / fromRate) * toRate;

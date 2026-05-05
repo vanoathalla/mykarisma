@@ -7,16 +7,7 @@ import '../models/catatan_model.dart';
 import '../models/keuangan_model.dart';
 import '../models/member_model.dart';
 
-/// AIController ΓÇö Groq API dengan konteks data aplikasi nyata.
-///
-/// Cara kerja:
-/// 1. Saat chatbot dibuka, ChatbotView memanggil [injectAppContext] dengan
-///    data terbaru dari SQLite (acara, keuangan, catatan, member).
-/// 2. Data tersebut dimasukkan ke system prompt sebagai "pengetahuan" AI.
-/// 3. AI akan menjawab pertanyaan berdasarkan data nyata dari aplikasi,
-///    bukan mengarang sendiri.
 class AIController {
-  // ── Groq API — dibaca dari .env (tidak pernah hardcode di source code) ────
   static String get _groqApiKey =>
       dotenv.env['GROQ_API_KEY'] ?? '';
 
@@ -26,7 +17,6 @@ class AIController {
 
   static const String _model = 'llama-3.3-70b-versatile';
 
-  // ΓöÇΓöÇ Base system prompt (tanpa data) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   static const String _baseSystemPrompt =
       'Kamu adalah asisten digital bernama "Karisma AI" untuk organisasi '
       'karang taruna / remaja masjid bernama KARISMA. '
@@ -38,16 +28,12 @@ class AIController {
       'Jangan mengarang data yang tidak ada. '
       'Jika data tidak tersedia, katakan dengan jujur bahwa belum ada data.';
 
-  // ΓöÇΓöÇ Riwayat chat ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   final List<Map<String, String>> _history = [];
 
   AIController() {
     _history.add({'role': 'system', 'content': _baseSystemPrompt});
   }
 
-  // ΓöÇΓöÇ Inject data aplikasi ke system prompt ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
-  /// Dipanggil dari ChatbotView setelah data berhasil diload dari DB.
-  /// Mengganti system prompt dengan versi yang sudah berisi data nyata.
   void injectAppContext({
     required List<AcaraModel> acara,
     required List<KeuanganModel> keuangan,
@@ -60,7 +46,6 @@ class AIController {
         '${today.year}-${today.month.toString().padLeft(2, '0')}-'
         '${today.day.toString().padLeft(2, '0')}';
 
-    // Pisahkan acara mendatang dan yang sudah lewat
     final mendatang = acara
         .where((a) => a.tanggal.compareTo(todayStr) >= 0)
         .toList()
@@ -70,7 +55,6 @@ class AIController {
         .toList()
       ..sort((a, b) => b.tanggal.compareTo(a.tanggal));
 
-    // Format acara mendatang
     final acaraMendatangStr = mendatang.isEmpty
         ? '  - (Belum ada agenda mendatang)'
         : mendatang
@@ -80,7 +64,6 @@ class AIController {
                 'Kategori: ${a.kategori} | Tipe: ${a.tipe}')
             .join('\n');
 
-    // Format acara sudah lewat (5 terbaru)
     final acaraLewatStr = sudahLewat.isEmpty
         ? '  - (Tidak ada)'
         : sudahLewat
@@ -88,7 +71,6 @@ class AIController {
             .map((a) => '  - ${a.nama} | ${a.tanggal}')
             .join('\n');
 
-    // Format keuangan (10 transaksi terbaru)
     final transaksiStr = keuangan.isEmpty
         ? '  - (Belum ada transaksi)'
         : keuangan
@@ -98,7 +80,6 @@ class AIController {
                 'Rp ${_formatRupiah(k.nominal)} | ${k.tanggal}')
             .join('\n');
 
-    // Format catatan (5 terbaru)
     final catatanStr = catatan.isEmpty
         ? '  - (Belum ada catatan)'
         : catatan
@@ -108,14 +89,12 @@ class AIController {
                 '    Ringkasan: ${c.isi.length > 100 ? '${c.isi.substring(0, 100)}...' : c.isi}')
             .join('\n');
 
-    // Format member (hanya nama dan role, tanpa data sensitif)
     final memberStr = members.isEmpty
         ? '  - (Belum ada data anggota)'
         : members
             .map((m) => '  - ${m.nama} (${m.role})')
             .join('\n');
 
-    // Bangun system prompt lengkap dengan data
     final fullSystemPrompt = '''
 $_baseSystemPrompt
 
@@ -144,7 +123,6 @@ Gunakan data di atas untuk menjawab pertanyaan pengguna secara akurat.
 Tanggal hari ini adalah $todayStr.
 ''';
 
-    // Update system prompt di posisi pertama history
     if (_history.isNotEmpty && _history.first['role'] == 'system') {
       _history[0] = {'role': 'system', 'content': fullSystemPrompt};
     } else {
@@ -156,7 +134,6 @@ Tanggal hari ini adalah $todayStr.
         '${catatan.length} catatan, ${members.length} member');
   }
 
-  // ΓöÇΓöÇ Send message ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   Future<String> sendMessage(String userMessage, {String? context}) async {
     final content =
         context != null ? '$userMessage\n\nKonteks: $context' : userMessage;
@@ -175,7 +152,7 @@ Tanggal hari ini adalah $todayStr.
               'model': _model,
               'messages': _history,
               'max_tokens': 1024,
-              'temperature': 0.5, // lebih rendah = lebih faktual
+              'temperature': 0.5,
             }),
           )
           .timeout(const Duration(seconds: 30));
@@ -209,7 +186,6 @@ Tanggal hari ini adalah $todayStr.
     }
   }
 
-  // ΓöÇΓöÇ Analisis keuangan ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   Future<String> analyzeFinance(List<KeuanganModel> transactions) async {
     if (transactions.isEmpty) {
       return 'Belum ada data transaksi untuk dianalisis.';
@@ -239,22 +215,18 @@ Data keuangan organisasi KARISMA:
     );
   }
 
-  // ΓöÇΓöÇ Reset history ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   void clearHistory() {
     _history.clear();
     _history.add({'role': 'system', 'content': _baseSystemPrompt});
   }
 
-  /// Hapus percakapan saja, tapi pertahankan system prompt + data konteks.
-  /// Dipakai saat user klik "hapus chat" agar AI tidak lupa data aplikasi.
   void clearChatOnly() {
     if (_history.isEmpty) return;
-    final systemMsg = _history.first; // simpan system prompt + data
+    final systemMsg = _history.first;
     _history.clear();
-    _history.add(systemMsg); // kembalikan hanya system prompt
+    _history.add(systemMsg);
   }
 
-  // ΓöÇΓöÇ Helper ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
   static String _formatRupiah(int n) {
     return n.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),

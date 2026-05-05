@@ -1,11 +1,10 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 import 'package:sensors_plus/sensors_plus.dart';
 
 class SensorController {
   static const double _kaabahLat = 21.4225;
   static const double _kaabahLon = 39.8262;
 
-  /// Hitung bearing dari posisi user ke Ka'bah, hasil dalam [0, 360)
   static double calculateQiblaDirection(double userLat, double userLon) {
     final lat1 = userLat * math.pi / 180;
     final lat2 = _kaabahLat * math.pi / 180;

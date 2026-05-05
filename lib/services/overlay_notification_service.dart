@@ -1,8 +1,7 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-/// Service untuk menampilkan notifikasi pop-up dari atas layar — iOS 26 style.
 class OverlayNotificationService {
   static final OverlayNotificationService _instance =
       OverlayNotificationService._();
@@ -120,12 +119,10 @@ class _NotifPopupState extends State<_NotifPopup>
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(22),
                   child: BackdropFilter(
-                    // iOS 26 style — blur kuat + tint putih/gelap
                     filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
                     child: Container(
                       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
                       decoration: BoxDecoration(
-                        // Putih semi-transparan seperti notification iOS
                         color: Colors.white.withValues(alpha: 0.82),
                         borderRadius: BorderRadius.circular(22),
                         border: Border.all(
@@ -149,7 +146,6 @@ class _NotifPopupState extends State<_NotifPopup>
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // App icon container
                           Container(
                             width: 40, height: 40,
                             decoration: BoxDecoration(
@@ -163,13 +159,11 @@ class _NotifPopupState extends State<_NotifPopup>
                             ),
                           ),
                           const SizedBox(width: 12),
-                          // Konten teks
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                // App name kecil di atas
                                 const Text(
                                   'KARISMA',
                                   style: TextStyle(
@@ -178,12 +172,10 @@ class _NotifPopupState extends State<_NotifPopup>
                                     color: Color(0xFF1565C0),
                                     letterSpacing: 0.5,
                                     height: 1.0,
-                                    // Tidak ada decoration — tidak ada garis bawah
                                     decoration: TextDecoration.none,
                                   ),
                                 ),
                                 const SizedBox(height: 2),
-                                // Judul
                                 Text(
                                   widget.title,
                                   style: const TextStyle(
@@ -215,7 +207,6 @@ class _NotifPopupState extends State<_NotifPopup>
                             ),
                           ),
                           const SizedBox(width: 8),
-                          // Close button
                           GestureDetector(
                             onTap: _animateOut,
                             child: Container(

@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-// ─── Gradient AI Card ─────────────────────────────────────────────────────────
 class AiMeshCard extends StatelessWidget {
   final Widget child;
   const AiMeshCard({super.key, required this.child});
@@ -22,7 +21,6 @@ class AiMeshCard extends StatelessWidget {
   }
 }
 
-// ─── Glass Card ───────────────────────────────────────────────────────────────
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -56,7 +54,6 @@ class GlassCard extends StatelessWidget {
   }
 }
 
-// ─── Surface Card ─────────────────────────────────────────────────────────────
 class SurfaceCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -94,7 +91,6 @@ class SurfaceCard extends StatelessWidget {
   }
 }
 
-// ─── Quick Action Button ──────────────────────────────────────────────────────
 class QuickActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -161,7 +157,6 @@ class QuickActionButton extends StatelessWidget {
   }
 }
 
-// ─── Section Header ───────────────────────────────────────────────────────────
 class SectionHeader extends StatelessWidget {
   final String title;
   final String? actionLabel;
@@ -204,7 +199,6 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
-// ─── Category Badge ───────────────────────────────────────────────────────────
 class CategoryBadge extends StatelessWidget {
   final String label;
   final Color? color;
@@ -240,7 +234,6 @@ class CategoryBadge extends StatelessWidget {
   }
 }
 
-// ─── Shimmer Placeholder ──────────────────────────────────────────────────────
 class ShimmerBox extends StatefulWidget {
   final double width;
   final double height;
@@ -306,7 +299,6 @@ class _ShimmerBoxState extends State<ShimmerBox>
   }
 }
 
-// ─── Pulsing Dot ──────────────────────────────────────────────────────────────
 class PulsingDot extends StatefulWidget {
   final Color color;
   final double size;
@@ -354,7 +346,6 @@ class _PulsingDotState extends State<PulsingDot>
   }
 }
 
-// ─── Typing Indicator ─────────────────────────────────────────────────────────
 class TypingIndicator extends StatefulWidget {
   const TypingIndicator({super.key});
 

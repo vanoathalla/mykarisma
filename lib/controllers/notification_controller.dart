@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,41 +7,25 @@ import 'package:timezone/data/latest.dart' as tz;
 import '../models/acara_model.dart';
 import '../services/overlay_notification_service.dart';
 
-/// NotificationController — mengelola semua notifikasi lokal aplikasi KARISMA.
-///
-/// Channel yang tersedia:
-/// 1. karisma_update  — notif saat admin tambah/update data (acara, keuangan, catatan)
-/// 2. karisma_acara   — pengingat H-1 otomatis saat admin tambah acara
-/// 3. karisma_hariH   — pengingat hari-H sesuai jam acara (diset oleh member)
-/// 4. karisma_langkah — pencapaian langkah ibadah
-///
-/// Semua notif mengikuti pengaturan suara/getar HP pengguna secara otomatis
-/// karena menggunakan Importance.defaultImportance (tidak override sistem).
 class NotificationController {
   static final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
   static bool _initialized = false;
 
-  // ── Channel IDs ────────────────────────────────────────────────────────────
   static const String _chUpdate = 'karisma_update';
   static const String _chAcara = 'karisma_acara';
-  // ID baru (v3) agar Android membuat ulang channel dengan Importance.max
-  // Channel lama 'karisma_hariH' dan 'karisma_hariH_v2' sudah terlanjur dibuat dengan importance rendah
   static const String _chHariH = 'karisma_hariH_v3';
   static const String _chLangkah = 'karisma_langkah';
 
-  // ── Prefs keys ─────────────────────────────────────────────────────────────
   static const String _prefNotifUpdate = 'notif_update_aktif';
   static const String _prefNotifAcara = 'notif_acara_aktif';
   static const String _prefNotifHariH = 'notif_hariH_aktif';
 
-  // ── Initialize ─────────────────────────────────────────────────────────────
   static Future<void> initialize() async {
     if (_initialized) return;
 
     tz.initializeTimeZones();
-    // Set timezone ke WIB agar jadwal notifikasi tepat waktu di Indonesia
     tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -51,8 +35,6 @@ class NotificationController {
     final androidImpl = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
 
-    // Update channel — karisma_update & karisma_acara pakai defaultImportance
-    // karisma_hariH pakai Importance.max agar muncul sebagai heads-up (pop-up)
     await androidImpl?.createNotificationChannel(const AndroidNotificationChannel(
       _chUpdate,
       'Update Data KARISMA',
@@ -67,8 +49,6 @@ class NotificationController {
       importance: Importance.defaultImportance,
     ));
 
-    // MAX importance = heads-up notification (pop-up di atas layar)
-    // Ini adalah level tertinggi untuk memastikan notifikasi muncul sebagai pop-up
     await androidImpl?.createNotificationChannel(const AndroidNotificationChannel(
       _chHariH,
       'Pengingat Hari-H Acara',
@@ -89,7 +69,6 @@ class NotificationController {
     _initialized = true;
   }
 
-  // ── Permission ─────────────────────────────────────────────────────────────
   static Future<bool> requestPermission() async {
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
@@ -97,7 +76,6 @@ class NotificationController {
     return granted ?? false;
   }
 
-  // ── Baca preferensi notifikasi ─────────────────────────────────────────────
   static Future<bool> isNotifUpdateAktif() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_prefNotifUpdate) ?? true;
@@ -113,7 +91,6 @@ class NotificationController {
     return prefs.getBool(_prefNotifHariH) ?? true;
   }
 
-  // ── Simpan preferensi notifikasi ───────────────────────────────────────────
   static Future<void> setNotifUpdate(bool aktif) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefNotifUpdate, aktif);
@@ -122,7 +99,6 @@ class NotificationController {
   static Future<void> setNotifAcara(bool aktif) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefNotifAcara, aktif);
-    // Jika dimatikan, batalkan semua notif H-1 yang terjadwal
     if (!aktif) await _plugin.cancelAll();
   }
 
@@ -131,9 +107,6 @@ class NotificationController {
     await prefs.setBool(_prefNotifHariH, aktif);
   }
 
-  // ── 1. Notif update data (admin tambah/edit) ───────────────────────────────
-  /// Dipanggil dari controller saat admin berhasil tambah/update data.
-  /// Hanya tampil jika member mengaktifkan notif update.
   static Future<void> showUpdateNotif({
     required String judul,
     required String isi,
@@ -159,9 +132,7 @@ class NotificationController {
         isi,
         details,
       );
-      // Save to local inbox so NotifikasiView can display it
       await _saveToInbox(judul: judul, isi: isi);
-      // Tampilkan in-app pop-up notification
       OverlayNotificationService().show(
         title: judul,
         body: isi,
@@ -171,7 +142,6 @@ class NotificationController {
     }
   }
 
-  /// Saves a notification entry to SharedPreferences inbox.
   static Future<void> _saveToInbox({required String judul, required String isi}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -181,16 +151,12 @@ class NotificationController {
         'body': isi,
         'timestamp': DateTime.now().toIso8601String(),
       });
-      raw.insert(0, entry); // newest first
-      // Keep max 50
+      raw.insert(0, entry);
       if (raw.length > 50) raw.removeRange(50, raw.length);
       await prefs.setStringList('notif_inbox', raw);
     } catch (_) {}
   }
 
-  // ── 2. Pengingat H-1 otomatis ─────────────────────────────────────────────
-  /// Dijadwalkan otomatis saat admin tambah acara.
-  /// Muncul jam 08:00 sehari sebelum acara.
   static Future<void> scheduleAcaraNotification(AcaraModel acara) async {
     if (!_initialized) return;
     if (!await isNotifAcaraAktif()) return;
@@ -234,12 +200,10 @@ class NotificationController {
     }
   }
 
-  // ── 3. Batalkan notif H-1 ─────────────────────────────────────────────────
   static Future<void> cancelNotification(int idAcara) async {
-    await _plugin.cancel(idAcara + 10000); // H-1
+    await _plugin.cancel(idAcara + 10000);
   }
 
-  // ── 4. Pencapaian langkah ─────────────────────────────────────────────────
   static Future<void> showStepAchievement(int targetSteps) async {
     if (!_initialized) return;
     try {

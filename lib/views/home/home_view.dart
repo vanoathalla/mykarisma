@@ -15,7 +15,6 @@ import '../auth/login_view.dart';
 import '../peta/peta_view.dart';
 import '../../widgets/karisma_logo.dart';
 
-// ─── Global tab notifier ──────────────────────────────────────────────────────
 class _HomeTabController extends ValueNotifier<int> {
   _HomeTabController(super.value);
 
@@ -31,7 +30,6 @@ class _HomeTabController extends ValueNotifier<int> {
 
 final homeTabNotifier = _HomeTabController(1);
 
-// ─── HomeView ─────────────────────────────────────────────────────────────────
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
@@ -40,12 +38,10 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  // 0 = Saran, 1 = Beranda (center/FAB), 2 = Profil
   int _currentIndex = 1;
   bool _isLoggedIn = false;
   bool _sessionChecked = false;
 
-  // Step counter untuk navbar
   int _stepsToday = 0;
   StreamSubscription<int>? _stepSub;
 
@@ -87,15 +83,12 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Future<void> _initStepCounter() async {
-    // Baca userId dari session untuk isolasi langkah per-user
     final session = await AuthHelper.getActiveSession();
     final userId = session?['id_member']?.toString() ?? 'guest';
 
-    // Baca cache dulu (cepat, tanpa stream)
     final cached = await PedometerController.readStepsTodayCached(userId: userId);
     if (mounted) setState(() => _stepsToday = cached);
 
-    // Init controller dengan userId agar langkah terpisah per-user
     final ctrl = PedometerController();
     await ctrl.initForUser(userId);
     _stepSub = ctrl.stepsStream.listen((steps) {
@@ -129,12 +122,11 @@ class _HomeViewState extends State<HomeView> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      extendBody: true, // body mengalir di bawah navbar
+      extendBody: true,
       body: IndexedStack(
         index: _currentIndex,
         children: _pages,
       ),
-      // ── Floating Action Button (center docked, lebih besar) ────────
       floatingActionButton: SizedBox(
         width: 64,
         height: 64,
@@ -157,7 +149,6 @@ class _HomeViewState extends State<HomeView> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      // ── Bottom App Bar ──────────────────────────────────────────────
       bottomNavigationBar: _NotchedBottomBar(
         currentIndex: _currentIndex,
         stepsToday: _stepsToday,
@@ -168,7 +159,6 @@ class _HomeViewState extends State<HomeView> {
   }
 }
 
-// ─── Notched Bottom Bar ───────────────────────────────────────────────────────
 class _NotchedBottomBar extends StatelessWidget {
   final int currentIndex;
   final int stepsToday;
@@ -204,7 +194,6 @@ class _NotchedBottomBar extends StatelessWidget {
             height: 68,
             child: Row(
               children: [
-                // ── Slot Kiri: Saran + step counter ──────────────────
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onTap(0),
@@ -235,10 +224,8 @@ class _NotchedBottomBar extends StatelessWidget {
                   ),
                 ),
 
-                // ── Ruang untuk FAB notch ─────────────────────────────
                 const SizedBox(width: 80),
 
-                // ── Slot Kanan: Profil ────────────────────────────────
                 Expanded(
                   child: GestureDetector(
                     onTap: () => onTap(2),
@@ -277,7 +264,6 @@ class _NotchedBottomBar extends StatelessWidget {
   }
 }
 
-// ─── Guest View — SacredHub Landing Page ─────────────────────────────────────
 class _GuestView extends StatefulWidget {
   final VoidCallback onLoginSuccess;
   const _GuestView({required this.onLoginSuccess});
@@ -293,7 +279,6 @@ class _GuestViewState extends State<_GuestView> {
   int _saldo = 0;
   List<DokumentasiModel> _dokumentasi = [];
   bool _loading = true;
-  // Animasi counter saldo
   int _displaySaldo = 0;
 
   @override
@@ -372,7 +357,6 @@ class _GuestViewState extends State<_GuestView> {
               child: CustomScrollView(
                 physics: const ClampingScrollPhysics(),
                 slivers: [
-                  // ── App Bar ──────────────────────────────────────────
                   SliverAppBar(
                     floating: true,
                     snap: true,
@@ -418,7 +402,6 @@ class _GuestViewState extends State<_GuestView> {
                     sliver: SliverList(
                       delegate: SliverChildListDelegate([
 
-                        //  Badge 
                         Center(
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -443,7 +426,6 @@ class _GuestViewState extends State<_GuestView> {
 
                         const SizedBox(height: 24),
 
-                        //  Headline 
                         Text(
                           '"KEYGEN"',
                           textAlign: TextAlign.center,
@@ -474,14 +456,13 @@ class _GuestViewState extends State<_GuestView> {
 
                         const SizedBox(height: 28),
 
-                        //  CTA Button 
                         Center(
                           child: GestureDetector(
                             onTap: _goToLogin,
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                               decoration: BoxDecoration(
-                                color: AppTheme.secondaryContainer, // Amber #F89C00
+                                color: AppTheme.secondaryContainer,
                                 borderRadius: BorderRadius.circular(50),
                                 boxShadow: [
                                   BoxShadow(
@@ -507,7 +488,6 @@ class _GuestViewState extends State<_GuestView> {
 
                         const SizedBox(height: 40),
 
-                        //  Financial Card 
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
@@ -562,7 +542,6 @@ class _GuestViewState extends State<_GuestView> {
 
                         const SizedBox(height: 20),
 
-                        //  Location Card 
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
@@ -612,7 +591,6 @@ class _GuestViewState extends State<_GuestView> {
 
                         const SizedBox(height: 20),
 
-                        //  Dokumentasi Carousel 
                         if (_dokumentasi.isNotEmpty) ...[
                           Text('Dokumentasi Kegiatan',
                               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: textPrimary)),
@@ -661,7 +639,6 @@ class _GuestViewState extends State<_GuestView> {
 
                         const SizedBox(height: 32),
 
-                        //  Footer 
                         Center(
                           child: Text(
                             '© 2024 KEYGEN — Kemirisewu Youth Generation',

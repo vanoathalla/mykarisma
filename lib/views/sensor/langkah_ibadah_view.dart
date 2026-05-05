@@ -25,12 +25,10 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
   StreamSubscription<int>? _stepSub;
   StreamSubscription<WalkingStatus>? _statusSub;
 
-  // Animasi lingkaran progress
   late AnimationController _progressAnim;
   late Animation<double> _progressValue;
   double _prevProgress = 0;
 
-  // Animasi badge muncul
   late AnimationController _badgeAnim;
 
   static const int _target = PedometerController.dailyTarget;
@@ -58,11 +56,9 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
   Future<void> _initPedometer() async {
     await _ctrl.initialize();
 
-    // Baca nilai awal
     final cached = await PedometerController.readStepsTodayCached();
     _updateSteps(cached);
 
-    // Subscribe stream
     _stepSub = _ctrl.stepsStream.listen(_updateSteps);
     _statusSub = _ctrl.statusStream.listen((s) {
       if (mounted) setState(() => _status = s);
@@ -73,7 +69,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
     if (!mounted) return;
     final newProgress = (steps / _target).clamp(0.0, 1.0);
 
-    // Animasi progress
     _progressValue = Tween<double>(
       begin: _prevProgress,
       end: newProgress,
@@ -86,7 +81,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
       _targetReached = steps >= _target;
     });
 
-    // Gamifikasi: kirim notifikasi & animasi badge saat target tercapai
     if (steps >= _target && !_notifSent) {
       _notifSent = true;
       _badgeAnim.forward();
@@ -98,7 +92,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
     try {
       await NotificationController.showStepAchievement(_target);
     } catch (_) {
-      // Notifikasi opsional '-" tidak crash jika gagal
     }
   }
 
@@ -127,46 +120,37 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
       backgroundColor: bg,
       body: Column(
         children: [
-          // '"-'"- App Bar '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           _buildAppBar(isDark, textPrimary),
 
-          // '"-'"- Content '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           Expanded(
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
               child: Column(
                 children: [
-                  // '"-'"- Circular Progress '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                   _buildCircularProgress(isDark, textPrimary, textSub),
 
                   const SizedBox(height: 28),
 
-                  // '"-'"- Status Badge '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                   _buildStatusBadge(isDark),
 
                   const SizedBox(height: 28),
 
-                  // '"-'"- Achievement Badge '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                   if (_targetReached) _buildAchievementBadge(isDark),
                   if (_targetReached) const SizedBox(height: 28),
 
-                  // '"-'"- Stats Row '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                   _buildStatsRow(isDark, cardBg, cardBorder, textPrimary, textSub),
 
                   const SizedBox(height: 28),
 
-                  // '"-'"- Motivasi Card '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                   _buildMotivasiCard(isDark, textPrimary, textSub),
 
                   const SizedBox(height: 28),
 
-                  // '"-'"- Milestone List '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                   _buildMilestones(isDark, cardBg, cardBorder, textPrimary, textSub),
 
                   const SizedBox(height: 20),
 
-                  // '"-'"- Reset Button '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                   _buildResetButton(isDark),
                 ],
               ),
@@ -177,7 +161,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
     );
   }
 
-  // '"-'"- App Bar '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
   Widget _buildAppBar(bool isDark, Color textPrimary) {
     return ClipRect(
       child: BackdropFilter(
@@ -222,7 +205,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
                           ],
                         ),
                       ),
-                      // Live indicator
                       Row(
                         children: [
                           _PulsingDot(
@@ -260,7 +242,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
     );
   }
 
-  // '"-'"- Circular Progress '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
   Widget _buildCircularProgress(
       bool isDark, Color textPrimary, Color textSub) {
     return AnimatedBuilder(
@@ -273,7 +254,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Background track
               CustomPaint(
                 size: const Size(240, 240),
                 painter: _CircleTrackPainter(
@@ -282,7 +262,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
                   targetReached: _targetReached,
                 ),
               ),
-              // Center content
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -330,7 +309,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
     );
   }
 
-  // '"-'"- Status Badge '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
   Widget _buildStatusBadge(bool isDark) {
     final isWalking = _status == WalkingStatus.walking;
     final color = isWalking ? Colors.green : AppTheme.outline;
@@ -371,7 +349,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
     );
   }
 
-  // '"-'"- Achievement Badge '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
   Widget _buildAchievementBadge(bool isDark) {
     return ScaleTransition(
       scale: CurvedAnimation(parent: _badgeAnim, curve: Curves.elasticOut),
@@ -436,11 +413,10 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
     );
   }
 
-  // '"-'"- Stats Row '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
   Widget _buildStatsRow(bool isDark, Color cardBg, Color cardBorder,
       Color textPrimary, Color textSub) {
     final remaining = (_target - _steps).clamp(0, _target);
-    final km = (_steps * 0.0008).toStringAsFixed(2); // ~0.8m per langkah
+    final km = (_steps * 0.0008).toStringAsFixed(2);
 
     return Row(
       children: [
@@ -489,7 +465,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
     );
   }
 
-  // '"-'"- Motivasi Card '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
   Widget _buildMotivasiCard(bool isDark, Color textPrimary, Color textSub) {
     final quotes = [
       '"Bergerak aktif adalah tanda semangat pemuda." - KARISMA',
@@ -529,7 +504,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
     );
   }
 
-  // '"-'"- Milestone List '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
   Widget _buildMilestones(bool isDark, Color cardBg, Color cardBorder,
       Color textPrimary, Color textSub) {
     final milestones = [
@@ -625,7 +599,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
     );
   }
 
-  // '"-'"- Reset Button '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
   Widget _buildResetButton(bool isDark) {
     return TextButton.icon(
       onPressed: () async {
@@ -670,7 +643,6 @@ class _LangkahIbadahViewState extends State<LangkahIbadahView>
   }
 }
 
-// '"-'"-'"- Circular Track Painter '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
 class _CircleTrackPainter extends CustomPainter {
   final double progress;
   final bool isDark;
@@ -687,9 +659,8 @@ class _CircleTrackPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 16;
     const strokeWidth = 14.0;
-    const startAngle = -math.pi / 2; // mulai dari atas
+    const startAngle = -math.pi / 2;
 
-    // Track background
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
       0,
@@ -705,7 +676,6 @@ class _CircleTrackPainter extends CustomPainter {
 
     if (progress <= 0) return;
 
-    // Progress arc
     final sweepAngle = 2 * math.pi * progress;
     final gradient = SweepGradient(
       startAngle: startAngle,
@@ -724,7 +694,6 @@ class _CircleTrackPainter extends CustomPainter {
 
     canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
 
-    // Dot di ujung progress
     final dotAngle = startAngle + sweepAngle;
     final dotX = center.dx + radius * math.cos(dotAngle);
     final dotY = center.dy + radius * math.sin(dotAngle);
@@ -752,7 +721,6 @@ class _CircleTrackPainter extends CustomPainter {
       old.targetReached != targetReached;
 }
 
-// '"-'"-'"- Stat Card '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
 class _StatCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -825,7 +793,6 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// '"-'"-'"- Milestone Model '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
 class _Milestone {
   final int steps;
   final IconData icon;
@@ -833,7 +800,6 @@ class _Milestone {
   const _Milestone(this.steps, this.icon, this.label);
 }
 
-// '"-'"-'"- Pulsing Dot '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
 class _PulsingDot extends StatefulWidget {
   final Color color;
   const _PulsingDot({required this.color});

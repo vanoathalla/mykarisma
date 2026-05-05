@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show debugPrint;
+﻿import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/auth_helper.dart';
@@ -24,7 +24,6 @@ class AuthController {
         role: member.role,
       );
 
-      // Simpan last login id untuk biometrik
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('last_login_id', member.id);
 
@@ -40,7 +39,6 @@ class AuthController {
       final isSupported = await localAuth.isDeviceSupported();
       if (!isSupported) return false;
 
-      // Tampilkan dialog autentikasi biometrik/PIN bawaan HP
       final authenticated = await localAuth.authenticate(
         localizedReason: 'Gunakan sidik jari atau PIN untuk masuk ke KARISMA',
         options: const AuthenticationOptions(
@@ -52,7 +50,6 @@ class AuthController {
 
       if (!authenticated) return false;
 
-      // Ambil last login id — login sebagai user terakhir yang login
       final prefs = await SharedPreferences.getInstance();
       final lastId = prefs.getString('last_login_id');
 
@@ -61,13 +58,11 @@ class AuthController {
 
       Map<String, dynamic> target;
       if (lastId != null) {
-        // Login sebagai user terakhir
         target = members.firstWhere(
           (m) => m['id_member'].toString() == lastId,
           orElse: () => members.first,
         );
       } else {
-        // Fallback: login sebagai admin
         target = members.firstWhere(
           (m) => m['role'] == 'admin',
           orElse: () => members.first,

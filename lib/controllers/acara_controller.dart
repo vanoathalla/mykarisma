@@ -1,10 +1,9 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import '../helpers/database_helper.dart';
 import '../models/acara_model.dart';
 import 'notification_controller.dart';
 
 class AcaraController {
-  // Fungsi untuk menampilkan data acara dari SQLite
   Future<List<AcaraModel>> fetchAcara() async {
     try {
       final rows = await DatabaseHelper.instance.getAllAcara();
@@ -15,7 +14,6 @@ class AcaraController {
     }
   }
 
-  // Fungsi untuk menyimpan data acara baru ke SQLite
   Future<Map<String, dynamic>> tambahAcara(
     String nama,
     String tanggal,
@@ -35,7 +33,6 @@ class AcaraController {
         'lokasi': lokasi,
       });
 
-      // Jadwalkan notifikasi H-1 jika tanggal di masa depan
       final tanggalDate = DateTime.tryParse(tanggal.split(' ').first);
       if (tanggalDate != null && tanggalDate.isAfter(DateTime.now())) {
         final acara = AcaraModel(
@@ -49,7 +46,6 @@ class AcaraController {
         await NotificationController.scheduleAcaraNotification(acara);
       }
 
-      // Notif update ke semua member yang login
       await NotificationController.showUpdateNotif(
         judul: '📅 Acara Baru Ditambahkan',
         isi: '$nama — $tanggal',
@@ -78,7 +74,6 @@ class AcaraController {
     }
   }
 
-  // Fungsi untuk memperbarui data acara di SQLite
   Future<Map<String, dynamic>> updateAcara(
     String id,
     String nama,
@@ -98,7 +93,6 @@ class AcaraController {
         'lokasi': lokasi,
       });
 
-      // Batalkan notifikasi lama dan jadwalkan ulang
       await NotificationController.cancelNotification(int.tryParse(id) ?? 0);
       final tanggalDate = DateTime.tryParse(tanggal.split(' ').first);
       if (tanggalDate != null && tanggalDate.isAfter(DateTime.now())) {
@@ -113,7 +107,6 @@ class AcaraController {
         await NotificationController.scheduleAcaraNotification(acara);
       }
 
-      // Notif update ke semua member
       await NotificationController.showUpdateNotif(
         judul: '📅 Acara Diperbarui',
         isi: '$nama — $tanggal',
@@ -126,7 +119,6 @@ class AcaraController {
     }
   }
 
-  // Fungsi untuk mencari acara berdasarkan nama atau kategori
   Future<List<AcaraModel>> searchAcara(String query) async {
     try {
       final all = await fetchAcara();

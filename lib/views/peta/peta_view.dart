@@ -18,7 +18,6 @@ class PetaView extends StatefulWidget {
 }
 
 class _PetaViewState extends State<PetaView> {
-  // Koordinat tujuan  Kemiri Sewu, Sidorejo, Godean, Sleman
   static const LatLng _lokasiTujuan = LatLng(-7.7473727, 110.2731459);
   static const String _namaTujuan = 'Lokasi KARISMA';
   static const String _deskripsiTujuan = 'Sidorejo, Kec. Godean, Sleman, Yogyakarta';
@@ -31,13 +30,11 @@ class _PetaViewState extends State<PetaView> {
   LatLng? _lokasiUser;
   bool _loadingLokasi = false;
 
-  // Rute navigasi
   List<LatLng> _rutePoints = [];
   bool _loadingRute = false;
   bool _ruteAktif = false;
   String _infoRute = '';
 
-  // Mode selector
   bool _modeLihatLandmark = false;
 
   final _namaCtrl = TextEditingController();
@@ -107,9 +104,6 @@ class _PetaViewState extends State<PetaView> {
     }
   }
 
-  //  Ambil rute dari OSRM (gratis, tanpa API key) 
-  // OSRM adalah routing engine open-source yang dipakai OpenStreetMap.
-  // Endpoint publik: router.project-osrm.org  tidak butuh key, tidak butuh kartu kredit.
   Future<void> _tampilkanRute(LatLng tujuan) async {
     if (_lokasiUser == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -121,7 +115,6 @@ class _PetaViewState extends State<PetaView> {
       return;
     }
 
-    // Jika rute sudah aktif ke tujuan yang sama, matikan
     if (_ruteAktif) {
       setState(() {
         _rutePoints = [];
@@ -134,7 +127,6 @@ class _PetaViewState extends State<PetaView> {
     setState(() => _loadingRute = true);
 
     try {
-      // Format: /route/v1/driving/{lon1},{lat1};{lon2},{lat2}
       final url = Uri.parse(
         'https://router.project-osrm.org/route/v1/driving/'
         '${_lokasiUser!.longitude},${_lokasiUser!.latitude};'
@@ -153,12 +145,10 @@ class _PetaViewState extends State<PetaView> {
           final geometry = route['geometry'] as Map<String, dynamic>;
           final coords = geometry['coordinates'] as List;
 
-          // OSRM mengembalikan [lon, lat]  kita balik ke LatLng(lat, lon)
           final points = coords
               .map((c) => LatLng((c[1] as num).toDouble(), (c[0] as num).toDouble()))
               .toList();
 
-          // Info jarak & durasi
           final distanceM = (route['distance'] as num).toDouble();
           final durationS = (route['duration'] as num).toDouble();
           final distStr = distanceM < 1000
@@ -176,7 +166,6 @@ class _PetaViewState extends State<PetaView> {
               _loadingRute = false;
             });
 
-            // Fit kamera agar seluruh rute terlihat
             if (points.isNotEmpty) {
               final bounds = LatLngBounds.fromPoints(points);
               _mapController.fitCamera(
@@ -191,7 +180,6 @@ class _PetaViewState extends State<PetaView> {
         }
       }
 
-      // Gagal ambil rute
       if (mounted) {
         setState(() => _loadingRute = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -376,14 +364,12 @@ class _PetaViewState extends State<PetaView> {
               const SizedBox(height: 12),
               TextField(controller: _deskripsiCtrl, decoration: const InputDecoration(labelText: 'Deskripsi (opsional)', border: OutlineInputBorder()), maxLines: 2),
               const SizedBox(height: 12),
-              // Latitude dengan tombol +/-
               _CoordField(
                 controller: _latCtrl,
                 label: 'Latitude',
                 hint: '-7.747372',
               ),
               const SizedBox(height: 12),
-              // Longitude dengan tombol +/-
               _CoordField(
                 controller: _lonCtrl,
                 label: 'Longitude',
@@ -425,7 +411,6 @@ class _PetaViewState extends State<PetaView> {
     );
   }
 
-  // ── Edit Landmark Dialog ──────────────────────────────────────────────────
   void _showEditLandmarkDialog(LandmarkModel lm) {
     _namaCtrl.text = lm.nama;
     _deskripsiCtrl.text = lm.deskripsi ?? '';
@@ -484,8 +469,6 @@ class _PetaViewState extends State<PetaView> {
       ),
     );
   }
-
-  // ── Bottom card builders ──────────────────────────────────────────────────
 
   Widget _buildNavigasiCard(Color cardBg, Color textPrimary, bool isDark) {
     return Container(
@@ -596,7 +579,6 @@ class _PetaViewState extends State<PetaView> {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Tombol lihat
                         TextButton(
                           onPressed: () {
                             _mapController.move(LatLng(lm.latitude, lm.longitude), 17);
@@ -610,7 +592,6 @@ class _PetaViewState extends State<PetaView> {
                           child: const Text('Lihat', style: TextStyle(fontSize: 12, color: AppTheme.primary, fontWeight: FontWeight.w600)),
                         ),
                         if (_isAdmin) ...[
-                          // Tombol edit
                           GestureDetector(
                             onTap: () => _showEditLandmarkDialog(lm),
                             child: Container(
@@ -623,7 +604,6 @@ class _PetaViewState extends State<PetaView> {
                             ),
                           ),
                           const SizedBox(width: 4),
-                          // Tombol hapus
                           GestureDetector(
                             onTap: () async {
                               final ok = await showDialog<bool>(
@@ -676,7 +656,6 @@ class _PetaViewState extends State<PetaView> {
     final cardBg = isDark ? const Color(0xFF252828) : Colors.white;
 
     final markers = <Marker>[
-      // Marker tujuan — logo KARISMA dengan background bulat + garis penunjuk
       Marker(
         point: _lokasiTujuan,
         width: 70, height: 80,
@@ -688,7 +667,6 @@ class _PetaViewState extends State<PetaView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Background bulat putih + border biru + shadow
               Container(
                 width: 56, height: 56,
                 decoration: BoxDecoration(
@@ -705,7 +683,6 @@ class _PetaViewState extends State<PetaView> {
                 ),
                 child: ClipOval(child: const KarismaLogo(size: 56)),
               ),
-              // Garis penunjuk lokasi
               Container(
                 width: 2.5,
                 height: 14,
@@ -714,7 +691,6 @@ class _PetaViewState extends State<PetaView> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              // Titik ujung
               Container(
                 width: 7, height: 7,
                 decoration: BoxDecoration(
@@ -732,7 +708,6 @@ class _PetaViewState extends State<PetaView> {
           ),
         ),
       ),
-      // Marker user
       if (_lokasiUser != null)
         Marker(
           point: _lokasiUser!,
@@ -760,7 +735,6 @@ class _PetaViewState extends State<PetaView> {
             ),
           ),
         ),
-      // Landmarks dari DB — logo KARISMA dengan background bulat + garis penunjuk
       ..._landmarks.map((lm) => Marker(
         point: LatLng(lm.latitude, lm.longitude),
         width: 60, height: 70,
@@ -844,7 +818,6 @@ class _PetaViewState extends State<PetaView> {
       ),
       body: Stack(
         children: [
-          //  Peta 
           _loading
               ? const Center(child: CircularProgressIndicator(color: AppTheme.primary))
               : FlutterMap(
@@ -863,7 +836,6 @@ class _PetaViewState extends State<PetaView> {
                       maxZoom: 19,
                       fallbackUrl: 'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
                     ),
-                    // Garis rute
                     if (_rutePoints.isNotEmpty)
                       PolylineLayer(
                         polylines: [
@@ -883,7 +855,6 @@ class _PetaViewState extends State<PetaView> {
                   ],
                 ),
 
-          //  Info rute (muncul saat rute aktif) 
           if (_ruteAktif && _infoRute.isNotEmpty)
             Positioned(
               top: 72,
@@ -915,7 +886,6 @@ class _PetaViewState extends State<PetaView> {
               ),
             ),
 
-          //  Bottom card 
           Positioned(
             bottom: 16, left: 16, right: 16,
             child: AnimatedSwitcher(
@@ -926,7 +896,6 @@ class _PetaViewState extends State<PetaView> {
             ),
           ),
 
-          // Mode selector - positioned at top of map
           Positioned(
             top: 12,
             left: 16,
@@ -987,7 +956,6 @@ class _PetaViewState extends State<PetaView> {
             ),
           ),
 
-          //  Loading lokasi indicator 
           if (_loadingLokasi)
             Positioned(
               top: 72, left: 0, right: 0,
@@ -1011,10 +979,8 @@ class _PetaViewState extends State<PetaView> {
               ),
             ),
 
-          // FAB tambah landmark (admin only) — di dalam Stack agar tidak menumpuk bottom card
           if (_isAdmin)
             Positioned(
-              // Letakkan di kanan bawah, tepat di atas bottom card (~160px tinggi)
               bottom: 100,
               right: 16,
               child: FloatingActionButton(
@@ -1034,9 +1000,6 @@ class _PetaViewState extends State<PetaView> {
   }
 }
 
-//  Coordinate Input Field dengan tombol +/- 
-/// Keyboard tipe angka mengikuti pengaturan HP (decimal/signed otomatis).
-/// Tombol + dan - untuk increment/decrement nilai koordinat.
 class _CoordField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -1058,17 +1021,14 @@ class _CoordField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Tombol minus
         _AdjustBtn(
           icon: Icons.remove_rounded,
           onTap: () => _adjust(-0.001),
         ),
         const SizedBox(width: 8),
-        // Input field
         Expanded(
           child: TextField(
             controller: controller,
-            // Keyboard tipe angka  tampilan keyboard tergantung HP
             keyboardType: const TextInputType.numberWithOptions(
               decimal: true,
               signed: true,
@@ -1083,7 +1043,6 @@ class _CoordField extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        // Tombol plus
         _AdjustBtn(
           icon: Icons.add_rounded,
           onTap: () => _adjust(0.001),
@@ -1119,5 +1078,3 @@ class _AdjustBtn extends StatelessWidget {
   }
 }
 
-//  Coordinate Input Field dengan tombol +/- 
-// Keyboard tipe angka mengikuti pengaturan HP (decimal/signed otomatis)

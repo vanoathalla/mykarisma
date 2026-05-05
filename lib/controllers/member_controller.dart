@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import '../helpers/auth_helper.dart';
 import '../helpers/database_helper.dart';
 import '../models/member_model.dart';
@@ -26,7 +26,6 @@ class MemberController {
       if (nama.isEmpty || panggilan.isEmpty || password.isEmpty) {
         return {'success': false, 'message': 'Nama, username, dan password wajib diisi'};
       }
-      // Cek username sudah ada
       final existing = await DatabaseHelper.instance.getMemberByUsername(panggilan);
       if (existing != null) {
         return {'success': false, 'message': 'Username sudah digunakan'};

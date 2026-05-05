@@ -22,7 +22,7 @@ class _KeuanganViewState extends State<KeuanganView> {
   bool _loadingRates = true;
 
   int _refreshKey = 0;
-  String _roleUser = 'tamu'; // default tamu
+  String _roleUser = 'tamu';
 
   @override
   void initState() {
@@ -49,7 +49,6 @@ class _KeuanganViewState extends State<KeuanganView> {
     }
   }
 
-  /// Tampilkan BottomSheet konversi kontekstual berdasarkan saldo/pemasukan/pengeluaran
   void _bukaKonversiKontekstual(Map<String, dynamic> data) {
     if (_currencyRates == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -93,7 +92,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Handle bar
                   Center(
                     child: Container(
                       width: 40,
@@ -125,7 +123,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Pilih nilai
                   DropdownButtonFormField<String>(
                     value: selectedNilai,
                     decoration: const InputDecoration(
@@ -144,7 +141,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Pilih mata uang tujuan
                   DropdownButtonFormField<String>(
                     value: selectedCurrency,
                     decoration: const InputDecoration(
@@ -165,7 +161,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Hasil konversi
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
@@ -256,7 +251,6 @@ class _KeuanganViewState extends State<KeuanganView> {
       });
     }
 
-    // Hitung konversi awal
     if (_currencyRates != null) {
       final nominal = item.nominal.toDouble();
       usdVal = _currencyCtrl.convert(nominal, 'IDR', 'USD', _currencyRates!);
@@ -290,7 +284,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Handle bar
                       Center(
                         child: Container(
                           width: 40,
@@ -321,7 +314,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Jenis transaksi toggle
                       Row(
                         children: [
                           Expanded(
@@ -579,7 +571,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Handle bar
                       Center(
                         child: Container(
                           width: 40,
@@ -610,7 +601,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Jenis transaksi toggle
                       Row(
                         children: [
                           Expanded(
@@ -850,7 +840,6 @@ class _KeuanganViewState extends State<KeuanganView> {
           return CustomScrollView(
             physics: const ClampingScrollPhysics(),
             slivers: [
-              // ── App Bar ──────────────────────────────────────────────
               SliverAppBar(
                 floating: true,
                 snap: true,
@@ -886,7 +875,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    // ── Saldo Card ──────────────────────────────────────
                     AiMeshCard(
                       child: Padding(
                         padding: const EdgeInsets.all(24),
@@ -944,7 +932,6 @@ class _KeuanganViewState extends State<KeuanganView> {
 
                     const SizedBox(height: 20),
 
-                    // ── Tombol Konversi Kontekstual ─────────────────────
                     SurfaceCard(
                       padding: const EdgeInsets.all(20),
                       borderRadius: BorderRadius.circular(20),
@@ -1044,7 +1031,6 @@ class _KeuanganViewState extends State<KeuanganView> {
 
                     const SizedBox(height: 24),
 
-                    // ── Riwayat Transaksi ───────────────────────────────
                     SectionHeader(title: 'Riwayat Transaksi'),
                     const SizedBox(height: 14),
 
@@ -1073,7 +1059,6 @@ class _KeuanganViewState extends State<KeuanganView> {
                         final isPemasukan = item.jenis.toLowerCase() == 'pemasukan';
                         return Dismissible(
                           key: Key('keuangan_${item.id}'),
-                          // Hanya admin yang bisa swipe hapus
                           direction: _roleUser == 'admin'
                               ? DismissDirection.endToStart
                               : DismissDirection.none,

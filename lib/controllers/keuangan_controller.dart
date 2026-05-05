@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import '../helpers/database_helper.dart';
 import '../models/keuangan_model.dart';
 import 'notification_controller.dart';
@@ -64,7 +64,6 @@ class KeuanganController {
         'jumlah': jumlah,
       });
 
-      // Notif update ke semua member
       final tipeLbl = tipe == 'pemasukan' ? '💰 Pemasukan Baru' : '💸 Pengeluaran Baru';
       await NotificationController.showUpdateNotif(
         judul: tipeLbl,

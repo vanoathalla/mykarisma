@@ -21,8 +21,8 @@ class _LoginViewState extends State<LoginView> {
 
   bool _loading = false;
   bool _obscurePassword = true;
-  bool _biometricAvailable = false;   // user sudah aktifkan → tampilkan tombol
-  bool _deviceHasBiometric = false;   // device support → untuk tampilkan dialog
+  bool _biometricAvailable = false;
+  bool _deviceHasBiometric = false;
 
   @override
   void initState() {
@@ -30,8 +30,6 @@ class _LoginViewState extends State<LoginView> {
     _checkBiometricAndAutoLogin();
   }
 
-  /// Cek ketersediaan biometrik — hanya update state, tidak auto-trigger.
-  /// Biometrik hanya aktif saat user klik tombol "Login dengan Biometrik".
   Future<void> _checkBiometricAndAutoLogin() async {
     final available = await _authCtrl.isBiometricAvailable();
     if (!mounted) return;
@@ -40,8 +38,8 @@ class _LoginViewState extends State<LoginView> {
     final enabled = prefs.getBool('biometric_enabled') ?? false;
 
     setState(() {
-      _deviceHasBiometric = available;          // device support biometrik
-      _biometricAvailable = available && enabled; // tombol muncul jika sudah diaktifkan
+      _deviceHasBiometric = available;
+      _biometricAvailable = available && enabled;
     });
   }
 
@@ -63,13 +61,10 @@ class _LoginViewState extends State<LoginView> {
     if (!mounted) return;
 
     if (res['success'] == true) {
-      // Cek apakah sudah pernah ditanya soal biometrik
       final prefs = await SharedPreferences.getInstance();
       final sudahDitanya = prefs.getBool('biometric_asked') ?? false;
 
-      // Tampilkan dialog jika device support biometrik DAN belum pernah ditanya
       if (_deviceHasBiometric && !sudahDitanya && mounted) {
-        // Tampilkan dialog konfirmasi aktifkan sidik jari
         final aktifkan = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
@@ -103,7 +98,6 @@ class _LoginViewState extends State<LoginView> {
           ),
         );
 
-        // Tandai sudah ditanya agar tidak muncul lagi
         await prefs.setBool('biometric_asked', true);
         if (aktifkan == true) {
           await prefs.setBool('biometric_enabled', true);
@@ -172,7 +166,6 @@ class _LoginViewState extends State<LoginView> {
               child: IntrinsicHeight(
                 child: Column(
                   children: [
-                    // Tombol kembali — muncul hanya jika bisa pop
                     if (Navigator.canPop(context))
                       Align(
                         alignment: Alignment.topLeft,
@@ -200,12 +193,9 @@ class _LoginViewState extends State<LoginView> {
                     else
                       const SizedBox(height: 60),
 
-                    // Logo KARISMA — langsung tanpa background
                     const KarismaLogo(size: 130),
                     const SizedBox(height: 24),
 
-
-                    // '”€'”€ Login Card '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
                     Container(
                       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                       padding: const EdgeInsets.all(28),
@@ -241,7 +231,6 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           const SizedBox(height: 24),
 
-                          // Username
                           TextFormField(
                             controller: _userCtrl,
                             decoration: const InputDecoration(
@@ -255,7 +244,6 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           const SizedBox(height: 14),
 
-                          // Password
                           TextFormField(
                             controller: _passCtrl,
                             obscureText: _obscurePassword,
@@ -283,7 +271,6 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           const SizedBox(height: 24),
 
-                          // Login Button
                           SizedBox(
                             height: 52,
                             child: ElevatedButton(
@@ -308,7 +295,6 @@ class _LoginViewState extends State<LoginView> {
                             ),
                           ),
 
-                          // Biometric Button
                           if (_biometricAvailable) ...[
                             const SizedBox(height: 12),
                             SizedBox(
@@ -329,7 +315,6 @@ class _LoginViewState extends State<LoginView> {
 
                           const SizedBox(height: 16),
 
-                          // Link ke Register
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [

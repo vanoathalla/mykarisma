@@ -484,7 +484,6 @@ class _CatatanViewState extends State<CatatanView> {
                               }
                             },
                             child: GestureDetector(
-                              // Tamu hanya bisa lihat, tidak bisa edit
                               onTap: _roleUser == 'admin'
                                   ? () => _bukaFormCatatan(catatan: item)
                                   : null,

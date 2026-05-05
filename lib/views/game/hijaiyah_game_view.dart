@@ -24,14 +24,11 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
   bool _isGameWin = false;
   String? _feedback;
   bool _showLeaderboard = false;
-  // Soal ke berapa di level ini
   int _soalDiLevel = 0;
 
-  // Animasi getar HP saat salah
   late AnimationController _shakeCtrl;
   late Animation<double> _shakeAnim;
 
-  // Animasi bintang berputar saat menang
   late AnimationController _winCtrl;
 
   @override
@@ -40,7 +37,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
     _currentLetter = {'huruf': '', 'nama': ''};
     _choices = [];
 
-    // Shake animation
     _shakeCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -49,7 +45,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
       CurvedAnimation(parent: _shakeCtrl, curve: Curves.elasticIn),
     );
 
-    // Win star rotation animation
     _winCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
@@ -84,14 +79,12 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
       setState(() {
         _score++;
         _feedback = 'correct';
-        // Jika naik level, reset soalDiLevel
         if (newLevel > _level) {
           _soalDiLevel = 0;
           _level = newLevel;
         }
       });
 
-      // Cek apakah sudah tamat (level 12 dan soal di level selesai)
       if (_level >= GameController.maxLevel &&
           _soalDiLevel >= GameController.questionsPerLevel) {
         await Future.delayed(const Duration(milliseconds: 500));
@@ -209,18 +202,15 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
       bgColor = levelColor.withValues(alpha: 0.05);
     }
 
-    // Progress soal di level ini
     final progress = (_soalDiLevel % GameController.questionsPerLevel) /
         GameController.questionsPerLevel;
 
     return Column(
       children: [
-        // Stats bar
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
           child: Row(
             children: [
-              // Score
               Expanded(
                 child: SurfaceCard(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -238,7 +228,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
                 ),
               ),
               const SizedBox(width: 10),
-              // Lives
               Expanded(
                 child: SurfaceCard(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -255,7 +244,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
                 ),
               ),
               const SizedBox(width: 10),
-              // Level dengan warna sesuai tier
               Expanded(
                 child: SurfaceCard(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -284,7 +272,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
           ),
         ),
 
-        // Progress bar level
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
           child: Column(
@@ -315,7 +302,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
 
         const SizedBox(height: 16),
 
-        // Letter display
         Expanded(
           child: Center(
             child: AnimatedBuilder(
@@ -369,7 +355,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
           ),
         ),
 
-        // Hint level
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Container(
@@ -390,7 +375,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
           ),
         ),
 
-        // Answer choices — grid 2 kolom (4 pilihan) atau 3 kolom (6 pilihan)
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
           child: GridView.count(
@@ -563,7 +547,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Bintang berputar
                 AnimatedBuilder(
                   animation: _winCtrl,
                   builder: (context, child) {
@@ -576,7 +559,6 @@ class _HijaiyahGameViewState extends State<HijaiyahGameView>
                       size: 72, color: Color(0xFFFFC107)),
                 ),
                 const SizedBox(height: 12),
-                // Trofi
                 Container(
                   width: 110, height: 110,
                   decoration: BoxDecoration(

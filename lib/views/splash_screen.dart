@@ -1,11 +1,9 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../widgets/karisma_logo.dart';
 import 'home/home_view.dart';
 
-/// Splash screen yang tampil saat aplikasi pertama dibuka.
-/// Background putih bersih + logo KARISMA di tengah dengan animasi fade-in.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -36,10 +34,8 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _ctrl, curve: const Interval(0.0, 0.7, curve: Curves.easeOutBack)),
     );
 
-    // Mulai animasi masuk
     _ctrl.forward();
 
-    // Navigasi ke HomeView setelah 2 detik
     Timer(const Duration(milliseconds: 2000), () {
       if (mounted) {
         Navigator.pushReplacement(
@@ -81,10 +77,8 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Logo KARISMA — tanpa background apapun
               const KarismaLogo(size: 180),
               const SizedBox(height: 24),
-              // Loading indicator kecil di bawah
               SizedBox(
                 width: 40,
                 child: LinearProgressIndicator(

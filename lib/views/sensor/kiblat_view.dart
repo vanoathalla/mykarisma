@@ -60,7 +60,6 @@ class _KiblatViewState extends State<KiblatView>
         locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
       );
 
-      // Rumus great-circle bearing (haversine-based) yang akurat
       _qiblaDirection = SensorController.calculateQiblaDirection(
         position.latitude,
         position.longitude,
@@ -68,16 +67,12 @@ class _KiblatViewState extends State<KiblatView>
 
       final sensorCtrl = SensorController();
       _magnetSub = sensorCtrl.magnetometerStream.listen((event) {
-        // Hitung azimuth dari magnetometer menggunakan atan2
-        // event.x = East, event.y = North pada orientasi landscape
-        // Untuk portrait: heading = atan2(-event.x, event.y)
         final heading = math.atan2(-event.x, event.y) * 180 / math.pi;
         final normalizedHeading = (heading + 360) % 360;
 
         if (mounted) {
           setState(() {
             _compassHeading = normalizedHeading;
-            // Sudut rotasi jarum = arah kiblat - heading perangkat
             _targetAngle = (_qiblaDirection - normalizedHeading) * math.pi / 180;
           });
         }
@@ -117,7 +112,6 @@ class _KiblatViewState extends State<KiblatView>
       backgroundColor: bg,
       body: Column(
         children: [
-          // '"-'"- App Bar '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           Container(
             color: isDark
                 ? const Color(0xFF1A1C1C).withValues(alpha: 0.95)
@@ -160,7 +154,6 @@ class _KiblatViewState extends State<KiblatView>
             ),
           ),
 
-          // '"-'"- Content '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           Expanded(
             child: _loading
                 ? const Center(
@@ -196,7 +189,6 @@ class _KiblatViewState extends State<KiblatView>
                         padding: const EdgeInsets.all(24),
                         child: Column(
                           children: [
-                            // Info Card
                             Container(
                               padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
@@ -258,7 +250,6 @@ class _KiblatViewState extends State<KiblatView>
 
                             const SizedBox(height: 32),
 
-                            // Compass
                             Transform.rotate(
                               angle: _targetAngle,
                               child: CustomPaint(
@@ -269,7 +260,6 @@ class _KiblatViewState extends State<KiblatView>
 
                             const SizedBox(height: 16),
 
-                            // Heading info
                             Text(
                               'Heading: ${_compassHeading.toStringAsFixed(0)} derajat',
                               style: TextStyle(fontSize: 13, color: textSub),
@@ -317,7 +307,6 @@ class _CompassPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
-    // Background circle
     canvas.drawCircle(
       center,
       radius,
@@ -326,7 +315,6 @@ class _CompassPainter extends CustomPainter {
         ..style = PaintingStyle.fill,
     );
 
-    // Outer border
     canvas.drawCircle(
       center,
       radius - 2,
@@ -336,7 +324,6 @@ class _CompassPainter extends CustomPainter {
         ..strokeWidth = 3,
     );
 
-    // Inner ring
     canvas.drawCircle(
       center,
       radius * 0.55,
@@ -346,7 +333,6 @@ class _CompassPainter extends CustomPainter {
         ..strokeWidth = 1,
     );
 
-    // Cardinal direction ticks
     for (int i = 0; i < 36; i++) {
       final angle = i * 10 * math.pi / 180;
       final isMajor = i % 9 == 0;
@@ -368,7 +354,6 @@ class _CompassPainter extends CustomPainter {
       );
     }
 
-    // Red needle (Ka'bah direction '-" north of compass)
     final needlePath = Path();
     needlePath.moveTo(center.dx, center.dy - radius * 0.75);
     needlePath.lineTo(center.dx - 10, center.dy + 10);
@@ -377,7 +362,6 @@ class _CompassPainter extends CustomPainter {
     needlePath.close();
     canvas.drawPath(needlePath, Paint()..color = Colors.red.shade600);
 
-    // White needle (south)
     final southPath = Path();
     southPath.moveTo(center.dx, center.dy + radius * 0.75);
     southPath.lineTo(center.dx - 10, center.dy - 10);
@@ -398,14 +382,12 @@ class _CompassPainter extends CustomPainter {
         ..strokeWidth = 1,
     );
 
-    // Center dot
     canvas.drawCircle(
         center, 12, Paint()..color = isDark ? const Color(0xFF252828) : Colors.white);
     canvas.drawCircle(
         center, 12, Paint()..color = AppTheme.outline.withValues(alpha: 0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5);
     canvas.drawCircle(center, 5, Paint()..color = Colors.red.shade600);
 
-    // Ka'bah label
     final tp = TextPainter(
       text: TextSpan(
         text: "Ka'bah '-²",

@@ -45,10 +45,9 @@ class _BerandaViewState extends State<BerandaView> {
   List<AcaraModel> _acaraMendatang = [];
   List<CatatanModel> _catatanTerbaru = [];
   int _stepsToday = 0;
-  String? _fotoPath; // foto profil user
+  String? _fotoPath;
   int _notifCount = 0;
 
-  // Banner slider state
   final PageController _bannerCtrl = PageController();
   int _bannerPage = 0;
 
@@ -71,7 +70,6 @@ class _BerandaViewState extends State<BerandaView> {
   Future<void> _loadNotifCount() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList('notif_inbox') ?? [];
-    // Bandingkan dengan jumlah yang sudah pernah dilihat
     final seen = prefs.getInt('notif_seen_count') ?? 0;
     final unread = (raw.length - seen).clamp(0, raw.length);
     if (mounted) setState(() => _notifCount = unread);
@@ -80,7 +78,6 @@ class _BerandaViewState extends State<BerandaView> {
   Future<void> _markNotifAsSeen() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList('notif_inbox') ?? [];
-    // Simpan jumlah total yang sudah dilihat
     await prefs.setInt('notif_seen_count', raw.length);
     if (mounted) setState(() => _notifCount = 0);
   }
@@ -166,7 +163,6 @@ class _BerandaViewState extends State<BerandaView> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? const Color(0xFF1A1C1C) : const Color(0xFFF9F9F9);
-    // Ambil tinggi status bar sekali di sini, teruskan ke delegate
     final statusBarH = MediaQuery.of(context).padding.top;
 
     return Scaffold(
@@ -175,8 +171,6 @@ class _BerandaViewState extends State<BerandaView> {
         onRefresh: _loadData,
         color: AppTheme.primary,
         child: CustomScrollView(
-          // ClampingScrollPhysics: tidak ada overscroll bounce di bawah,
-          // RefreshIndicator tetap aktif untuk pull-to-refresh dari atas
           physics: const ClampingScrollPhysics(),
           slivers: [
             SliverPersistentHeader(
@@ -212,17 +206,16 @@ class _BerandaViewState extends State<BerandaView> {
           ],
         ),
       ),
-      floatingActionButton: null, // FAB + dihapus dari beranda — ada di dalam masing-masing fitur
+      floatingActionButton: null,
     );
   }
 
-  //  TOP BAR 
   Widget _buildTopBar(bool isDark) {
     return Row(
       children: [
         const SizedBox(width: 16),
         GestureDetector(
-          onTap: () => homeTabNotifier.switchTo(2), // Switch ke tab Profil
+          onTap: () => homeTabNotifier.switchTo(2),
           child: Stack(
             children: [
               Container(
@@ -269,7 +262,6 @@ class _BerandaViewState extends State<BerandaView> {
                   context,
                   MaterialPageRoute(builder: (_) => const NotifikasiView()),
                 );
-                // Refresh badge setelah kembali dari halaman notifikasi
                 _loadNotifCount();
               },
             ),
@@ -302,7 +294,6 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  //  1. GREETING GLASS CARD 
   Widget _buildGreeting(bool isDark) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
@@ -311,7 +302,6 @@ class _BerandaViewState extends State<BerandaView> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // ── Layer 1: Banner slider (background) ──────────────────────
             PageView(
               controller: _bannerCtrl,
               onPageChanged: (i) => setState(() => _bannerPage = i),
@@ -322,7 +312,6 @@ class _BerandaViewState extends State<BerandaView> {
               ],
             ),
 
-            // ── Layer 2: Gradient overlay agar teks terbaca ───────────────
             IgnorePointer(
               child: Container(
                 decoration: BoxDecoration(
@@ -339,7 +328,6 @@ class _BerandaViewState extends State<BerandaView> {
               ),
             ),
 
-            // ── Layer 3: Konten teks di atas ──────────────────────────────
             IgnorePointer(
               child: Padding(
               padding: const EdgeInsets.all(20),
@@ -405,10 +393,9 @@ class _BerandaViewState extends State<BerandaView> {
                   ),
                 ],
               ),
-            ),  // tutup Padding
-            ),  // tutup IgnorePointer
+            ),
+            ),
 
-            // ── Layer 4: Dot indicator kanan bawah ────────────────────────
             Positioned(
               bottom: 12,
               right: 16,
@@ -434,9 +421,7 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  /// Background tiap slide banner
   Widget _buildBannerBg(bool isDark, int index) {
-    // Warna gradien berbeda tiap slide
     final gradients = [
       [const Color(0xFF1565C0), const Color(0xFF283593)],
       [const Color(0xFF00695C), const Color(0xFF1565C0)],
@@ -464,7 +449,6 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  //  2. AI MESH GRADIENT CARD 
   Widget _buildAiCard() {
     return GestureDetector(
       onTap: () => _go(const ChatbotView()),
@@ -528,13 +512,11 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  //  3. QUICK ACTION GRID 
   Widget _buildQuickGrid(bool isDark) {
     final cardBg = isDark ? const Color(0xFF252828) : Colors.white;
     final cardBorder = isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFEEEEEE);
     final labelColor = isDark ? const Color(0xFF889390) : AppTheme.onSurfaceVariant;
 
-    // Semua fitur tersusun langsung di grid — tidak ada menu "Lainnya"
     final items = [
       _QAItem(Icons.calendar_month_rounded, 'Acara', () => _go(const AcaraListView())),
       _QAItem(Icons.account_balance_wallet_rounded, 'Keuangan', () => _go(const KeuanganView())),
@@ -583,7 +565,6 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  //  4. FINANCIAL SNAPSHOT 
   Widget _buildFinancial(bool isDark) {
     final cardBg = isDark ? const Color(0xFF252828) : Colors.white;
     final cardBorder = isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFEEEEEE);
@@ -658,7 +639,6 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  //  5. UPCOMING EVENTS 
   Widget _buildEvents(bool isDark) {
     final textPrimary = isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface;
     final textSub = isDark ? const Color(0xFF889390) : AppTheme.outline;
@@ -698,13 +678,11 @@ class _BerandaViewState extends State<BerandaView> {
           Column(
             children: _acaraMendatang.map((item) {
               final color = _acaraColor(item.tipe);
-              // Parse tanggal dan waktu
               final parts = item.tanggal.split(' ');
               final dateParts = parts[0].split('-');
               final day   = dateParts.length >= 3 ? dateParts[2] : '--';
               final month = dateParts.length >= 2 ? _monthName(int.tryParse(dateParts[1]) ?? 1) : '---';
               final year  = dateParts.isNotEmpty ? dateParts[0] : '----';
-              // Ambil jam jika ada
               String? waktu;
               if (parts.length > 1) {
                 final tp = parts[1].split(':');
@@ -725,15 +703,12 @@ class _BerandaViewState extends State<BerandaView> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Accent bar kiri
                           Container(width: 4, color: color),
-                          // Konten
                           Expanded(
                             child: Padding(
                     padding: const EdgeInsets.all(14),
                     child: Row(
                       children: [
-                        // Date box — tanggal, bulan, tahun, jam
                         Container(
                           width: 60,
                           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
@@ -809,7 +784,6 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  //  6. NOTULENSI — 1 CARD TERBARU 
   Widget _buildNotulensi(bool isDark) {
     final textPrimary = isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface;
     final textSub = isDark ? const Color(0xFF889390) : AppTheme.outline;
@@ -910,7 +884,6 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  //  7. MAP WIDGET 
   Widget _buildMap(bool isDark) {
     final textPrimary = isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface;
     final cardBorder = isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFEEEEEE);
@@ -932,7 +905,6 @@ class _BerandaViewState extends State<BerandaView> {
             clipBehavior: Clip.antiAlias,
             child: Stack(
               children: [
-                // Map placeholder background
                 Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -943,9 +915,7 @@ class _BerandaViewState extends State<BerandaView> {
                     ),
                   ),
                 ),
-                // Grid lines (map-like)
                 CustomPaint(size: const Size(double.infinity, 180), painter: _MapGridPainter(isDark: isDark)),
-                // Center pin
                 Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -962,7 +932,6 @@ class _BerandaViewState extends State<BerandaView> {
                     ],
                   ),
                 ),
-                // Bottom overlay
                 Positioned(
                   bottom: 12, left: 12, right: 12,
                   child: ClipRRect(
@@ -999,7 +968,6 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  // ── 8. LANGKAH IBADAH CARD ────────────────────────────────────────────────
   Widget _buildLangkahCard(bool isDark) {
     final cardBg = isDark ? const Color(0xFF252828) : Colors.white;
     final cardBorder = isDark
@@ -1032,7 +1000,6 @@ class _BerandaViewState extends State<BerandaView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1099,7 +1066,6 @@ class _BerandaViewState extends State<BerandaView> {
 
             const SizedBox(height: 16),
 
-            // Langkah count + progress bar
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -1125,7 +1091,6 @@ class _BerandaViewState extends State<BerandaView> {
 
             const SizedBox(height: 12),
 
-            // Linear progress bar
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
@@ -1142,7 +1107,6 @@ class _BerandaViewState extends State<BerandaView> {
 
             const SizedBox(height: 8),
 
-            // Teks dinamis
             Text(
               _stepsToday == 0
                   ? 'Mulai berjalan untuk menghitung langkah Anda 🚶'
@@ -1161,10 +1125,7 @@ class _BerandaViewState extends State<BerandaView> {
     );
   }
 
-  // ── MORE SHEET ────────────────────────────────────────────────────────────
 }
-
-//  Helper Classes 
 
 class _QAItem {
   final IconData icon;
@@ -1173,11 +1134,9 @@ class _QAItem {
   const _QAItem(this.icon, this.label, this.onTap);
 }
 
-// ─── Sticky Glass App Bar ─────────────────────────────────────────────────────
 class _GlassAppBarDelegate extends SliverPersistentHeaderDelegate {
   final bool isDark;
   final Widget child;
-  // statusBarHeight diteruskan dari build() agar delegate tahu tinggi status bar
   final double statusBarHeight;
 
   const _GlassAppBarDelegate({
@@ -1186,7 +1145,6 @@ class _GlassAppBarDelegate extends SliverPersistentHeaderDelegate {
     required this.statusBarHeight,
   });
 
-  // Tinggi total = status bar + konten bar (56px)
   double get _total => statusBarHeight + 56;
 
   @override
@@ -1216,8 +1174,6 @@ class _GlassAppBarDelegate extends SliverPersistentHeaderDelegate {
               ),
             ],
           ),
-          // Padding manual = status bar, bukan SafeArea,
-          // supaya tinggi delegate tidak berubah-ubah
           child: Padding(
             padding: EdgeInsets.only(top: statusBarHeight),
             child: child,
@@ -1232,7 +1188,6 @@ class _GlassAppBarDelegate extends SliverPersistentHeaderDelegate {
       old.isDark != isDark || old.statusBarHeight != statusBarHeight;
 }
 
-//  Bouncing Dots (AI typing indicator) 
 class _BouncingDots extends StatefulWidget {
   const _BouncingDots();
   @override
@@ -1282,7 +1237,6 @@ class _BouncingDotsState extends State<_BouncingDots> with TickerProviderStateMi
   }
 }
 
-//  Map Grid Painter 
 class _MapGridPainter extends CustomPainter {
   final bool isDark;
   const _MapGridPainter({required this.isDark});
@@ -1299,7 +1253,6 @@ class _MapGridPainter extends CustomPainter {
     for (double y = 0; y < size.height; y += step) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
-    // Road-like lines
     final roadPaint = Paint()
       ..color = (isDark ? Colors.white : AppTheme.primary).withValues(alpha: 0.12)
       ..strokeWidth = 3;

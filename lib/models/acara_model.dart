@@ -1,9 +1,9 @@
-class AcaraModel {
+﻿class AcaraModel {
   final String idAcara;
   final String nama;
   final String tanggal;
   final String kategori;
-  final String tipe; // kept for DB backward-compat (not shown in UI)
+  final String tipe;
   final String? lokasi;
 
   AcaraModel({
@@ -15,7 +15,6 @@ class AcaraModel {
     this.lokasi,
   });
 
-  // Fungsi untuk mengubah format JSON dari DB menjadi Object di Flutter
   factory AcaraModel.fromJson(Map<String, dynamic> json) {
     return AcaraModel(
       idAcara: json['id_acara']?.toString() ?? '0',

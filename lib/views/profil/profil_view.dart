@@ -48,7 +48,6 @@ class _ProfilViewState extends State<ProfilView> {
             prefs.getString('role') ??
             'Tamu';
         _idMember = id;
-        // Key foto per-user: foto_path_<id_member> agar tiap akun punya foto sendiri
         _fotoPath = prefs.getString('foto_path_$id');
         _namaCtrl.text = _namaLengkap;
       });
@@ -63,7 +62,6 @@ class _ProfilViewState extends State<ProfilView> {
     );
     if (picked == null) return;
     final prefs = await SharedPreferences.getInstance();
-    // Simpan dengan key per-user supaya foto tidak tercampur antar akun
     await prefs.setString('foto_path_$_idMember', picked.path);
     if (mounted) setState(() => _fotoPath = picked.path);
   }
@@ -107,7 +105,6 @@ class _ProfilViewState extends State<ProfilView> {
     if (confirm != true) return;
     await AuthHelper.clearSession();
     if (mounted) {
-      // Kembali ke HomeView '-" HomeView akan detect tamu otomatis
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeView()),
         (route) => false,
@@ -189,7 +186,6 @@ class _ProfilViewState extends State<ProfilView> {
       body: CustomScrollView(
         physics: const ClampingScrollPhysics(),
         slivers: [
-          // '"-'"- App Bar '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           SliverAppBar(
             pinned: true,
             floating: false,
@@ -207,7 +203,7 @@ class _ProfilViewState extends State<ProfilView> {
                 if (Navigator.canPop(context)) {
                   Navigator.pop(context);
                 } else {
-                  homeTabNotifier.switchTo(1); // Kembali ke Beranda
+                  homeTabNotifier.switchTo(1);
                 }
               },
             ),
@@ -244,7 +240,6 @@ class _ProfilViewState extends State<ProfilView> {
           SliverToBoxAdapter(
             child: Column(
               children: [
-                // '"-'"- Hero Header '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                 Container(
                   width: double.infinity,
                   decoration: const BoxDecoration(
@@ -260,7 +255,6 @@ class _ProfilViewState extends State<ProfilView> {
                       padding: const EdgeInsets.fromLTRB(24, 32, 24, 48),
                       child: Column(
                         children: [
-                          // Avatar
                           GestureDetector(
                             onTap: _pilihFoto,
                             child: Stack(
@@ -318,7 +312,6 @@ class _ProfilViewState extends State<ProfilView> {
                           ),
                           const SizedBox(height: 16),
 
-                          // Nama
                           Text(
                             _namaLengkap,
                             style: const TextStyle(
@@ -330,7 +323,6 @@ class _ProfilViewState extends State<ProfilView> {
                           ),
                           const SizedBox(height: 10),
 
-                          // Badges
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -353,7 +345,6 @@ class _ProfilViewState extends State<ProfilView> {
                   ),
                 ),
 
-                // '"-'"- Curved clip '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                 Container(
                   height: 28,
                   decoration: BoxDecoration(
@@ -368,12 +359,10 @@ class _ProfilViewState extends State<ProfilView> {
             ),
           ),
 
-          // '"-'"- Info Cards '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // Edit Nama (hanya saat edit mode)
                 if (_editMode) ...[
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -420,7 +409,6 @@ class _ProfilViewState extends State<ProfilView> {
                   const SizedBox(height: 16),
                 ],
 
-                // Info Card
                 Container(
                   decoration: BoxDecoration(
                     color: cardBg,
@@ -459,7 +447,6 @@ class _ProfilViewState extends State<ProfilView> {
 
                 const SizedBox(height: 20),
 
-                // Foto Profil Card
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -527,7 +514,6 @@ class _ProfilViewState extends State<ProfilView> {
 
                 const SizedBox(height: 20),
 
-                // '"-'"- Pengaturan '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                 Text(
                   'Pengaturan',
                   style: TextStyle(
@@ -545,7 +531,6 @@ class _ProfilViewState extends State<ProfilView> {
                   ),
                   child: Column(
                     children: [
-                      // Dark Mode Toggle
                       ValueListenableBuilder<ThemeMode>(
                         valueListenable: themeNotifier,
                         builder: (context, mode, _) {
@@ -589,7 +574,6 @@ class _ProfilViewState extends State<ProfilView> {
                         },
                       ),
                       Divider(height: 1, indent: 68, endIndent: 16, color: cardBorder),
-                      // Tentang Aplikasi
                       ListTile(
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 4),
@@ -624,7 +608,6 @@ class _ProfilViewState extends State<ProfilView> {
 
                 const SizedBox(height: 20),
 
-                // '"-'"- Tombol Logout '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -658,7 +641,6 @@ class _ProfilViewState extends State<ProfilView> {
   }
 }
 
-// '"-'"-'"- Helper Widgets '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
 class _Badge extends StatelessWidget {
   final String label;
   final Color bg;

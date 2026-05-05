@@ -1,4 +1,4 @@
-class KeuanganModel {
+﻿class KeuanganModel {
   final String id;
   final String jenis;
   final String keterangan;
@@ -17,7 +17,6 @@ class KeuanganModel {
     return KeuanganModel(
       id: json['id_keuangan']?.toString() ?? '',
 
-      // PERUBAHAN: Menyesuaikan dengan nama kolom di JSON/Database
       jenis: json['tipe'] ?? '',
       keterangan: json['nama'] ?? '',
       tanggal: json['tanggal'] ?? '',

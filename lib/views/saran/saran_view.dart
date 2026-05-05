@@ -21,14 +21,12 @@ class _SaranViewState extends State<SaranView>
   late TabController _tabCtrl;
   bool _isAdmin = false;
 
-  // ── Form state ──────────────────────────────────────────────────────────
   final _formKey = GlobalKey<FormState>();
   final _namaCtrl = TextEditingController();
   final _isiCtrl = TextEditingController();
   double _rating = 0;
   bool _loadingKirim = false;
 
-  // ── Inbox state ─────────────────────────────────────────────────────────
   List<FeedbackModel> _inbox = [];
   bool _loadingInbox = true;
 
@@ -102,7 +100,6 @@ class _SaranViewState extends State<SaranView>
     try {
       await DatabaseHelper.instance.insertFeedback(model.toMap());
 
-      // Kirim notifikasi ke admin (system + in-app overlay)
       final pengirim = model.nama ?? 'Anonim';
       final bintang = '★' * model.rating + '☆' * (5 - model.rating);
       await NotificationController.showUpdateNotif(
@@ -186,7 +183,6 @@ class _SaranViewState extends State<SaranView>
         ),
         title: Text('Saran & Kesan',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: tp)),
-        // Tab hanya muncul untuk admin
         bottom: _isAdmin
             ? TabBar(
                 controller: _tabCtrl,
@@ -216,7 +212,6 @@ class _SaranViewState extends State<SaranView>
     );
   }
 
-  // ── Tab Inbox (admin) ────────────────────────────────────────────────────
   Widget _buildInboxTab(bool isDark, Color tp) {
     final cardBg = isDark ? const Color(0xFF252828) : Colors.white;
     final bdr = isDark
@@ -242,7 +237,6 @@ class _SaranViewState extends State<SaranView>
       );
     }
 
-    // Hitung rata-rata rating
     final avgRating = _inbox.isEmpty ? 0.0
         : _inbox.map((f) => f.rating).reduce((a, b) => a + b) / _inbox.length;
 
@@ -252,7 +246,6 @@ class _SaranViewState extends State<SaranView>
       child: CustomScrollView(
         physics: const ClampingScrollPhysics(),
         slivers: [
-          // Summary card
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -289,7 +282,6 @@ class _SaranViewState extends State<SaranView>
             ),
           ),
 
-          // List saran
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
             sliver: SliverList(
@@ -306,7 +298,6 @@ class _SaranViewState extends State<SaranView>
                       border: Border.all(color: bdr),
                     ),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      // Header: nama + tanggal + hapus
                       Row(children: [
                         CircleAvatar(
                           radius: 18,
@@ -324,7 +315,6 @@ class _SaranViewState extends State<SaranView>
                           Text(fb.tanggal,
                             style: TextStyle(fontSize: 11, color: sub)),
                         ])),
-                        // Rating badge
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
@@ -339,7 +329,6 @@ class _SaranViewState extends State<SaranView>
                           ]),
                         ),
                         const SizedBox(width: 8),
-                        // Hapus
                         GestureDetector(
                           onTap: () => _hapusFeedback(fb),
                           child: Container(
@@ -354,7 +343,6 @@ class _SaranViewState extends State<SaranView>
                         ),
                       ]),
                       const SizedBox(height: 10),
-                      // Bintang visual
                       Row(children: List.generate(5, (j) => Icon(
                         j < fb.rating ? Icons.star_rounded : Icons.star_outline_rounded,
                         color: Colors.amber, size: 16))),
@@ -362,7 +350,6 @@ class _SaranViewState extends State<SaranView>
                       Text(_ratingLabel(fb.rating),
                         style: TextStyle(fontSize: 11, color: rc, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 10),
-                      // Isi saran
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
@@ -387,7 +374,6 @@ class _SaranViewState extends State<SaranView>
     );
   }
 
-  // ── Tab Form Kirim Saran ─────────────────────────────────────────────────
   Widget _buildFormTab(bool isDark) {
     return CustomScrollView(
       physics: const ClampingScrollPhysics(),
@@ -396,7 +382,6 @@ class _SaranViewState extends State<SaranView>
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              // Header card
               AiMeshCard(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
@@ -424,7 +409,6 @@ class _SaranViewState extends State<SaranView>
               ),
               const SizedBox(height: 24),
 
-              // Form
               Form(
                 key: _formKey,
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -436,7 +420,6 @@ class _SaranViewState extends State<SaranView>
                   ),
                   const SizedBox(height: 20),
 
-                  // Rating
                   SurfaceCard(
                     padding: const EdgeInsets.all(20),
                     borderRadius: BorderRadius.circular(18),

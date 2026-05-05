@@ -134,7 +134,6 @@ class _RegisterViewState extends State<RegisterView> {
       await db.insert('member', data);
 
       if (mounted) {
-        // Reset biometric_asked agar dialog muncul lagi untuk akun baru
         final prefs = await SharedPreferences.getInstance();
         await prefs.remove('biometric_asked');
         await prefs.remove('biometric_enabled');
@@ -189,12 +188,9 @@ class _RegisterViewState extends State<RegisterView> {
                   children: [
                     const SizedBox(height: 40),
 
-                    // Logo KARISMA — langsung tanpa background
                     const KarismaLogo(size: 120),
                     const SizedBox(height: 24),
 
-
-                    // '"-'"- Register Card '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                     Container(
                       margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                       padding: const EdgeInsets.all(24),
@@ -232,7 +228,6 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 20),
 
-                            // Nama Lengkap
                             TextFormField(
                               controller: _namaCtrl,
                               decoration: const InputDecoration(
@@ -250,7 +245,6 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Nama Panggilan
                             TextFormField(
                               controller: _panggilanCtrl,
                               decoration: const InputDecoration(
@@ -275,7 +269,6 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Usia '-" BottomSheet picker
                             GestureDetector(
                               onTap: _pilihUsia,
                               child: AbsorbPointer(
@@ -297,7 +290,6 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Gender
                             DropdownButtonFormField<String>(
                               value: _gender,
                               decoration: const InputDecoration(
@@ -316,7 +308,6 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // No HP
                             TextFormField(
                               controller: _noHpCtrl,
                               keyboardType: TextInputType.phone,
@@ -337,7 +328,6 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // RT
                             TextFormField(
                               controller: _rtCtrl,
                               keyboardType: TextInputType.number,
@@ -358,7 +348,6 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Password
                             TextFormField(
                               controller: _passwordCtrl,
                               obscureText: _obscurePassword,
@@ -391,7 +380,6 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 12),
 
-                            // Konfirmasi Password
                             TextFormField(
                               controller: _konfirmasiCtrl,
                               obscureText: _obscureKonfirmasi,
@@ -424,7 +412,6 @@ class _RegisterViewState extends State<RegisterView> {
                             ),
                             const SizedBox(height: 24),
 
-                            // Tombol Daftar
                             SizedBox(
                               height: 52,
                               child: ElevatedButton(
@@ -451,7 +438,6 @@ class _RegisterViewState extends State<RegisterView> {
 
                             const SizedBox(height: 16),
 
-                            // Link ke Login
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

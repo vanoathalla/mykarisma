@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
-/// Widget logo KARISMA menggunakan file PNG asli.
-/// Gunakan sebagai pengganti ikon masjid di seluruh aplikasi.
 class KarismaLogo extends StatelessWidget {
   final double size;
   final Color? color;
@@ -21,7 +19,6 @@ class KarismaLogo extends StatelessWidget {
       fit: BoxFit.contain,
     );
 
-    // Jika ada override color, pakai ColorFiltered untuk tint
     if (color != null) {
       return ColorFiltered(
         colorFilter: ColorFilter.mode(color!, BlendMode.srcIn),

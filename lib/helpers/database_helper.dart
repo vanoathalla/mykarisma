@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+﻿import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/member_model.dart';
@@ -9,21 +9,16 @@ class DatabaseHelper {
 
   DatabaseHelper._init();
 
-  // ─── Getter lazy-initialize ───────────────────────────────────────────────
-
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDB('karisma.db');
     return _database!;
   }
 
-  // ─── Inisialisasi ─────────────────────────────────────────────────────────
-
   Future<Database> _initDB(String filePath) async {
-    // Di web, getDatabasesPath() tidak tersedia — gunakan nama file langsung
     final String path;
     if (kIsWeb) {
-      path = filePath; // sqflite_common_ffi_web pakai nama file saja
+      path = filePath;
     } else {
       final dbPath = await getDatabasesPath();
       path = join(dbPath, filePath);
@@ -122,8 +117,6 @@ class DatabaseHelper {
     ''');
   }
 
-  // ─── Upgrade ──────────────────────────────────────────────────────────────
-
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE member ADD COLUMN password_hash TEXT');
@@ -158,12 +151,9 @@ class DatabaseHelper {
       ''');
     }
     if (oldVersion < 3) {
-      // Add lokasi column to acara table
       await db.execute('ALTER TABLE acara ADD COLUMN lokasi TEXT');
     }
   }
-
-  // ─── Operasi Member ───────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> getAllMembers() async {
     final db = await database;
@@ -225,8 +215,6 @@ class DatabaseHelper {
     return MemberModel.fromJson(rows.first);
   }
 
-  // ─── Operasi Acara ────────────────────────────────────────────────────────
-
   Future<List<Map<String, dynamic>>> getAllAcara() async {
     final db = await database;
     return db.query('acara');
@@ -246,8 +234,6 @@ class DatabaseHelper {
       whereArgs: [int.tryParse(id) ?? 0],
     );
   }
-
-  // ─── Operasi Catatan ──────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> getAllCatatan() async {
     final db = await database;
@@ -278,8 +264,6 @@ class DatabaseHelper {
     );
   }
 
-  // ─── Operasi Keuangan ─────────────────────────────────────────────────────
-
   Future<List<Map<String, dynamic>>> getAllKeuangan() async {
     final db = await database;
     return db.query('keuangan', orderBy: 'tanggal DESC');
@@ -299,14 +283,10 @@ class DatabaseHelper {
     );
   }
 
-  // ─── Operasi Dokumentasi ──────────────────────────────────────────────────
-
   Future<List<Map<String, dynamic>>> getAllDokumentasi() async {
     final db = await database;
     return db.query('dokumentasi');
   }
-
-  // ─── Operasi Landmark ─────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> getAllLandmarks() async {
     final db = await database;
@@ -328,8 +308,6 @@ class DatabaseHelper {
     return db.delete('landmark', where: 'id_landmark = ?', whereArgs: [id]);
   }
 
-  // ─── Operasi Sesi Game ────────────────────────────────────────────────────
-
   Future<List<Map<String, dynamic>>> getAllGameSessions() async {
     final db = await database;
     return db.query('sesi_game', orderBy: 'skor DESC');
@@ -339,8 +317,6 @@ class DatabaseHelper {
     final db = await database;
     return db.insert('sesi_game', data);
   }
-
-  // ─── Operasi Feedback ─────────────────────────────────────────────────────
 
   Future<int> insertFeedback(Map<String, dynamic> data) async {
     final db = await database;
@@ -357,11 +333,6 @@ class DatabaseHelper {
     return db.delete('feedback', where: 'id_feedback = ?', whereArgs: [id]);
   }
 
-  // ─── Utility ──────────────────────────────────────────────────────────────
-
-  /// Seed data awal: insert admin jika belum ada, atau update password_hash
-  /// jika admin sudah ada tapi password_hash null/kosong.
-  /// password_hash adalah SHA-256 dari 'admin123'.
   Future<void> seedData() async {
     final db = await database;
     final rows = await db.query(
@@ -371,7 +342,6 @@ class DatabaseHelper {
     );
 
     if (rows.isEmpty) {
-      // Insert admin baru
       await db.insert('member', {
         'nama': 'Admin Karisma',
         'nama_panggilan': 'admin',
@@ -382,7 +352,6 @@ class DatabaseHelper {
             '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
       }, conflictAlgorithm: ConflictAlgorithm.ignore);
     } else {
-      // Update password_hash jika null/kosong
       final existing = rows.first;
       if (existing['password_hash'] == null ||
           (existing['password_hash'] as String).isEmpty) {
@@ -399,7 +368,6 @@ class DatabaseHelper {
     }
   }
 
-  /// Hapus semua data dari seluruh tabel tanpa DROP tabel.
   Future<void> clearAllData() async {
     final db = await database;
     await db.delete('member');

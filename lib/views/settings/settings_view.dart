@@ -12,12 +12,10 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  // Notifikasi
-  bool _notifUpdate = true;   // notif saat admin tambah/update data
-  bool _notifAcara = true;    // pengingat H-1 otomatis
-  bool _notifHariH = true;    // pengingat hari-H (diset per acara)
+  bool _notifUpdate = true;
+  bool _notifAcara = true;
+  bool _notifHariH = true;
 
-  // Tampilan
   String _bahasa = 'Indonesia';
 
   @override
@@ -53,7 +51,6 @@ class _SettingsViewState extends State<SettingsView> {
       body: CustomScrollView(
         physics: const ClampingScrollPhysics(),
         slivers: [
-          // ── App Bar ──────────────────────────────────────────────────
           SliverAppBar(
             floating: true,
             snap: true,
@@ -84,7 +81,6 @@ class _SettingsViewState extends State<SettingsView> {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
 
-                // ── Tampilan ─────────────────────────────────────────
                 _SectionLabel(label: 'Tampilan', color: subColor),
                 const SizedBox(height: 10),
                 _SettingsCard(
@@ -129,10 +125,8 @@ class _SettingsViewState extends State<SettingsView> {
 
                 const SizedBox(height: 20),
 
-                // ── Notifikasi ────────────────────────────────────────
                 _SectionLabel(label: 'Notifikasi', color: subColor),
                 const SizedBox(height: 6),
-                // Info box
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
@@ -167,7 +161,6 @@ class _SettingsViewState extends State<SettingsView> {
                 _SettingsCard(
                   color: cardColor,
                   children: [
-                    // Notif update data
                     _SettingsTile(
                       icon: Icons.notifications_active_rounded,
                       iconColor: AppTheme.secondaryContainer,
@@ -186,7 +179,6 @@ class _SettingsViewState extends State<SettingsView> {
                       ),
                     ),
                     _Divider(color: divColor),
-                    // Pengingat H-1
                     _SettingsTile(
                       icon: Icons.event_rounded,
                       iconColor: AppTheme.secondary,
@@ -205,7 +197,6 @@ class _SettingsViewState extends State<SettingsView> {
                       ),
                     ),
                     _Divider(color: divColor),
-                    // Pengingat hari-H
                     _SettingsTile(
                       icon: Icons.alarm_rounded,
                       iconColor: Colors.orange,
@@ -226,7 +217,6 @@ class _SettingsViewState extends State<SettingsView> {
                   ],
                 ),
 
-                // Panduan pengingat hari-H
                 if (_notifHariH) ...[
                   const SizedBox(height: 8),
                   Container(
@@ -263,7 +253,6 @@ class _SettingsViewState extends State<SettingsView> {
 
                 const SizedBox(height: 20),
 
-                // ── Preferensi Aplikasi ───────────────────────────────
                 _SectionLabel(label: 'Preferensi Aplikasi', color: subColor),
                 const SizedBox(height: 10),
                 _SettingsCard(
@@ -306,7 +295,6 @@ class _SettingsViewState extends State<SettingsView> {
 
                 const SizedBox(height: 28),
 
-                // ── Logout ────────────────────────────────────────────
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -414,7 +402,6 @@ class _SettingsViewState extends State<SettingsView> {
   }
 }
 
-// ─── Helper Widgets ───────────────────────────────────────────────────────────
 class _SectionLabel extends StatelessWidget {
   final String label;
   final Color color;

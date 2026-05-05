@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import '../helpers/database_helper.dart';
 import '../models/catatan_model.dart';
 import 'notification_controller.dart';
@@ -31,7 +31,6 @@ class CatatanController {
         'tanggal': tanggal,
       });
 
-      // Notif update ke semua member
       await NotificationController.showUpdateNotif(
         judul: '📝 Notulensi Baru Ditambahkan',
         isi: judul.trim(),

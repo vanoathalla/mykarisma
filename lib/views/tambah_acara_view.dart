@@ -141,7 +141,6 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
       body: CustomScrollView(
         physics: const ClampingScrollPhysics(),
         slivers: [
-          // ── App Bar ──────────────────────────────────────────────────
           SliverAppBar(
             floating: true,
             snap: true,
@@ -177,7 +176,6 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Nama Acara
                       TextFormField(
                         controller: _namaCtrl,
                         decoration: const InputDecoration(
@@ -189,7 +187,6 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
                       ),
                       const SizedBox(height: 14),
 
-                      // Tanggal
                       GestureDetector(
                         onTap: () async {
                           final initial =
@@ -222,7 +219,6 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
                       ),
                       const SizedBox(height: 14),
 
-                      // Waktu
                       GestureDetector(
                         onTap: () async {
                           final picked = await showTimePicker(
@@ -251,7 +247,6 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
                         ),
                       ),
 
-                      // Konversi zona waktu
                       if (_selectedTime != null) ...[
                         const SizedBox(height: 10),
                         SurfaceCard(
@@ -288,7 +283,6 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
                       ],
                       const SizedBox(height: 14),
 
-                      // Kategori
                       DropdownButtonFormField<String>(
                         initialValue: _selectedKategori,
                         decoration: const InputDecoration(
@@ -304,7 +298,6 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
                       ),
                       const SizedBox(height: 14),
 
-                      // Lokasi
                       TextFormField(
                         controller: _lokasiCtrl,
                         decoration: const InputDecoration(
@@ -315,7 +308,6 @@ class _TambahAcaraViewState extends State<TambahAcaraView> {
                       ),
                       const SizedBox(height: 28),
 
-                      // Simpan
                       SizedBox(
                         width: double.infinity,
                         height: 52,

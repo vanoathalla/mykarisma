@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
+﻿import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
@@ -14,20 +14,16 @@ import 'services/overlay_notification_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables dari .env
-  // Wrapped try-catch agar tidak crash jika file belum ter-bundle
   try {
     await dotenv.load(fileName: '.env');
   } catch (e) {
     debugPrint('[main] dotenv load error (ignored): $e');
   }
 
-  // Inisialisasi database factory sesuai platform
   if (kIsWeb) {
     databaseFactory = databaseFactoryFfiWeb;
   }
 
-  // Inisialisasi notifikasi lokal (hanya di non-web)
   if (!kIsWeb) {
     try {
       await NotificationController.initialize();
@@ -36,10 +32,8 @@ void main() async {
     }
   }
 
-  // Seed data admin awal
   await DatabaseHelper.instance.seedData();
 
-  // Cek session aktif
   final sessionValid = await AuthHelper.isSessionValid();
 
   runApp(MyKarismaApp(sessionValid: sessionValid));
@@ -61,7 +55,6 @@ class MyKarismaApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme(),
           themeMode: mode,
           navigatorKey: OverlayNotificationService().navigatorKey,
-          // Tampilkan SplashScreen dulu, lalu otomatis ke HomeView
           home: kIsWeb ? const HomeView() : const SplashScreen(),
           debugShowCheckedModeBanner: false,
         );
