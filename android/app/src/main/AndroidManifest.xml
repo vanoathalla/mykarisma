@@ -20,7 +20,7 @@
     <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
 
     <application
-        android:label="project"
+        android:label="KARISMA"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

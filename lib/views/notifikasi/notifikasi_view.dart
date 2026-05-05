@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../theme/app_theme.dart';
+import '../acara_list_view.dart';
+import '../keuangan_view.dart';
+import '../catatan_view.dart';
 
 /// Halaman inbox notifikasi — menampilkan semua notifikasi yang sudah dikirim.
 /// Notifikasi disimpan di SharedPreferences key 'notif_inbox' sebagai JSON list.
@@ -60,6 +63,17 @@ class _NotifikasiViewState extends State<NotifikasiView> {
     }
     if (mounted) {
       setState(() => _inbox.removeAt(index));
+    }
+  }
+
+  void _navigasiDariNotif(Map<String, dynamic> notif) {
+    final title = (notif['title'] as String? ?? '').toLowerCase();
+    if (title.contains('acara')) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const AcaraListView()));
+    } else if (title.contains('keuangan') || title.contains('kas')) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const KeuanganView()));
+    } else if (title.contains('catatan') || title.contains('notulensi')) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => const CatatanView()));
     }
   }
 
@@ -176,7 +190,9 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                       final body = notif['body'] as String? ?? '';
                       final ts = _formatTimestamp(notif['timestamp'] as String?);
 
-                      return Container(
+                      return GestureDetector(
+                        onTap: () => _navigasiDariNotif(notif),
+                        child: Container(
                         margin: const EdgeInsets.only(bottom: 10),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -254,6 +270,7 @@ class _NotifikasiViewState extends State<NotifikasiView> {
                             ),
                           ],
                         ),
+                      ),
                       );
                     },
                   ),

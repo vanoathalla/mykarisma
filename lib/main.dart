@@ -7,6 +7,7 @@ import 'helpers/database_helper.dart';
 import 'helpers/auth_helper.dart';
 import 'theme/app_theme.dart';
 import 'views/home/home_view.dart';
+import 'views/splash_screen.dart';
 import 'controllers/notification_controller.dart';
 
 void main() async {
@@ -58,8 +59,8 @@ class MyKarismaApp extends StatelessWidget {
           theme: AppTheme.lightTheme(),
           darkTheme: AppTheme.darkTheme(),
           themeMode: mode,
-          // HomeView sudah menangani mode tamu vs login secara internal
-          home: const HomeView(),
+          // Tampilkan SplashScreen dulu, lalu otomatis ke HomeView
+          home: kIsWeb ? const HomeView() : const SplashScreen(),
           debugShowCheckedModeBanner: false,
         );
       },

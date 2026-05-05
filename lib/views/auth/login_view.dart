@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'dart:ui';
 import '../../controllers/auth_controller.dart';
 import '../../theme/app_theme.dart';
 import '../home/home_view.dart';
@@ -148,18 +149,14 @@ class _LoginViewState extends State<LoginView> {
                     else
                       const SizedBox(height: 60),
 
-                    // Logo KARISMA
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: const KarismaLogo(size: 100),
-                    ),
-                    const SizedBox(height: 8),
+                    // Logo KARISMA — langsung tanpa background
+                    const KarismaLogo(size: 130),
+                    const SizedBox(height: 24),
 
-                    const Spacer(),
 
                     // '”€'”€ Login Card '”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€'”€
                     Container(
-                      margin: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+                      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                       padding: const EdgeInsets.all(28),
                       decoration: BoxDecoration(
                         color: AppTheme.surfaceContainerLowest,

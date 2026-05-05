@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:flutter/services.dart';
 import '../../helpers/auth_helper.dart';
 import '../../helpers/database_helper.dart';
@@ -182,18 +183,14 @@ class _RegisterViewState extends State<RegisterView> {
                   children: [
                     const SizedBox(height: 40),
 
-                    // Logo KARISMA
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: const KarismaLogo(size: 110),
-                    ),
-                    const SizedBox(height: 8),
+                    // Logo KARISMA — langsung tanpa background
+                    const KarismaLogo(size: 120),
+                    const SizedBox(height: 24),
 
-                    const Spacer(),
 
                     // '"-'"- Register Card '"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-'"-
                     Container(
-                      margin: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: AppTheme.surfaceContainerLowest,

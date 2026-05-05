@@ -46,6 +46,7 @@ class _BerandaViewState extends State<BerandaView> {
   List<CatatanModel> _catatanTerbaru = [];
   int _stepsToday = 0;
   String? _fotoPath; // foto profil user
+  int _notifCount = 0;
 
   @override
   void initState() {
@@ -53,6 +54,7 @@ class _BerandaViewState extends State<BerandaView> {
     _loadData();
     _loadSteps();
     _loadFotoProfil();
+    _loadNotifCount();
   }
 
   Future<void> _loadFotoProfil() async {
@@ -60,6 +62,23 @@ class _BerandaViewState extends State<BerandaView> {
     if (mounted) {
       setState(() => _fotoPath = prefs.getString('foto_path'));
     }
+  }
+
+  Future<void> _loadNotifCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList('notif_inbox') ?? [];
+    // Bandingkan dengan jumlah yang sudah pernah dilihat
+    final seen = prefs.getInt('notif_seen_count') ?? 0;
+    final unread = (raw.length - seen).clamp(0, raw.length);
+    if (mounted) setState(() => _notifCount = unread);
+  }
+
+  Future<void> _markNotifAsSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList('notif_inbox') ?? [];
+    // Simpan jumlah total yang sudah dilihat
+    await prefs.setInt('notif_seen_count', raw.length);
+    if (mounted) setState(() => _notifCount = 0);
   }
 
   Future<void> _loadSteps() async {
@@ -229,15 +248,51 @@ class _BerandaViewState extends State<BerandaView> {
           ),
         ),
         const SizedBox(width: 10),
-        const KarismaLogo(size: 36),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: const KarismaLogo(size: 56),
+        ),
         const Spacer(),
-        IconButton(
-          icon: Icon(Icons.notifications_outlined,
-              color: isDark ? const Color(0xFF84D5C5) : AppTheme.primary),
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const NotifikasiView()),
-          ),
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              icon: Icon(Icons.notifications_outlined,
+                  color: isDark ? const Color(0xFF84D5C5) : AppTheme.primary),
+              onPressed: () async {
+                // Tandai semua notif sebagai sudah dilihat — badge langsung hilang
+                await _markNotifAsSeen();
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const NotifikasiView()),
+                );
+                // Cek apakah ada notif baru yang masuk saat di halaman notifikasi
+                _loadNotifCount();
+              },
+            ),
+            if (_notifCount > 0)
+              Positioned(
+                top: 6,
+                right: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                  child: Text(
+                    _notifCount > 99 ? '99+' : '$_notifCount',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(width: 8),
       ],
@@ -417,7 +472,7 @@ class _BerandaViewState extends State<BerandaView> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4, crossAxisSpacing: 12, mainAxisSpacing: 16, childAspectRatio: 0.82,
+        crossAxisCount: 4, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.05,
       ),
       itemCount: items.length,
       itemBuilder: (_, i) {

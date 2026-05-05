@@ -99,6 +99,7 @@ class _CatatanViewState extends State<CatatanView> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         return StatefulBuilder(
@@ -108,14 +109,14 @@ class _CatatanViewState extends State<CatatanView> {
                 color: AppTheme.surfaceContainerLowest,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
               ),
-              padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 24,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-              ),
               child: SingleChildScrollView(
                 physics: const ClampingScrollPhysics(),
+                padding: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  top: 24,
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
+                ),
                 child: Form(
                   key: formKey,
                   child: Column(

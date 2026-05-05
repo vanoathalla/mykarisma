@@ -561,18 +561,59 @@ class _PetaViewState extends State<PetaView> {
     final cardBg = isDark ? const Color(0xFF252828) : Colors.white;
 
     final markers = <Marker>[
-      // Marker tujuan — pakai logo KARISMA
+      // Marker tujuan — logo KARISMA dengan background bulat + garis penunjuk
       Marker(
         point: _lokasiTujuan,
-        width: 56, height: 56,
+        width: 70, height: 80,
         child: GestureDetector(
           onTap: () => _showLokasiDetail(
             nama: _namaTujuan, deskripsi: _deskripsiTujuan,
             lokasi: _lokasiTujuan, isMain: true,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: const KarismaLogo(size: 56),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Background bulat putih + border biru + shadow
+              Container(
+                width: 56, height: 56,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppTheme.primary, width: 2.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipOval(child: const KarismaLogo(size: 56)),
+              ),
+              // Garis penunjuk lokasi
+              Container(
+                width: 2.5,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Titik ujung
+              Container(
+                width: 7, height: 7,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primary.withValues(alpha: 0.5),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -604,18 +645,47 @@ class _PetaViewState extends State<PetaView> {
             ),
           ),
         ),
-      // Landmarks dari DB — pakai logo KARISMA
+      // Landmarks dari DB — logo KARISMA dengan background bulat + garis penunjuk
       ..._landmarks.map((lm) => Marker(
         point: LatLng(lm.latitude, lm.longitude),
-        width: 44, height: 44,
+        width: 60, height: 70,
         child: GestureDetector(
           onTap: () => _showLokasiDetail(
             nama: lm.nama, deskripsi: lm.deskripsi ?? '',
             lokasi: LatLng(lm.latitude, lm.longitude),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: const KarismaLogo(size: 44),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 46, height: 46,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.orange, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.orange.withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ClipOval(child: const KarismaLogo(size: 46)),
+              ),
+              Container(
+                width: 2,
+                height: 12,
+                color: Colors.orange,
+              ),
+              Container(
+                width: 6, height: 6,
+                decoration: const BoxDecoration(
+                  color: Colors.orange,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ],
           ),
         ),
       )),

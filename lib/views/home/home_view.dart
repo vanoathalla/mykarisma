@@ -386,11 +386,10 @@ class _GuestViewState extends State<_GuestView> {
                     title: Row(
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(9),
-                          child: const KarismaLogo(size: 32),
+                          borderRadius: BorderRadius.circular(10),
+                          child: const KarismaLogo(size: 52),
                         ),
                         const SizedBox(width: 10),
-                        // Teks MyKarisma dihapus, logo sudah cukup
                       ],
                     ),
                     actions: [
