@@ -430,9 +430,9 @@ class _GuestViewState extends State<_GuestView> {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('', style: TextStyle(fontSize: 13)),
+                                Text('✨', style: TextStyle(fontSize: 13)),
                                 SizedBox(width: 6),
-                                Text('PORTAL DIGITAL KARISMA',
+                                Text('KEMIRISEWU YOUTH GENERATION',
                                     style: TextStyle(
                                         fontSize: 11, fontWeight: FontWeight.w700,
                                         color: AppTheme.primary, letterSpacing: 0.8)),
@@ -445,18 +445,29 @@ class _GuestViewState extends State<_GuestView> {
 
                         //  Headline 
                         Text(
-                          'Keunggulan Spiritual,\nTerpadu dalam Genggaman.',
+                          '"KEYGEN"',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 28, fontWeight: FontWeight.w800,
-                            color: textPrimary, height: 1.25, letterSpacing: -0.5,
+                            fontSize: 36, fontWeight: FontWeight.w900,
+                            color: textPrimary, height: 1.1, letterSpacing: 1.5,
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          'Kemirisewu Youth Generation',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600,
+                            color: AppTheme.primary, letterSpacing: 0.3,
                           ),
                         ),
 
                         const SizedBox(height: 14),
 
                         Text(
-                          'Kelola komunitas dan organisasi Islam dengan pusat dinamika modern yang dirancang untuk kejelasan tujuan.',
+                          'Platform digital generasi muda Kemirisewu untuk mengelola kegiatan, keuangan, dan komunikasi organisasi.',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 14, color: textSub, height: 1.6),
                         ),
@@ -653,7 +664,7 @@ class _GuestViewState extends State<_GuestView> {
                         //  Footer 
                         Center(
                           child: Text(
-                            '© 2024 KARISMA',
+                            '© 2024 KEYGEN — Kemirisewu Youth Generation',
                             style: TextStyle(fontSize: 11, color: textSub),
                             textAlign: TextAlign.center,
                           ),
