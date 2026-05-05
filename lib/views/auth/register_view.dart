@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../helpers/auth_helper.dart';
 import '../../helpers/database_helper.dart';
 import '../../theme/app_theme.dart';
@@ -133,6 +134,11 @@ class _RegisterViewState extends State<RegisterView> {
       await db.insert('member', data);
 
       if (mounted) {
+        // Reset biometric_asked agar dialog muncul lagi untuk akun baru
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('biometric_asked');
+        await prefs.remove('biometric_enabled');
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Pendaftaran berhasil! Silakan masuk.'),

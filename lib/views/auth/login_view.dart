@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../controllers/auth_controller.dart';
 import '../../theme/app_theme.dart';
 import '../home/home_view.dart';
@@ -20,7 +21,8 @@ class _LoginViewState extends State<LoginView> {
 
   bool _loading = false;
   bool _obscurePassword = true;
-  bool _biometricAvailable = false;
+  bool _biometricAvailable = false;   // user sudah aktifkan → tampilkan tombol
+  bool _deviceHasBiometric = false;   // device support → untuk tampilkan dialog
 
   @override
   void initState() {
@@ -28,18 +30,19 @@ class _LoginViewState extends State<LoginView> {
     _checkBiometricAndAutoLogin();
   }
 
-  /// Cek ketersediaan biometrik dan langsung trigger prompt
-  /// tanpa user perlu klik tombol — sesuai sensor HP (sidik jari / Face ID)
+  /// Cek ketersediaan biometrik — hanya update state, tidak auto-trigger.
+  /// Biometrik hanya aktif saat user klik tombol "Login dengan Biometrik".
   Future<void> _checkBiometricAndAutoLogin() async {
     final available = await _authCtrl.isBiometricAvailable();
-    if (mounted) setState(() => _biometricAvailable = available);
+    if (!mounted) return;
 
-    // Auto-trigger biometrik jika tersedia dan belum ada session
-    if (available && mounted) {
-      // Delay singkat agar UI sudah render
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (mounted) _doBiometricLogin();
-    }
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool('biometric_enabled') ?? false;
+
+    setState(() {
+      _deviceHasBiometric = available;          // device support biometrik
+      _biometricAvailable = available && enabled; // tombol muncul jika sudah diaktifkan
+    });
   }
 
   Future<void> _doLogin() async {
@@ -60,6 +63,54 @@ class _LoginViewState extends State<LoginView> {
     if (!mounted) return;
 
     if (res['success'] == true) {
+      // Cek apakah sudah pernah ditanya soal biometrik
+      final prefs = await SharedPreferences.getInstance();
+      final sudahDitanya = prefs.getBool('biometric_asked') ?? false;
+
+      // Tampilkan dialog jika device support biometrik DAN belum pernah ditanya
+      if (_deviceHasBiometric && !sudahDitanya && mounted) {
+        // Tampilkan dialog konfirmasi aktifkan sidik jari
+        final aktifkan = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Icon(Icons.fingerprint_rounded, color: AppTheme.primary, size: 28),
+                SizedBox(width: 10),
+                Text('Login Sidik Jari', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              ],
+            ),
+            content: const Text(
+              'Aktifkan login dengan sidik jari bawaan HP?\n\nKamu bisa langsung masuk tanpa ketik password lagi.',
+              style: TextStyle(fontSize: 14, height: 1.5),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Nanti Saja', style: TextStyle(color: AppTheme.outline)),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Aktifkan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
+            ],
+          ),
+        );
+
+        // Tandai sudah ditanya agar tidak muncul lagi
+        await prefs.setBool('biometric_asked', true);
+        if (aktifkan == true) {
+          await prefs.setBool('biometric_enabled', true);
+        }
+      }
+
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const HomeView()),

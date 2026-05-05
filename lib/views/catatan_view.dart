@@ -1,5 +1,4 @@
-﻿import 'dart:ui';
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../controllers/catatan_controller.dart';
 import '../controllers/acara_controller.dart';
 import '../helpers/auth_helper.dart';
@@ -348,78 +347,54 @@ class _CatatanViewState extends State<CatatanView> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: bg,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight + 56),
-        child: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              color: barBg,
-              child: SafeArea(
-                bottom: false,
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-                      child: Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.arrow_back_ios_new_rounded,
-                                color: textPrimary, size: 20),
-                            onPressed: () => Navigator.pop(context),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              'Catatan & Notulensi',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                color: textPrimary,
-                              ),
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.refresh_rounded,
-                                color: AppTheme.primary),
-                            onPressed: _loadCatatan,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                      child: TextField(
-                        onChanged: _onSearchChanged,
-                        style: TextStyle(color: textPrimary),
-                        decoration: InputDecoration(
-                          hintText: 'Cari catatan...',
-                          hintStyle: TextStyle(
-                              color: isDark
-                                  ? const Color(0xFF889390)
-                                  : AppTheme.outline),
-                          prefixIcon: const Icon(Icons.search_rounded,
-                              color: AppTheme.primary, size: 20),
-                          suffixIcon: _searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear_rounded, size: 18),
-                                  onPressed: () => _onSearchChanged(''),
-                                )
-                              : null,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                        ),
-                      ),
-                    ),
-                    Container(
-                        height: 1,
-                        color: AppTheme.primary.withValues(alpha: 0.08)),
-                  ],
+      appBar: AppBar(
+        backgroundColor: barBg,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: textPrimary, size: 20),
+          onPressed: () => Navigator.pop(context),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        title: Text(
+          'Catatan & Notulensi',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: textPrimary),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: AppTheme.primary),
+            onPressed: _loadCatatan,
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                child: TextField(
+                  onChanged: _onSearchChanged,
+                  style: TextStyle(color: textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'Cari catatan...',
+                    hintStyle: TextStyle(
+                        color: isDark ? const Color(0xFF889390) : AppTheme.outline),
+                    prefixIcon: const Icon(Icons.search_rounded,
+                        color: AppTheme.primary, size: 20),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded, size: 18),
+                            onPressed: () => _onSearchChanged(''),
+                          )
+                        : null,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
                 ),
               ),
-            ),
+              Container(height: 1, color: AppTheme.primary.withValues(alpha: 0.08)),
+            ],
           ),
         ),
       ),

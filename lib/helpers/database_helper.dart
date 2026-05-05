@@ -172,11 +172,8 @@ class DatabaseHelper {
 
   Future<int> insertMember(MemberModel member) async {
     final db = await database;
-
-    // Jangan sertakan id_member saat insert baru agar AUTOINCREMENT bekerja.
     final isNewRecord = member.id.isEmpty || member.id == '0';
     final Map<String, dynamic> data;
-
     if (isNewRecord) {
       data = {
         'nama': member.nama,
@@ -184,19 +181,23 @@ class DatabaseHelper {
         'no_hp': member.noHp,
         'role': member.role,
         'rt': member.rt,
+        if (member.passwordHash != null) 'password_hash': member.passwordHash,
       };
     } else {
       data = member.toMap();
     }
-
-    return db.insert(
-      'member',
-      data,
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    return db.insert('member', data, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<MemberModel?> getMemberByCredentials(
+  Future<int> updateMember(String id, Map<String, dynamic> data) async {
+    final db = await database;
+    return db.update('member', data, where: 'id_member = ?', whereArgs: [int.tryParse(id) ?? 0]);
+  }
+
+  Future<int> deleteMember(String id) async {
+    final db = await database;
+    return db.delete('member', where: 'id_member = ?', whereArgs: [int.tryParse(id) ?? 0]);
+  }  Future<MemberModel?> getMemberByCredentials(
     String namaPanggilan,
     String noHp,
   ) async {
@@ -317,6 +318,16 @@ class DatabaseHelper {
     return db.insert('landmark', data);
   }
 
+  Future<int> updateLandmark(int id, Map<String, dynamic> data) async {
+    final db = await database;
+    return db.update('landmark', data, where: 'id_landmark = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteLandmark(int id) async {
+    final db = await database;
+    return db.delete('landmark', where: 'id_landmark = ?', whereArgs: [id]);
+  }
+
   // ─── Operasi Sesi Game ────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> getAllGameSessions() async {
@@ -334,6 +345,16 @@ class DatabaseHelper {
   Future<int> insertFeedback(Map<String, dynamic> data) async {
     final db = await database;
     return db.insert('feedback', data);
+  }
+
+  Future<List<Map<String, dynamic>>> getAllFeedback() async {
+    final db = await database;
+    return db.query('feedback', orderBy: 'tanggal DESC, id_feedback DESC');
+  }
+
+  Future<int> deleteFeedback(int id) async {
+    final db = await database;
+    return db.delete('feedback', where: 'id_feedback = ?', whereArgs: [id]);
   }
 
   // ─── Utility ──────────────────────────────────────────────────────────────

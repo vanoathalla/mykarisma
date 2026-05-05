@@ -425,6 +425,66 @@ class _PetaViewState extends State<PetaView> {
     );
   }
 
+  // ── Edit Landmark Dialog ──────────────────────────────────────────────────
+  void _showEditLandmarkDialog(LandmarkModel lm) {
+    _namaCtrl.text = lm.nama;
+    _deskripsiCtrl.text = lm.deskripsi ?? '';
+    _latCtrl.text = lm.latitude.toString();
+    _lonCtrl.text = lm.longitude.toString();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Landmark'),
+        content: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            TextField(controller: _namaCtrl,
+              decoration: const InputDecoration(labelText: 'Nama Landmark', border: OutlineInputBorder())),
+            const SizedBox(height: 12),
+            TextField(controller: _deskripsiCtrl,
+              decoration: const InputDecoration(labelText: 'Deskripsi (opsional)', border: OutlineInputBorder()),
+              maxLines: 2),
+            const SizedBox(height: 12),
+            _CoordField(controller: _latCtrl, label: 'Latitude', hint: '-7.747372'),
+            const SizedBox(height: 12),
+            _CoordField(controller: _lonCtrl, label: 'Longitude', hint: '110.273145'),
+          ]),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          ElevatedButton(
+            onPressed: () async {
+              final nama = _namaCtrl.text.trim();
+              final lat = double.tryParse(_latCtrl.text.trim());
+              final lon = double.tryParse(_lonCtrl.text.trim());
+              if (nama.isEmpty || lat == null || lon == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Nama, latitude, dan longitude wajib diisi')));
+                return;
+              }
+              if (lm.idLandmark != null) {
+                await DatabaseHelper.instance.updateLandmark(lm.idLandmark!, {
+                  'nama': nama,
+                  'latitude': lat,
+                  'longitude': lon,
+                  'deskripsi': _deskripsiCtrl.text.trim().isEmpty ? null : _deskripsiCtrl.text.trim(),
+                });
+              }
+              if (ctx.mounted) Navigator.pop(ctx);
+              await _loadLandmarks();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Landmark berhasil diperbarui'), backgroundColor: Colors.green));
+              }
+            },
+            child: const Text('Simpan'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // ── Bottom card builders ──────────────────────────────────────────────────
 
   Widget _buildNavigasiCard(Color cardBg, Color textPrimary, bool isDark) {
@@ -533,17 +593,72 @@ class _PetaViewState extends State<PetaView> {
                     subtitle: lm.deskripsi != null && lm.deskripsi!.isNotEmpty
                         ? Text(lm.deskripsi!, style: TextStyle(fontSize: 11, color: textSub), maxLines: 1, overflow: TextOverflow.ellipsis)
                         : null,
-                    trailing: TextButton(
-                      onPressed: () {
-                        _mapController.move(LatLng(lm.latitude, lm.longitude), 17);
-                        setState(() => _modeLihatLandmark = false);
-                      },
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text('Lihat', style: TextStyle(fontSize: 12, color: AppTheme.primary, fontWeight: FontWeight.w600)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Tombol lihat
+                        TextButton(
+                          onPressed: () {
+                            _mapController.move(LatLng(lm.latitude, lm.longitude), 17);
+                            setState(() => _modeLihatLandmark = false);
+                          },
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text('Lihat', style: TextStyle(fontSize: 12, color: AppTheme.primary, fontWeight: FontWeight.w600)),
+                        ),
+                        if (_isAdmin) ...[
+                          // Tombol edit
+                          GestureDetector(
+                            onTap: () => _showEditLandmarkDialog(lm),
+                            child: Container(
+                              width: 28, height: 28,
+                              decoration: BoxDecoration(
+                                color: AppTheme.primary.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(7),
+                              ),
+                              child: const Icon(Icons.edit_rounded, size: 14, color: AppTheme.primary),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          // Tombol hapus
+                          GestureDetector(
+                            onTap: () async {
+                              final ok = await showDialog<bool>(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Hapus Landmark'),
+                                  content: Text('Yakin hapus "${lm.nama}"?'),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+                                    TextButton(onPressed: () => Navigator.pop(ctx, true),
+                                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                      child: const Text('Hapus')),
+                                  ],
+                                ),
+                              );
+                              if (ok == true && lm.idLandmark != null) {
+                                await DatabaseHelper.instance.deleteLandmark(lm.idLandmark!);
+                                await _loadLandmarks();
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Landmark dihapus'), backgroundColor: Colors.green));
+                                }
+                              }
+                            },
+                            child: Container(
+                              width: 28, height: 28,
+                              decoration: BoxDecoration(
+                                color: Colors.red.withValues(alpha: 0.10),
+                                borderRadius: BorderRadius.circular(7),
+                              ),
+                              child: const Icon(Icons.delete_outline_rounded, size: 14, color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   );
                 },

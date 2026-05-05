@@ -48,6 +48,10 @@ class _BerandaViewState extends State<BerandaView> {
   String? _fotoPath; // foto profil user
   int _notifCount = 0;
 
+  // Banner slider state
+  final PageController _bannerCtrl = PageController();
+  int _bannerPage = 0;
+
   @override
   void initState() {
     super.initState();
@@ -90,6 +94,7 @@ class _BerandaViewState extends State<BerandaView> {
 
   @override
   void dispose() {
+    _bannerCtrl.dispose();
     super.dispose();
   }
 
@@ -260,13 +265,11 @@ class _BerandaViewState extends State<BerandaView> {
               icon: Icon(Icons.notifications_outlined,
                   color: isDark ? const Color(0xFF84D5C5) : AppTheme.primary),
               onPressed: () async {
-                // Tandai semua notif sebagai sudah dilihat — badge langsung hilang
-                await _markNotifAsSeen();
                 await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const NotifikasiView()),
                 );
-                // Cek apakah ada notif baru yang masuk saat di halaman notifikasi
+                // Refresh badge setelah kembali dari halaman notifikasi
                 _loadNotifCount();
               },
             ),
@@ -302,80 +305,159 @@ class _BerandaViewState extends State<BerandaView> {
   //  1. GREETING GLASS CARD 
   Widget _buildGreeting(bool isDark) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(40),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white.withValues(alpha: 0.70),
-            borderRadius: BorderRadius.circular(40),
-            border: Border.all(
-              color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.white.withValues(alpha: 0.40),
+      borderRadius: BorderRadius.circular(28),
+      child: SizedBox(
+        height: 180,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // ── Layer 1: Banner slider (background) ──────────────────────
+            PageView(
+              controller: _bannerCtrl,
+              onPageChanged: (i) => setState(() => _bannerPage = i),
+              children: [
+                _buildBannerBg(isDark, 0),
+                _buildBannerBg(isDark, 1),
+                _buildBannerBg(isDark, 2),
+              ],
             ),
-            boxShadow: isDark ? [] : [
-              BoxShadow(color: AppTheme.primary.withValues(alpha: 0.06), blurRadius: 20, offset: const Offset(0, 4)),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+
+            // ── Layer 2: Gradient overlay agar teks terbaca ───────────────
+            IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerRight,
+                    end: Alignment.centerLeft,
+                    colors: [
+                      Colors.transparent,
+                      (isDark ? const Color(0xFF1A1C1C) : AppTheme.primary)
+                          .withValues(alpha: 0.82),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Layer 3: Konten teks di atas ──────────────────────────────
+            IgnorePointer(
+              child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Haii Selamat Datang,',
-                          style: TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w600,
-                            color: isDark ? const Color(0xFF84D5C5) : AppTheme.primaryContainer,
+                  Text(
+                    'Haii Selamat Datang,',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _namaUser,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            height: 1.2,
                           ),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                _namaUser,
-                                style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.w800,
-                                  color: isDark ? const Color(0xFFF1F1F1) : AppTheme.onSurface,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (_roleUser == 'admin') ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primary.withValues(alpha: 0.10),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.20)),
-                                  boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.25), blurRadius: 10)],
-                                ),
-                                child: const Text('ADMIN', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: AppTheme.primary, letterSpacing: 0.8)),
-                              ),
-                            ],
-                          ],
+                      ),
+                      if (_roleUser == 'admin') ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.20),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.40)),
+                          ),
+                          child: const Text('ADMIN',
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: 0.8)),
                         ),
                       ],
-                    ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_today_outlined,
+                          size: 12, color: Colors.white.withValues(alpha: 0.70)),
+                      const SizedBox(width: 5),
+                      Text(
+                        _dateLabel(),
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.70)),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.calendar_today_outlined, size: 14, color: isDark ? const Color(0xFF889390) : AppTheme.outline),
-                  const SizedBox(width: 6),
-                  Text(_dateLabel(), style: TextStyle(fontSize: 13, color: isDark ? const Color(0xFF889390) : AppTheme.outline)),
-                ],
+            ),  // tutup Padding
+            ),  // tutup IgnorePointer
+
+            // ── Layer 4: Dot indicator kanan bawah ────────────────────────
+            Positioned(
+              bottom: 12,
+              right: 16,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(3, (i) => AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  width: _bannerPage == i ? 18 : 5,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: _bannerPage == i
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.40),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                )),
               ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Background tiap slide banner
+  Widget _buildBannerBg(bool isDark, int index) {
+    // Warna gradien berbeda tiap slide
+    final gradients = [
+      [const Color(0xFF1565C0), const Color(0xFF283593)],
+      [const Color(0xFF00695C), const Color(0xFF1565C0)],
+      [const Color(0xFF283593), const Color(0xFF6A1B9A)],
+    ];
+    final colors = gradients[index % gradients.length];
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: colors,
+        ),
+      ),
+      child: Align(
+        alignment: Alignment.centerRight,
+        child: Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: Opacity(
+            opacity: 0.25,
+            child: KarismaLogo(size: 120),
           ),
         ),
       ),

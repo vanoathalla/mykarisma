@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:local_auth/local_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/auth_helper.dart';
 import '../helpers/database_helper.dart';
 
@@ -22,6 +24,10 @@ class AuthController {
         role: member.role,
       );
 
+      // Simpan last login id untuk biometrik
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('last_login_id', member.id);
+
       return {"success": true, "message": "Login berhasil"};
     } catch (e) {
       return {"success": false, "message": "Gagal mengakses database"};
@@ -31,37 +37,62 @@ class AuthController {
   Future<bool> loginWithBiometric() async {
     final localAuth = LocalAuthentication();
     try {
-      final canCheck = await localAuth.canCheckBiometrics;
-      if (!canCheck) return false;
+      final isSupported = await localAuth.isDeviceSupported();
+      if (!isSupported) return false;
+
+      // Tampilkan dialog autentikasi biometrik/PIN bawaan HP
       final authenticated = await localAuth.authenticate(
-        localizedReason: 'Login ke MyKarisma menggunakan biometrik',
-        options: const AuthenticationOptions(biometricOnly: true),
+        localizedReason: 'Gunakan sidik jari atau PIN untuk masuk ke KARISMA',
+        options: const AuthenticationOptions(
+          biometricOnly: false,
+          stickyAuth: true,
+          useErrorDialogs: true,
+        ),
       );
-      if (authenticated) {
-        // Ambil data admin dari DB dan buat session
-        final members = await DatabaseHelper.instance.getAllMembers();
-        if (members.isNotEmpty) {
-          final admin = members.firstWhere(
-            (m) => m['role'] == 'admin',
-            orElse: () => members.first,
-          );
-          await AuthHelper.saveSession(
-            idMember: admin['id_member'].toString(),
-            nama: admin['nama'] ?? '',
-            role: admin['role'] ?? '',
-          );
-          return true;
-        }
+
+      if (!authenticated) return false;
+
+      // Ambil last login id — login sebagai user terakhir yang login
+      final prefs = await SharedPreferences.getInstance();
+      final lastId = prefs.getString('last_login_id');
+
+      final members = await DatabaseHelper.instance.getAllMembers();
+      if (members.isEmpty) return false;
+
+      Map<String, dynamic> target;
+      if (lastId != null) {
+        // Login sebagai user terakhir
+        target = members.firstWhere(
+          (m) => m['id_member'].toString() == lastId,
+          orElse: () => members.first,
+        );
+      } else {
+        // Fallback: login sebagai admin
+        target = members.firstWhere(
+          (m) => m['role'] == 'admin',
+          orElse: () => members.first,
+        );
       }
-      return false;
+
+      await AuthHelper.saveSession(
+        idMember: target['id_member'].toString(),
+        nama: target['nama'] ?? '',
+        role: target['role'] ?? '',
+      );
+      return true;
     } catch (e) {
+      debugPrint('[AuthController] biometric error: $e');
       return false;
     }
   }
 
   Future<bool> isBiometricAvailable() async {
     final localAuth = LocalAuthentication();
-    return await localAuth.canCheckBiometrics;
+    try {
+      return await localAuth.isDeviceSupported();
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> logout() async {

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import '../models/acara_model.dart';
+import '../services/overlay_notification_service.dart';
 
 /// NotificationController — mengelola semua notifikasi lokal aplikasi KARISMA.
 ///
@@ -160,6 +161,11 @@ class NotificationController {
       );
       // Save to local inbox so NotifikasiView can display it
       await _saveToInbox(judul: judul, isi: isi);
+      // Tampilkan in-app pop-up notification
+      OverlayNotificationService().show(
+        title: judul,
+        body: isi,
+      );
     } catch (e) {
       debugPrint('[NotificationController] showUpdateNotif error: $e');
     }

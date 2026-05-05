@@ -9,6 +9,7 @@ import 'theme/app_theme.dart';
 import 'views/home/home_view.dart';
 import 'views/splash_screen.dart';
 import 'controllers/notification_controller.dart';
+import 'services/overlay_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +60,7 @@ class MyKarismaApp extends StatelessWidget {
           theme: AppTheme.lightTheme(),
           darkTheme: AppTheme.darkTheme(),
           themeMode: mode,
+          navigatorKey: OverlayNotificationService().navigatorKey,
           // Tampilkan SplashScreen dulu, lalu otomatis ke HomeView
           home: kIsWeb ? const HomeView() : const SplashScreen(),
           debugShowCheckedModeBanner: false,
